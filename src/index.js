@@ -1,8 +1,7 @@
+const { PORT } = require("./config/env");
 const express = require("express");
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
+const connectDB = require("./config/db");
 
-dotenv.config();
 const app = express();
 app.use(express.json());
 
@@ -11,12 +10,10 @@ const noteRoutes = require("./interface/routes/noteRoutes");
 app.use("/api/notes", noteRoutes);
 
 // MongoDb connection
-mongoose
-	.connect(process.env.MONGO_URI)
+connectDB()
 	.then(() => {
-		console.log("MongoDb connected");
-		app.listen(process.env.PORT || 3000, () => {
-			console.log(`Server running on port ${process.env.PORT || 3000}`);
+		app.listen(PORT, () => {
+			console.log(`Server running on port ${PORT}`);
 		});
 	})
 	.catch(error => {

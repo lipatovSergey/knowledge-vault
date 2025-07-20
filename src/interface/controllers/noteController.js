@@ -1,4 +1,4 @@
-const createNote = require("../../app/createNote");
+const createNote = require("../../app/notes/createNote");
 const noteRepo = require("../../infrustructure/db/repositories/note.repository.mongo");
 
 const noteController = {
