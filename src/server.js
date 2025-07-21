@@ -1,15 +1,9 @@
+require("dotenv").config();
 const { PORT } = require("./config/env");
-const express = require("express");
 const connectDB = require("./config/db");
+const app = require("./app");
 
-const app = express();
-app.use(express.json());
-
-// routes connection
-const noteRoutes = require("./interface/routes/noteRoutes");
-app.use("/api/notes", noteRoutes);
-
-// MongoDb connection
+// MongoDB connection
 connectDB()
 	.then(() => {
 		app.listen(PORT, () => {

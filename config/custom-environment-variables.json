@@ -1,0 +1,6 @@
+{
+	"port": "PORT",
+	"db": {
+		"uri": "MONGO_URI"
+	}
+}

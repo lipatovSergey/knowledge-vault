@@ -1,4 +1,4 @@
-const NoteModel = require("../models/Note.js");
+const NoteModel = require("./Note");
 
 // methods of note
 const noteRepo = {

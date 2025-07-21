@@ -1,6 +1,6 @@
 // Use-case: create new note
 
-module.exports = async function createNote(noteData, noteRepo) {
+async function createNote(noteData, noteRepo) {
 	// simple validation
 	// TODO: move to validator
 	if (!noteData.title || !noteData.content || !noteData.userId) {
@@ -12,4 +12,8 @@ module.exports = async function createNote(noteData, noteRepo) {
 	const newNote = await noteRepo.create(noteData);
 
 	return newNote;
+}
+
+module.exports = {
+	createNote,
 };
