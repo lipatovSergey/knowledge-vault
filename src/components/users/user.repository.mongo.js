@@ -1,5 +1,4 @@
-const UserModel = require("../models/User.js");
-const { create } = require("./note.repository.mongo");
+const UserModel = require("./User.js");
 
 // methods of user
 const userRepo = {
