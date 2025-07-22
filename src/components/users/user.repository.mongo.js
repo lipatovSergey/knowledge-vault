@@ -8,6 +8,7 @@ const userRepo = {
 			const newUser = new UserModel(userData);
 			return await newUser.save();
 		} catch (error) {
+			// user with passed email exists in DB
 			if (error.code === 11000 && error.keyPattern?.email) {
 				return "USER_EXISTS";
 			}
