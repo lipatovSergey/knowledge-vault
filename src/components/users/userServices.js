@@ -19,9 +19,13 @@ async function createUser(userData, userRepo) {
 
 	// here is buisness logic
 
-	const newUser = await userRepo.create(userToSave);
+	const result = await userRepo.create(userToSave);
 
-	return newUser;
+	if (result === "USER_EXISTS") {
+		return "USER_EXISTS";
+	}
+
+	return result;
 }
 
 // use-case: find user by email
@@ -32,10 +36,16 @@ async function findUserByEmail(email, userRepo) {
 	}
 
 	const user = await userRepo.findByEmail(email);
-
 	return user;
+}
+
+// use-case: check user's password
+async function checkUserPassword(plainPassword, hashedPassword) {
+	return await bcrypt.compare(plainPassword, hashedPassword);
 }
 
 module.exports = {
 	createUser,
+	findUserByEmail,
+	checkUserPassword,
 };
