@@ -43,6 +43,13 @@ const userController = {
 			next(error);
 		}
 	},
+
+	async logoutUser(req, res, next) {
+		req.session.destroy(() => {
+			res.clearCookie("connect.sid");
+			res.status(200).json({ message: "Logged out" });
+		});
+	},
 };
 
 module.exports = userController;
