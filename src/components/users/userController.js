@@ -36,6 +36,7 @@ const userController = {
 			if (!user || !match) {
 				return res.status(401).json({ message: "Invalid email or password" });
 			} else {
+				req.session.userId = user._id;
 				return res.status(200).json({ message: "Login successful", user });
 			}
 		} catch (error) {
