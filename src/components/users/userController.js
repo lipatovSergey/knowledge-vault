@@ -37,7 +37,7 @@ const userController = {
 				return res.status(401).json({ message: "Invalid email or password" });
 			} else {
 				req.session.userId = user._id;
-				return res.status(200).json({ message: "Login successful", user });
+				return res.status(200).json({ message: "Login successful" });
 			}
 		} catch (error) {
 			next(error);
@@ -45,10 +45,28 @@ const userController = {
 	},
 
 	async logoutUser(req, res, next) {
-		req.session.destroy(() => {
-			res.clearCookie("connect.sid");
-			res.status(200).json({ message: "Logged out" });
-		});
+		try {
+			req.session.destroy(() => {
+				res.clearCookie("connect.sid");
+				res.status(200).json({ message: "Logged out" });
+			});
+		} catch (error) {
+			next(error);
+		}
+	},
+
+	async getUserInfo(req, res, next) {
+		try {
+			const user = await userRepo.findById(req.session.userId);
+			if (!user) {
+				return res.status(404).json({ message: "User not found" });
+			}
+			const { _id, name, email } = user;
+			const info = { _id, name, email };
+			res.json(info);
+		} catch (error) {
+			next(error);
+		}
 	},
 };
 
