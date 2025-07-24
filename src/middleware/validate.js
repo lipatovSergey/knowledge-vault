@@ -1,9 +1,10 @@
+const { ZodValidationError } = require("../errors/errors");
+
 function validate(schema) {
 	return (req, res, next) => {
 		const result = schema.safeParse(req.body);
 		if (!result.success) {
-			const error = result.error.flatten().fieldErrors;
-			return res.status(400).json({ errors: error });
+			return next(new ZodValidationError(result.error));
 		}
 		req.validatedData = result.data;
 		next();
