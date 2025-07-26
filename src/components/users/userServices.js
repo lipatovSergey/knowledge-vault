@@ -1,13 +1,12 @@
 const bcrypt = require("bcrypt");
+const {
+	ConflictError,
+	UnauthorizedError,
+	NotFoundError,
+} = require("../../errors/errors");
 
 // use-case: create new user
 async function createUser(userData, userRepo) {
-	// simple validation
-	// TODO: move to validator
-	if (!userData.name || !userData.email || !userData.password) {
-		throw new Error("Name, password, email is required");
-	}
-
 	// hashing pass with bcrypt
 	const saltRounds = 10;
 	const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
@@ -22,7 +21,7 @@ async function createUser(userData, userRepo) {
 	const result = await userRepo.create(userToSave);
 
 	if (result === "USER_EXISTS") {
-		return "USER_EXISTS";
+		throw new ConflictError("User already exists");
 	}
 
 	return result;
@@ -30,22 +29,33 @@ async function createUser(userData, userRepo) {
 
 // use-case: find user by email
 async function findUserByEmail(email, userRepo) {
-	// TODO: move to validator
-	if (!email) {
-		throw new Error("email is required");
-	}
-
 	const user = await userRepo.findByEmail(email);
+	if (!user) {
+		throw new UnauthorizedError("Invalid email or password");
+	}
+	return user;
+}
+
+// use-case: find user by ID
+async function findUserById(id, userRepo) {
+	const user = await userRepo.findById(id);
+	if (!user) {
+		throw new NotFoundError("User not found");
+	}
 	return user;
 }
 
 // use-case: check user's password
 async function checkUserPassword(plainPassword, hashedPassword) {
-	return await bcrypt.compare(plainPassword, hashedPassword);
+	const match = await bcrypt.compare(plainPassword, hashedPassword);
+	if (!match) {
+		throw new UnauthorizedError("Invalid email or password");
+	}
 }
 
 module.exports = {
 	createUser,
 	findUserByEmail,
 	checkUserPassword,
+	findUserById,
 };
