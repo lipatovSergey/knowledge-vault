@@ -18,6 +18,7 @@
 		"express": "^5.1.0",
 		"express-session": "^1.18.2",
 		"mongoose": "^8.16.4",
+		"winston": "^3.17.0",
 		"zod": "^4.0.5"
 	},
 	"devDependencies": {
