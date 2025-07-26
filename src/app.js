@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 // session
-const sessionMiddleware = require("./middleware/session");
+const { sessionMiddleware } = require("./middleware/session");
 app.use(sessionMiddleware);
 
 // note routes connection
