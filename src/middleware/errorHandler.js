@@ -1,26 +1,17 @@
 const { AppError, ZodValidationError } = require("../errors/errors");
 const logger = require("../config/logger");
+const sanitizeBody = require("../utils/sanitizeBody");
 
 function errorHandler(err, req, res, next) {
-	if (err instanceof ZodValidationError) {
-		logger.warn("Validation failed", {
-			path: req.originalUrl,
-			method: req.method,
-			errors: err.details,
-		});
-		return res.status(err.statusCode).json({
-			message: err.message,
-			errors: err.details,
-		});
-	}
+	const level = err instanceof AppError ? err.level : "error";
 	// always send to logger
-	logger.error(err.message, {
+	logger[level](err.message, {
 		name: err.name,
 		stack: err.stack,
 		statusCode: err.statusCode || 500,
 		path: req.originalUrl,
 		method: req.method,
-		body: req.body,
+		body: sanitizeBody(req.body),
 	});
 	// operational errors
 	if (err instanceof AppError) {

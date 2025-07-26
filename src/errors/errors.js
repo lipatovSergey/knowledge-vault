@@ -2,23 +2,23 @@ const AppError = require("./AppError");
 
 class BadRequesError extends AppError {
 	constructor(message = "Bad Request") {
-		super(message, 400);
+		super(message, 400, "warn");
 	}
 }
 
 class UnauthorizedError extends AppError {
 	constructor(message = "Unauthorized") {
-		super(message, 401);
+		super(message, 401, "warn");
 	}
 }
 class NotFoundError extends AppError {
 	constructor(message = "Not Found") {
-		super(message, 404);
+		super(message, 404, "warn");
 	}
 }
 class ConflictError extends AppError {
 	constructor(message = "Conflict") {
-		super(message, 401);
+		super(message, 401, "warn");
 	}
 }
 

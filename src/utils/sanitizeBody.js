@@ -10,3 +10,5 @@ function saniteizeBody(body) {
 	}
 	return clone;
 }
+
+module.exports = saniteizeBody;
