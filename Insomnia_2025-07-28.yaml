@@ -1,0 +1,158 @@
+type: collection.insomnia.rest/5.0
+name: My first collection
+meta:
+  id: wrk_4760a377678c4653a38c478127c6fb59
+  created: 1753146409710
+  modified: 1753146409710
+  description: ""
+collection:
+  - url: http://localhost:3000/api/users
+    name: create user
+    meta:
+      id: req_635f7f0f61d9426392262190f166ce33
+      created: 1753146409793
+      modified: 1753520960315
+      isPrivate: false
+      description: ""
+      sortKey: -1753146409793
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"name": "{% faker 'randomFullName' %}",
+        	 "email": "{% faker 'randomEmail' %}",
+        	"password": "test"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.3.0
+    scripts:
+      preRequest: >-
+        module.exports = async function (context) {
+          function genId() {
+            const ts = Date.now().toString(36);
+            const rnd = Math.random().toString(36).slice(2, 8);
+            return `${ts}${rnd}`;
+          }
+
+          const uniquePart = genId();
+
+          await context.request.setEnvironmentVariable('EMAIL_UNIQUE', uniquePart);
+        };
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:3000/api/users/login
+    name: login user
+    meta:
+      id: req_41238fa34d5e4d029c5aa24300435d6e
+      created: 1753151284777
+      modified: 1753519485479
+      isPrivate: false
+      description: ""
+      sortKey: -1753151284777
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "Zachary.Kuhic@hotmail.com",
+        	"password": "test123"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5939c56f2abf46b28a1a7fc863e196f0
+      - name: User-Agent
+        value: insomnia/11.3.0
+        id: pair_5ea639bbe44d401590c142978966a4d1
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:3000/api/users/logout
+    name: logout user
+    meta:
+      id: req_d2764e876edc4c80b55809b3d03c136d
+      created: 1753231358084
+      modified: 1753232985892
+      isPrivate: false
+      description: ""
+      sortKey: -1753231358084
+    method: POST
+    headers:
+      - name: User-Agent
+        value: insomnia/11.3.0
+        id: pair_7fba2f8564b547d397600b2937301de2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:3000/api/users/me
+    name: get user data
+    meta:
+      id: req_83495902123c410797a3bbec84ec868a
+      created: 1753232560822
+      modified: 1753519534934
+      isPrivate: false
+      description: ""
+      sortKey: -1753148847285
+    method: GET
+    body:
+      mimeType: application/json
+      text: ""
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_615495747c574e778895e670ef7e231b
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_9f3da2c8fac5571070ffa1faa7620b48bfba0417
+    created: 1753146409716
+    modified: 1753521834127
+  cookies:
+    - id: 4a8d410c-e551-4c1f-b6aa-c88867ff857c
+      key: connect.sid
+      value: s%3AHEw7i5PaXmzxMoA84mZWZgtJONNgkGuZ.zcLCFnvmqNPaEP7JguazQsxMkTUK7iMAdmcVyex0Fig
+      domain: localhost
+      path: /
+      secure: false
+      httpOnly: true
+      creation: 2025-07-26T08:46:18.689Z
+      hostOnly: true
+      lastAccessed: 2025-07-26T08:46:18.689Z
+environments:
+  name: Base Environment
+  meta:
+    id: env_9f3da2c8fac5571070ffa1faa7620b48bfba0417
+    created: 1753146409713
+    modified: 1753521834139
+    isPrivate: false
+  data:
+    EMAIL_DOMAIN: test.com
+    EMAIL_UNIQUE: ""
