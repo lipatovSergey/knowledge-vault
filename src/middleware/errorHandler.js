@@ -1,8 +1,12 @@
-const { AppError, ZodValidationError } = require("../errors/errors");
+const { AppError } = require("../errors/errors");
 const logger = require("../config/logger");
 const sanitizeBody = require("../utils/sanitizeBody");
 
 function errorHandler(err, req, res, next) {
+	// important! If error happened after the res was send, we delegate it to build in express error handler. It stops the session.
+	if (res.headersSend) {
+		return next(err);
+	}
 	const level = err instanceof AppError ? err.level : "error";
 	// always send to logger
 	logger[level](err.message, {

@@ -24,7 +24,7 @@ class ConflictError extends AppError {
 
 class ZodValidationError extends AppError {
 	constructor(zodError) {
-		super("Validation Failed", 400);
+		super("Validation Failed", 400, "warn");
 		this.details = zodError.flatten().fieldErrors;
 	}
 }
