@@ -3,5 +3,6 @@
 	"db": {
 		"uri": ""
 	},
-	"session_secret": ""
+	"session_secret": "",
+	"node_end": "development"
 }

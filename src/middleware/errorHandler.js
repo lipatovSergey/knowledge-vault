@@ -1,6 +1,7 @@
 const { AppError } = require("../errors/errors");
 const logger = require("../config/logger");
 const sanitizeBody = require("../utils/sanitizeBody");
+const { NODE_ENV } = require("../config/env");
 
 function errorHandler(err, req, res, next) {
 	// important! If error happened after the res was send, we delegate it to build in express error handler. It stops the session.
@@ -27,7 +28,11 @@ function errorHandler(err, req, res, next) {
 
 	// unknown errors
 	return res.status(500).json({
-		message: "Internal Server Error",
+		message:
+			NODE_ENV !== "production"
+				? "Error unknown by custom error handler"
+				: "Internal Server Error",
+		...(NODE_ENV !== "production" && { stack: err.stack }),
 	});
 }
 

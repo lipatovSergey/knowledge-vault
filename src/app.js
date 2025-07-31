@@ -15,7 +15,9 @@ app.use("/api/notes", noteRoutes);
 // user routes connection
 const userRoutes = require("./components/users/userRoutes");
 app.use("/api/users", userRoutes);
-
+app.get("/test-error", (req, res) => {
+	throw new Error("Simulated unexpected error");
+});
 app.use(errorHandler);
 
 module.exports = app;

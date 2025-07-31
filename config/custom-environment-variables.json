@@ -3,5 +3,6 @@
 	"db": {
 		"uri": "MONGO_URI"
 	},
-	"session_secret": "SESSION_SECRET"
+	"session_secret": "SESSION_SECRET",
+	"node_env": "NODE_ENV"
 }

@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { PORT } = require("./config/env");
+const { NODE_ENV } = require("./config/env");
 const connectDB = require("./config/db");
 const app = require("./app");
 
@@ -19,6 +20,7 @@ connectDB()
 	.then(() => {
 		app.listen(PORT, () => {
 			console.log(`Server running on port ${PORT}`);
+			console.log(`Server running in ${NODE_ENV} mode`);
 		});
 	})
 	.catch(error => {
