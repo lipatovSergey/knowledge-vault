@@ -1,4 +1,4 @@
-const noteServices = require("./noteServices");
+const noteServices = require("./note.services");
 const noteRepo = require("./note.repository.mongo");
 
 const noteController = {

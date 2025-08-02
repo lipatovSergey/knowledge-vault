@@ -1,10 +1,10 @@
 const express = require("express");
-const userController = require("./userController");
+const userController = require("./user.controller.js");
 // middlewares
-const requireAuth = require("../../middleware/requireAuth.js");
-const validate = require("../../middleware/validate.js");
+const requireAuth = require("../../middleware/require-auth.middleware.js");
+const validate = require("../../middleware/validate.middleware.js");
 // validate chemas
-const { schemas } = require("../users/userValidator.js");
+const { schemas } = require("./user.validator.js");
 
 const router = express.Router();
 router.post("/", validate(schemas.userCreate), userController.createUser);

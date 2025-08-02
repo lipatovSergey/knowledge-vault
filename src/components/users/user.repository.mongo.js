@@ -1,4 +1,4 @@
-const UserModel = require("./User.js");
+const UserModel = require("./user.model.js");
 
 // methods of user
 const userRepo = {

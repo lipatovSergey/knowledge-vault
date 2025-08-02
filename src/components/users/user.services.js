@@ -3,7 +3,7 @@ const {
 	ConflictError,
 	UnauthorizedError,
 	NotFoundError,
-} = require("../../errors/errors");
+} = require("../../errors/errors.class");
 
 // use-case: create new user
 async function createUser(userData, userRepo) {

@@ -1,4 +1,4 @@
-const userServices = require("./userServices");
+const userServices = require("./user.services");
 const userRepo = require("./user.repository.mongo");
 
 const userController = {

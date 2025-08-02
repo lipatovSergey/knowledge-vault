@@ -23,7 +23,7 @@ describe("User registration", () => {
 		it("should return 400 if name was not passed", async () => {
 			const res = await request(app).post("/api/users").send({
 				name: "",
-				email: "test1@example.com",
+				email: "test@example.com",
 				password: "pass123",
 			});
 			expectValidationError(res);

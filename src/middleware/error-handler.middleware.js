@@ -1,6 +1,6 @@
-const { AppError } = require("../errors/errors");
+const { AppError } = require("../errors/errors.class");
 const logger = require("../config/logger");
-const sanitizeBody = require("../utils/sanitizeBody");
+const sanitizeBody = require("../utils/sanitize-body.util");
 const { NODE_ENV } = require("../config/env");
 
 function errorHandler(err, req, res, next) {

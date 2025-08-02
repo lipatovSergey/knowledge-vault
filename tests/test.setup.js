@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const connectDB = require("./db");
-const { store } = require("../middleware/session");
+const connectDB = require("../src/config/db");
+const { store } = require("../src/middleware/session.middleware");
 beforeAll(async () => {
 	await connectDB();
 });

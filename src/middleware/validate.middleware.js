@@ -1,4 +1,4 @@
-const { ZodValidationError } = require("../errors/errors");
+const { ZodValidationError } = require("../errors/errors.class");
 
 function validate(schema) {
 	return (req, res, next) => {
