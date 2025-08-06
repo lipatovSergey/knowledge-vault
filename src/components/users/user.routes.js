@@ -7,10 +7,15 @@ const validate = require("../../middleware/validate.middleware.js");
 const { schemas } = require("./user.validator.js");
 
 const router = express.Router();
+// create new user
 router.post("/", validate(schemas.userCreate), userController.createUser);
+// log-in
 router.post("/login", validate(schemas.userLogin), userController.loginUser);
+// log-out authenticated (loged in) user
 router.post("/logout", requireAuth, userController.logoutUser);
+// get user's info by himself (authenticated)
 router.get("/me", requireAuth, userController.getUserInfo);
+// delete user by himself(authenticated)
 router.delete("/me", requireAuth, userController.deleteUser);
 
 module.exports = router;

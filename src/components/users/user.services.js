@@ -60,6 +60,7 @@ async function deleteUser(id, userRepo) {
     throw new NotFoundError("User not found");
   }
 }
+
 module.exports = {
   createUser,
   findUserByEmail,
