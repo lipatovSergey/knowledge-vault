@@ -30,7 +30,8 @@ const userRepo = {
 
   // delete user
   async deleteUser(id) {
-    await UserModel.findByIdAndDelete(id);
+    const deletedUser = await UserModel.findByIdAndDelete(id);
+    return deletedUser;
   },
 };
 

@@ -53,6 +53,7 @@ async function checkUserPassword(plainPassword, hashedPassword) {
   }
 }
 
+// use-case: delete user by id
 async function deleteUser(id, userRepo) {
   const deleted = await userRepo.deleteUser(id);
   if (!deleted) {
