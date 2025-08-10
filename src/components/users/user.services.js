@@ -15,16 +15,18 @@ async function createUser(userData, userRepo) {
     ...userData,
     password: hashedPassword,
   };
-
-  // here is buisness logic
-
-  const result = await userRepo.create(userToSave);
-
-  if (result === "USER_EXISTS") {
-    throw new ConflictError("User already exists");
+  try {
+    const result = await userRepo.create(userToSave);
+    return result;
+  } catch (err) {
+    if (
+      err?.code === 11000 &&
+      (err?.keyPattern?.email || err?.keyValue?.email)
+    ) {
+      throw new ConflictError("User already exists");
+    }
+    throw err;
   }
-
-  return result;
 }
 
 // use-case: find user by email

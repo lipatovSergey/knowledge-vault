@@ -4,16 +4,8 @@ const UserModel = require("./user.model.js");
 const userRepo = {
   // saves new user to MongoDB and return it
   async create(userData) {
-    try {
-      const newUser = new UserModel(userData);
-      return await newUser.save();
-    } catch (error) {
-      // user with passed email exists in DB
-      if (error.code === 11000 && error.keyPattern?.email) {
-        return "USER_EXISTS";
-      }
-      throw error;
-    }
+    const newUser = new UserModel(userData);
+    return await newUser.save();
   },
 
   // find user by email
