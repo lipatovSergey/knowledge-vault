@@ -1,5 +1,6 @@
 const userServices = require("./user.services");
 const userRepo = require("./user.repository.mongo");
+const destroySession = require("../../utils/destroy-session.util.js");
 
 const userController = {
   async createUser(req, res, next) {
@@ -36,10 +37,9 @@ const userController = {
 
   async logoutUser(req, res, next) {
     try {
-      req.session.destroy(() => {
-        res.clearCookie("connect.sid");
-        res.status(200).json({ message: "Logged out" });
-      });
+      await destroySession(req);
+      res.clearCookie("connect.sid");
+      res.status(200).json({ message: "Logged out" });
     } catch (error) {
       next(error);
     }
@@ -63,10 +63,9 @@ const userController = {
   async deleteUser(req, res, next) {
     try {
       await userServices.deleteUser(req.session.userId, userRepo);
-      req.session.destroy(() => {
-        res.clearCookie("connect.sid");
-      });
-      res.status(200).json({ message: "User deleted" });
+      await destroySession(req);
+      res.clearCookie("connect.sid");
+      return res.status(200).json({ message: "User deleted" });
     } catch (error) {
       next(error);
     }

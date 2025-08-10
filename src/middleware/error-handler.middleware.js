@@ -5,7 +5,7 @@ const { NODE_ENV } = require("../config/env");
 
 function errorHandler(err, req, res, next) {
   // important! If error happened after the res was send, we delegate it to build in express error handler. It stops the session.
-  if (res.headersSend) {
+  if (res.headersSent) {
     return next(err);
   }
   const level = err instanceof AppError ? err.level : "error";

@@ -12,7 +12,7 @@ const userRepo = {
       if (error.code === 11000 && error.keyPattern?.email) {
         return "USER_EXISTS";
       }
-      throw new Error(error);
+      throw error;
     }
   },
 
