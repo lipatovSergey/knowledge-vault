@@ -63,6 +63,9 @@ const userController = {
   async deleteUser(req, res, next) {
     try {
       await userServices.deleteUser(req.session.userId, userRepo);
+      req.session.destroy(() => {
+        res.clearCookie("connect.sid");
+      });
       res.status(200).json({ message: "User deleted" });
     } catch (error) {
       next(error);
