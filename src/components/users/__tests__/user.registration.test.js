@@ -68,4 +68,18 @@ describe("User registration", () => {
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty("message", "User created successfully");
   });
+
+  it("should return 409 if user with used email exists", async () => {
+    await request(app).post(route).send({
+      name: " Test User",
+      email: "test@example.com",
+      password: "pass123",
+    });
+    const res = await request(app).post(route).send({
+      name: " Test User",
+      email: "test@example.com",
+      password: "pass123",
+    });
+    expect(res.statusCode).toBe(409);
+  });
 });
