@@ -5,10 +5,11 @@ const destroySession = require("../../utils/destroy-session.util.js");
 const userController = {
   async createUser(req, res, next) {
     try {
+      // better to take validatedData and not from body
       const userData = {
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
+        name: req.validatedData.name,
+        email: req.validatedData.email,
+        password: req.validatedData.password,
       };
 
       await userServices.createUser(userData, userRepo);
@@ -21,8 +22,8 @@ const userController = {
   async loginUser(req, res, next) {
     try {
       const data = {
-        email: req.body.email,
-        password: req.body.password,
+        email: req.validatedData.email,
+        password: req.validatedData.password,
       };
 
       const user = await userServices.findUserByEmail(data.email, userRepo);
