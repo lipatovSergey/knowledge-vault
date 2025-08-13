@@ -1,5 +1,4 @@
 const request = require("supertest");
-const app = require("../../../app");
 
 describe("User registration", () => {
   const route = "/api/users";
@@ -10,7 +9,7 @@ describe("User registration", () => {
     }
 
     it("should return 400 and errors for invalid types of fields", async () => {
-      const res = await request(app).post(route).send({
+      const res = await request(global.app).post(route).send({
         name: 123,
         email: 123,
         password: 123,
@@ -24,7 +23,7 @@ describe("User registration", () => {
     });
 
     it("should return 400 if name was not passed", async () => {
-      const res = await request(app).post(route).send({
+      const res = await request(global.app).post(route).send({
         name: "",
         email: "test@example.com",
         password: "pass123",
@@ -35,7 +34,7 @@ describe("User registration", () => {
     });
 
     it("should return code 400 and message 'Invalid email' if email is invalid or empty string", async () => {
-      const res = await request(app).post(route).send({
+      const res = await request(global.app).post(route).send({
         name: "name",
         email: "test",
         password: "pass123",
@@ -46,7 +45,7 @@ describe("User registration", () => {
     });
 
     it("should return code 400 and message 'Password must be at least 6 characters'	if password is invalid or empty string", async () => {
-      const res = await request(app).post(route).send({
+      const res = await request(global.app).post(route).send({
         name: "name",
         email: "test@test.com",
         password: "",
@@ -60,7 +59,7 @@ describe("User registration", () => {
   });
 
   it("should register a new user", async () => {
-    const res = await request(app).post(route).send({
+    const res = await request(global.app).post(route).send({
       name: "Test User",
       email: "test@example.com",
       password: "pass123",
@@ -70,12 +69,12 @@ describe("User registration", () => {
   });
 
   it("should return 409 if user with used email exists", async () => {
-    await request(app).post(route).send({
+    await request(global.app).post(route).send({
       name: " Test User",
       email: "test@example.com",
       password: "pass123",
     });
-    const res = await request(app).post(route).send({
+    const res = await request(global.app).post(route).send({
       name: " Test User",
       email: "test@example.com",
       password: "pass123",

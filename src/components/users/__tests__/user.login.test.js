@@ -1,11 +1,10 @@
 const request = require("supertest");
-const app = require("../../../app");
 const it = global.it;
 
 describe("User login", () => {
 	const route = "/api/users/login";
 	beforeEach(async () => {
-		await request(app).post("/api/users").send({
+		await request(global.app).post("/api/users").send({
 			name: "User",
 			email: "test@example.com",
 			password: "pass123",
@@ -13,7 +12,7 @@ describe("User login", () => {
 	});
 
 	it("should log in with correct credentials", async () => {
-		const res = await request(app).post(route).send({
+		const res = await request(global.app).post(route).send({
 			email: "test@example.com",
 			password: "pass123",
 		});
@@ -22,7 +21,7 @@ describe("User login", () => {
 	});
 
 	it("should set session cookie after successful login", async () => {
-		const res = await request(app).post(route).send({
+		const res = await request(global.app).post(route).send({
 			email: "test@example.com",
 			password: "pass123",
 		});
@@ -32,7 +31,7 @@ describe("User login", () => {
 	});
 
 	it("should return 401 if email is incorrect", async () => {
-		const res = await request(app).post(route).send({
+		const res = await request(global.app).post(route).send({
 			email: "wrong@example.com",
 			password: "pass123",
 		});
@@ -41,7 +40,7 @@ describe("User login", () => {
 	});
 
 	it("should return 401 if password is incorrect", async () => {
-		const res = await request(app).post(route).send({
+		const res = await request(global.app).post(route).send({
 			email: "test@example.com",
 			password: "pass124",
 		});
@@ -50,7 +49,7 @@ describe("User login", () => {
 	});
 
 	it("should return 400 if email is an empty string", async () => {
-		const res = await request(app).post(route).send({
+		const res = await request(global.app).post(route).send({
 			email: "",
 			password: "pass123",
 		});
@@ -61,7 +60,7 @@ describe("User login", () => {
 	});
 
 	it("should return 400 if password is an empty string", async () => {
-		const res = await request(app).post(route).send({
+		const res = await request(global.app).post(route).send({
 			email: "test@example.com",
 			password: "",
 		});

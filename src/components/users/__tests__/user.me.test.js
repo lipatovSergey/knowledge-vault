@@ -1,5 +1,4 @@
 const request = require("supertest");
-const app = require("../../../app");
 const it = global.it;
 
 describe("/api/users/me", () => {
@@ -7,12 +6,12 @@ describe("/api/users/me", () => {
   let cookie;
 
   beforeEach(async () => {
-    await request(app).post("/api/users").send({
+    await request(global.app).post("/api/users").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
     });
-    const res = await request(app).post("/api/users/login").send({
+    const res = await request(global.app).post("/api/users/login").send({
       email: "test@example.com",
       password: "pass123",
     });
@@ -21,20 +20,20 @@ describe("/api/users/me", () => {
 
   describe("GET /me", () => {
     it("should get user's data", async () => {
-      const res = await request(app).get(route).set("Cookie", cookie);
+      const res = await request(global.app).get(route).set("Cookie", cookie);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("name", "User");
       expect(res.body).toHaveProperty("email", "test@example.com");
     });
 
     it("should return 401 and message 'Unauthorized' if no session cookie was passed", async () => {
-      const res = await request(app).get(route);
+      const res = await request(global.app).get(route);
       expect(res.statusCode).toBe(401);
       expect(res.body).toHaveProperty("message", "Unauthorized");
     });
 
     it("should return 404 if user not found (fake session)", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(global.app);
       const fakeId = "64ffacacacacacacacacacac"; // валидный ObjectId-формат
 
       await agent.post(`/test/session/${fakeId}`); // сессия сохранена
@@ -46,13 +45,13 @@ describe("/api/users/me", () => {
 
   describe("DELETE /me", () => {
     it("should delete user", async () => {
-      const res = await request(app).delete(route).set("Cookie", cookie);
+      const res = await request(global.app).delete(route).set("Cookie", cookie);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("message", "User deleted");
     });
 
     it("should return 401 and message 'Unauthorized' if no session cookie was passed", async () => {
-      const res = await request(app).delete(route);
+      const res = await request(global.app).delete(route);
       expect(res.statusCode).toBe(401);
       expect(res.body).toHaveProperty("message", "Unauthorized");
     });
