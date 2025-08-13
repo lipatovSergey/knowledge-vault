@@ -16,17 +16,11 @@ beforeAll(async () => {
   global.app = app;
 
   // if DB connect by function and not inside app
-  try {
-    const connectDB = require("../src/config/db");
-    if (typeof connectDB === "function") {
-      await connectDB();
-    }
-  } catch (_) {}
+  const connectDB = require("../src/config/db");
+  await connectDB();
 
   // get store to close it in afterAll
-  try {
-    ({ store } = require("../src/middleware/session.middleware"));
-  } catch (_) {}
+ ({ store } = require("../src/middleware/session.middleware"));
 
   // check that connection succeed
   if(mongoose.connection.readyState !== 1) {
