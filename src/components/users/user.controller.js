@@ -1,6 +1,7 @@
 const userServices = require("./user.services");
 const userRepo = require("./user.repository.mongo");
 const destroySession = require("../../utils/destroy-session.util.js");
+const regenerateSession = require("../../utils/regenerate-session.util.js");
 
 const userController = {
   async createUser(req, res, next) {
@@ -29,6 +30,8 @@ const userController = {
       const user = await userServices.findUserByEmail(data.email, userRepo);
       await userServices.checkUserPassword(data.password, user.password);
 
+      // regeberate session ID for authenticated user
+      await regenerateSession(req);
       req.session.userId = user._id;
       return res.status(200).json({ message: "Login successful" });
     } catch (error) {
