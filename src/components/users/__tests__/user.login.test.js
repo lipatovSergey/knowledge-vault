@@ -69,12 +69,6 @@ describe("User login", () => {
     expect(res.body.errors).toHaveProperty("password");
     expect(res.body.errors.password[0]).toBe("Password is required");
   });
-  it("touch works alone", async () => {
-    const agent = request.agent(global.app);
-    const res = await agent.get("/test/touch");
-    console.log(res.body, res.headers["set-cookie"]);
-    expect(res.status).toBe(200);
-  });
 
   it("regenerates session ID on successful login", async () => {
     const agent = request.agent(global.app);
@@ -97,5 +91,24 @@ describe("User login", () => {
     const sidBefore = cookieBefore.match(/connect\.sid=([^;]+)/)[1];
     const sidAfter = cookieAfter.match(/connect\.sid=([^;]+)/)[1];
     expect(sidBefore).not.toBe(sidAfter);
+  });
+
+  it("should return 409 if user is already logged in", async () => {
+    const firstRes = await request(global.app).post(route).send({
+      email: "test@example.com",
+      password: "pass123",
+    });
+
+    const cookie = firstRes.headers["set-cookie"];
+
+    const res = await request(global.app)
+      .post(route)
+      .set("Cookie", cookie)
+      .send({
+        email: "test@example.com",
+        password: "pass123",
+      });
+
+    expect(res.statusCode).toBe(409);
   });
 });
