@@ -3,5 +3,6 @@
     "checkJs": false,
     "module": "commonjs"
   },
+  "include": ["**/*.js", "src/components/users/user.controller.cjs"],
   "exclude": ["node_modules", "dist"]
 }
