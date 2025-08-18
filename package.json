@@ -2,6 +2,10 @@
   "name": "knowledge-vault",
   "version": "1.0.0",
   "main": "server.js",
+  "private": true,
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "scripts": {
     "test": "NODE_ENV=test jest --runInBand",
     "dev": "nodemon src/server.js"
@@ -23,6 +27,7 @@
   },
   "devDependencies": {
     "eslint": "^9.32.0",
+    "eslint-plugin-n": "^17.21.3",
     "jest": "^30.0.5",
     "mongodb-memory-server": "^10.2.0",
     "nodemon": "^3.1.10",
