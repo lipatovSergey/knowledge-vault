@@ -23,5 +23,12 @@ router.post("/logout", requireAuth, userController.logoutUser);
 router.get("/me", requireAuth, userController.getUserInfo);
 // delete user by himself(authenticated)
 router.delete("/me", requireAuth, userController.deleteUser);
+// update user info
+router.patch(
+  "/me",
+  requireAuth,
+  validate(schemas.userInfoPatch),
+  userController.updateUserInfo,
+);
 
 module.exports = router;
