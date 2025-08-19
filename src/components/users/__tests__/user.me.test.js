@@ -56,4 +56,20 @@ describe("/api/users/me", () => {
       expect(res.body).toHaveProperty("message", "Unauthorized");
     });
   });
+
+  describe("PATCH /me", () => {
+    it("should return 401 and 'Unauthorized' if no session cookie was passed", async () => {
+      const res = await request(global.app).patch(route);
+      expect(res.statusCode).toBe(401);
+      expect(res.body).toHaveProperty("message", "Unauthorized");
+    });
+
+    it("should return 400 if name wasn't passed", async () => {
+      const res = await agent.patch(route).send({
+        name: "",
+      });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.errors.name[0]).toBe("Name is required");
+    });
+  });
 });
