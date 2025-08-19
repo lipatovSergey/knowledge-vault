@@ -3,24 +3,24 @@ const it = global.it;
 
 describe("/api/users/me", () => {
   const route = "/api/users/me";
-  let cookie;
+  let agent;
 
   beforeEach(async () => {
-    await request(global.app).post("/api/users").send({
+    agent = request.agent(global.app);
+    await agent.post("/api/users").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
     });
-    const res = await request(global.app).post("/api/users/login").send({
+    await agent.post("/api/users/login").send({
       email: "test@example.com",
       password: "pass123",
     });
-    cookie = res.headers["set-cookie"];
   });
 
   describe("GET /me", () => {
     it("should get user's data", async () => {
-      const res = await request(global.app).get(route).set("Cookie", cookie);
+      const res = await agent.get(route);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("name", "User");
       expect(res.body).toHaveProperty("email", "test@example.com");
@@ -45,7 +45,7 @@ describe("/api/users/me", () => {
 
   describe("DELETE /me", () => {
     it("should delete user", async () => {
-      const res = await request(global.app).delete(route).set("Cookie", cookie);
+      const res = await agent.delete(route);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("message", "User deleted");
     });
