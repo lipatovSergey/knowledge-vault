@@ -71,5 +71,12 @@ describe("/api/users/me", () => {
       expect(res.statusCode).toBe(400);
       expect(res.body.errors.name[0]).toBe("Name is required");
     });
+
+    it("should update user's name field", async () => {
+      const res = await agent.patch(route).send({
+        name: "Updated",
+      });
+      expect(res.statusCode).toBe(200);
+    });
   });
 });
