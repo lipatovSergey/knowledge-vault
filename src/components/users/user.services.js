@@ -69,7 +69,7 @@ async function updateUserName(id, name, userRepo) {
   if (!updatedName) {
     throw new NotFoundError("User not found");
   }
-  return updatedName;
+  return updatedName.name;
 }
 
 module.exports = {

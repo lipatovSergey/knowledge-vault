@@ -33,7 +33,8 @@ const userRepo = {
       { $set: { name: newName } },
       { returnDocument: "after", runValidators: true, select: "name" },
     );
-    return updatedName.name;
+    console.log(updatedName);
+    return updatedName;
   },
 };
 

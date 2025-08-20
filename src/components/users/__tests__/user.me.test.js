@@ -77,6 +77,19 @@ describe("/api/users/me", () => {
         name: "Updated",
       });
       expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("updatedName", "Updated");
+    });
+
+    it("should return 404 if user not found (fake session)", async () => {
+      const agent = request.agent(global.app);
+      const fakeId = "64ffacacacacacacacacacac"; // валидный ObjectId-формат
+
+      await agent.post(`/test/session/${fakeId}`); // сессия сохранена
+      const res = await agent.patch("/api/users/me").send({
+        name: "Updated",
+      }); // requireAuth пропустит
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toHaveProperty("message", "User not found");
     });
   });
 });
