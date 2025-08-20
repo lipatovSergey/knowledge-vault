@@ -28,7 +28,7 @@ router.patch(
   "/me",
   requireAuth,
   validate(schemas.userInfoPatch),
-  userController.updateUserInfo,
+  userController.updateUserName,
 );
 
 module.exports = router;

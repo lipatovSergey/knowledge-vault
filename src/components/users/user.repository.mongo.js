@@ -25,6 +25,16 @@ const userRepo = {
     const deletedUser = await UserModel.findByIdAndDelete(id);
     return deletedUser;
   },
+
+  // update user name by id
+  async updateUserName(id, newName) {
+    const updatedName = await UserModel.findByIdAndUpdate(
+      id,
+      { $set: { name: newName } },
+      { returnDocument: "after", runValidators: true, select: "name" },
+    );
+    return updatedName.name;
+  },
 };
 
 module.exports = userRepo;

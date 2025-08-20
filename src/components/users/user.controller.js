@@ -74,6 +74,20 @@ const userController = {
       next(error);
     }
   },
+
+  async updateUserName(req, res, next) {
+    try {
+      const newName = req.validatedData.name;
+      const updatedName = await userServices.updateUserName(
+        req.session.userId,
+        newName,
+        userRepo,
+      );
+      res.status(200).json({ updatedName: updatedName });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = userController;

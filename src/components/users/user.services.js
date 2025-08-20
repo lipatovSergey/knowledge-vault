@@ -63,10 +63,20 @@ async function deleteUser(id, userRepo) {
   }
 }
 
+// use-case: update user's name
+async function updateUserName(id, name, userRepo) {
+  const updatedName = await userRepo.updateUserName(id, name);
+  if (!updatedName) {
+    throw new NotFoundError("User not found");
+  }
+  return updatedName;
+}
+
 module.exports = {
   createUser,
   findUserByEmail,
   checkUserPassword,
   findUserById,
   deleteUser,
+  updateUserName,
 };
