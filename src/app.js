@@ -18,6 +18,9 @@ app.use("/api/notes", noteRoutes);
 const userRoutes = require("./components/users/user.routes");
 app.use("/api/users", userRoutes);
 
+const authRoutes = require("./components/auth/auth.routes.js");
+app.use("/api/auth", authRoutes);
+
 // test routes
 if (NODE_ENV === "test") {
   const testRoutes = require("../tests/test.routes.js");
