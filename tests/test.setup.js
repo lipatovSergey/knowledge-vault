@@ -11,13 +11,12 @@ let store; // connect-mongo store
 beforeAll(async () => {
   // start in-memory Mongo and change process.env.MONGO_URI
   await startMemoryMongo();
-  // only then import app 
-  const app = require("../src/app");
-  global.app = app;
 
-  // if DB connect by function and not inside app
   const connectDB = require("../src/config/db");
   await connectDB();
+
+  const app = require("../src/app");
+  global.app = app;
 
   // get store to close it in afterAll
  ({ store } = require("../src/middleware/session.middleware"));
@@ -36,9 +35,13 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
   if(store && typeof store.close === "function") {
-    await store.close();
+    try {
+      await store.close()
+    } catch (err) {
+      if(err?.name !== "MongoClientClosedError") throw err; 
+    }
   }
+  await mongoose.disconnect()
   await stopMemoryMongo();
 });
