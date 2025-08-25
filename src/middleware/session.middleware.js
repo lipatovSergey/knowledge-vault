@@ -4,29 +4,31 @@ const MongoStore = require("connect-mongo");
 const mongoose = require("mongoose");
 const { SESSION_SECRET, MONGO_URI } = require("../config/env");
 
-const isTest = process.env.NODE_ENV === "test";
-
-// 1) В тестах используем MemoryStore — никаких отдельных Mongo-клиентов.
 let store;
-if (isTest) {
+if (process.env.NODE_ENV === "test") {
+  // MemoryStore for tests, no clients
   store = new session.MemoryStore();
 } else {
-  // 2) В обычном режиме привязываем store к КЛИЕНТУ Mongoose (а не к mongoUrl),
-  //    чтобы у Mongoose и connect-mongo был один и тот же MongoClient.
-  //    Если по какой-то причине клиент ещё не готов — мягко упадём на mongoUrl.
+  // DEV/PROD mode
+  // Check if mongoose client allready exists
   const client =
     mongoose.connection?.readyState === 1
       ? mongoose.connection.getClient()
       : null;
 
-  const baseOptions = { collectionName: "sessions", ttl: 60 * 60 * 24 }; // 1 сутки
-  store = MongoStore.create(
-    client ? { client, ...baseOptions } : { mongoUrl: MONGO_URI, ...baseOptions }
-  );
+  const baseOptions = { collectionName: "sessions", ttl: 60 * 60 * 24 }; // 1 day
+  if(client) {
+    // if mongoose client exists use it for sessions store as well
+    store = MongoStore.create({client, ...baseOptions})
+  } else {
+    // else create another client for sessions
+    store = MongoStore.create({ mongoUrl: MONGO_URI, ...baseOptions })
+    // throw warn. Need to check order of DB connect and session middleware
+    console.warn("Session store initialized before DB connection")
+  }
 }
 
-// 3) Сам middleware с безопасными настройками cookie.
-//    В тестах secure=false — чтобы SuperTest видел куку без HTTPS.
+// secure=fase so that SuperTest sees cookies without HTTPS
 const sessionMiddleware = session({
   secret: SESSION_SECRET,
   resave: false,
@@ -35,8 +37,8 @@ const sessionMiddleware = session({
   cookie: {
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // включите true в проде за HTTPS
-    maxAge: 24 * 60 * 60 * 1000, // 1 сутки
+    secure: false, // TODO: true in production 
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
   },
 });
 
