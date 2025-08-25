@@ -1,6 +1,5 @@
 // tests/test.setup.js
 jest.setTimeout(60_000); // first start need to download binary
-
 process.env.NODE_ENV = "test";
 
 const mongoose = require("mongoose");
@@ -17,14 +16,6 @@ beforeAll(async () => {
 
   const app = require("../src/app");
   global.app = app;
-
-  // get store to close it in afterAll
- ({ store } = require("../src/middleware/session.middleware"));
-
-  // check that connection succeed
-  if(mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGO_URI);
-  }
 });
 
 afterEach(async () => {
@@ -35,13 +26,6 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  if(store && typeof store.close === "function") {
-    try {
-      await store.close()
-    } catch (err) {
-      if(err?.name !== "MongoClientClosedError") throw err; 
-    }
-  }
   await mongoose.disconnect()
   await stopMemoryMongo();
 });
