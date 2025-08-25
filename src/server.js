@@ -1,7 +1,6 @@
 require("dotenv").config();
 const { PORT } = require("./config/env");
 const connectDB = require("./config/db");
-const app = require("./app");
 
 // Global errors catchers
 process.on("unhandledRejection", (reason) => {
@@ -17,6 +16,7 @@ process.on("uncaughtException", (err) => {
 // MongoDB connection
 connectDB()
   .then(() => {
+    const app = require("./app");
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
