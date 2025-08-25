@@ -9,7 +9,7 @@ class InMemoryMailService extends MailService {
   async sendPasswordReset(msg) {
     this._push({
       ...msg,
-      type: "password reset",
+      type: "password-reset",
       createdAt: new Date(),
     });
   }
