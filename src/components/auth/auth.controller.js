@@ -1,7 +1,6 @@
 const userRepo = require("../users/user.repository.mongo"); // репозиторий уже есть
 const mail = require("../../services/mail/index.js"); // синглтон-почта
 const { generateToken } = require("../../utils/token.util.js");
-const tokens = require("./token.store.memory.js");
 
 const authController = {
   async forgotPassword(req, res, next) {
