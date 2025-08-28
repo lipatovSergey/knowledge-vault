@@ -11,4 +11,9 @@ router.post(
   authController.forgotPassword,
 );
 
+router.post(
+  "/password/reset",
+  validate(schemas.passwordReset),
+  authController.resetPassword,
+);
 module.exports = router;

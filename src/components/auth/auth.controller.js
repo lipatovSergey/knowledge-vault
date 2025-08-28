@@ -1,6 +1,7 @@
 const userRepo = require("../users/user.repository.mongo"); // репозиторий уже есть
 const mail = require("../../services/mail/index.js"); // синглтон-почта
 const { generateToken } = require("../../utils/token.util.js");
+const tokenStore = require("./token-memory.store.js");
 
 const authController = {
   async forgotPassword(req, res, next) {
@@ -10,6 +11,8 @@ const authController = {
 
       if (user) {
         const rawToken = await generateToken(16);
+        console.log("rawToken: ", rawToken);
+        tokenStore.save(email, rawToken);
         await mail.sendPasswordReset({
           to: email,
           subject: "Reset your password",
@@ -21,6 +24,18 @@ const authController = {
       return res
         .status(200)
         .json({ message: "If this account exists, an email has been sent" });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async resetPassword(req, res, next) {
+    try {
+      const body = req.body;
+      console.log(body);
+      return res
+        .status(200)
+        .json({ message: "Password has been updated successfully" });
     } catch (err) {
       next(err);
     }
