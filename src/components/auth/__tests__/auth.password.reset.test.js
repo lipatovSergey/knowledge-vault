@@ -32,4 +32,14 @@ describe("POST /api/auth/password/reset", () => {
     });
     expect(res.statusCode).toBe(200);
   });
+
+  it("get 400 if token from DB and token from request different", async () => {
+    const res = await agent.post(route).send({
+      email: email,
+      token: "84663d4c6d2bc544986002e613f20080",
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+    expect(res.statusCode).toBe(400);
+  });
 });
