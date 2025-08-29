@@ -1,4 +1,5 @@
 const authServices = require("./auth.services.js");
+const userServices = require("../users/user.services.js");
 const userRepo = require("../users/user.repository.mongo"); // репозиторий уже есть
 const mail = require("../../services/mail/index.js"); // синглтон-почта
 const { generateToken } = require("../../utils/token.util.js");
@@ -32,8 +33,13 @@ const authController = {
   async resetPassword(req, res, next) {
     try {
       const body = req.validatedData;
-      console.log(body);
       await authServices.checkTokens(body);
+      await userServices.updateUserPassword(
+        body.email,
+        body.newPassword,
+        userRepo,
+      );
+
       return res
         .status(200)
         .json({ message: "Password has been updated successfully" });

@@ -36,6 +36,15 @@ const userRepo = {
     console.log(updatedName);
     return updatedName;
   },
+
+  // update user password by email
+  async updatePassword(email, hashedPassword) {
+    return await UserModel.findOneAndUpdate(
+      { email },
+      { $set: { password: hashedPassword } },
+      { new: false },
+    ).exec();
+  },
 };
 
 module.exports = userRepo;

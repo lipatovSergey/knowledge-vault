@@ -72,6 +72,16 @@ async function updateUserName(id, name, userRepo) {
   return updatedName.name;
 }
 
+// use-case: update user's password
+async function updateUserPassword(email, password, userRepo) {
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  const answer = await userRepo.updatePassword(email, hashedPassword);
+  if (!answer) {
+    throw new NotFoundError("User not found");
+  }
+}
+
 module.exports = {
   createUser,
   findUserByEmail,
@@ -79,4 +89,5 @@ module.exports = {
   findUserById,
   deleteUser,
   updateUserName,
+  updateUserPassword,
 };

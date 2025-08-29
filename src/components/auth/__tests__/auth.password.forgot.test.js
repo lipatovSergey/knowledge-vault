@@ -40,6 +40,7 @@ describe("POST /api/auth/password/forgot", () => {
   it("includes a raw token in the reset email meta", async () => {
     await agent.post(route).send({ email: email });
     const msg = mailbox.lastTo(email);
+    console.log(msg);
     expect(msg).toBeDefined();
     expect(msg.meta?.rawToken).toBeDefined();
   });
