@@ -1,4 +1,3 @@
-````md
 ## 2025-08-25 — Password reset (forgotten password) flow: initial slice
 
 **Feature goal:**  
