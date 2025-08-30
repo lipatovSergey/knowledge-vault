@@ -39,6 +39,7 @@ const authController = {
         body.newPassword,
         userRepo,
       );
+      tokenStore.remove(body.email);
 
       return res
         .status(204)

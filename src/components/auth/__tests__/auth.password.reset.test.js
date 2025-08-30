@@ -1,5 +1,6 @@
 const request = require("supertest");
 const mailbox = require("../../../../tests/mailbox.helper.js");
+const tokenStore = require("../token-memory.store.js");
 
 describe("POST /api/auth/password/reset", () => {
   const route = "/api/auth/password/reset";
@@ -9,6 +10,7 @@ describe("POST /api/auth/password/reset", () => {
 
   beforeEach(async () => {
     mailbox.clear();
+    tokenStore.clear();
     agent = request.agent(global.app);
     await agent.post("/api/users").send({
       name: "User",
@@ -61,5 +63,22 @@ describe("POST /api/auth/password/reset", () => {
       password: "pass456",
     });
     expect(newPasswordRes.statusCode).toBe(200);
+  });
+
+  it("after password reset request with old token should return 401", async () => {
+    await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+
+    const res = await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+    expect(res.statusCode).toBe(400);
   });
 });

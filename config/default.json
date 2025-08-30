@@ -1,8 +1,11 @@
 {
-	"port": 3000,
-	"db": {
-		"uri": ""
-	},
-	"session_secret": "",
-	"node_end": "development"
+  "port": 3000,
+  "db": {
+    "uri": ""
+  },
+  "session_secret": "",
+  "node_end": "development",
+  "auth": {
+    "reset_token_ttl_ms": 900000
+  }
 }
