@@ -16,21 +16,19 @@ describe("POST /api/auth/password/reset", () => {
       password: "pass123",
     });
 
-    await request(global.app)
-      .post("/api/auth/password/forgot")
-      .send({ email: email });
+    await agent.post("/api/auth/password/forgot").send({ email: email });
     const message = mailbox.lastTo(email);
     emailToken = message.meta.rawToken;
   });
 
-  it("get 200 if all required fields included in request body", async () => {
+  it("get 204 if all required fields included in request body", async () => {
     const res = await agent.post(route).send({
       email: email,
       token: emailToken,
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(204);
   });
 
   it("get 400 if token from DB and token from request different", async () => {
@@ -41,5 +39,27 @@ describe("POST /api/auth/password/reset", () => {
       newPasswordConfirmation: "pass456",
     });
     expect(res.statusCode).toBe(400);
+  });
+
+  it("get 204, updates password, old fails, new works", async () => {
+    const res = await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+    expect(res.statusCode).toBe(204);
+
+    const oldPasswordRes = await agent.post("/api/users/login").send({
+      email: email,
+      password: "pass123",
+    });
+    expect(oldPasswordRes.statusCode).toBe(401);
+
+    const newPasswordRes = await agent.post("/api/users/login").send({
+      email: email,
+      password: "pass456",
+    });
+    expect(newPasswordRes.statusCode).toBe(200);
   });
 });

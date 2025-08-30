@@ -41,7 +41,7 @@ const authController = {
       );
 
       return res
-        .status(200)
+        .status(204)
         .json({ message: "Password has been updated successfully" });
     } catch (err) {
       next(err);
