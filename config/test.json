@@ -3,8 +3,5 @@
   "db": {
     "uri": "mongodb://localhost:27017/knowledge-vault-test"
   },
-  "auth": {
-    "reset_token_ttl_ms": 10
-  },
   "session_secret": "123"
 }

@@ -2,11 +2,14 @@ const { BadRequestError } = require("../../errors/errors.class.js");
 const tokenStore = require("./token-memory.store.js");
 const { RESET_TOKEN_TTL_MS } = require("../../config/env.js");
 
-async function checkTokens(data) {
-  const inMemoryToken = tokenStore.get(data.email)?.token;
+function checkTokens(data) {
+  const inMemoryToken = tokenStore.get(data.email);
 
-  // this one must be first, if inMemoryToken undefinde it throws error
-  if (inMemoryToken !== data.token) {
+  if (!inMemoryToken) {
+    throw new BadRequestError("Invalid or expired token");
+  }
+
+  if (inMemoryToken.token !== data.token) {
     throw new BadRequestError("Invalid or expired token");
   }
 

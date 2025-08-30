@@ -1,6 +1,7 @@
 const request = require("supertest");
 const mailbox = require("../../../../tests/mailbox.helper.js");
 const tokenStore = require("../token-memory.store.js");
+const { RESET_TOKEN_TTL_MS } = require("../../../config/env.js");
 
 describe("POST /api/auth/password/reset", () => {
   const route = "/api/auth/password/reset";
@@ -17,7 +18,6 @@ describe("POST /api/auth/password/reset", () => {
       email: email,
       password: "pass123",
     });
-
     await agent.post("/api/auth/password/forgot").send({ email: email });
     const message = mailbox.lastTo(email);
     emailToken = message.meta.rawToken;
@@ -65,7 +65,7 @@ describe("POST /api/auth/password/reset", () => {
     expect(newPasswordRes.statusCode).toBe(200);
   });
 
-  it("after password reset request with old token should return 401", async () => {
+  it("after password reset request with old token should return 400", async () => {
     await agent.post(route).send({
       email: email,
       token: emailToken,
@@ -80,5 +80,19 @@ describe("POST /api/auth/password/reset", () => {
       newPasswordConfirmation: "pass456",
     });
     expect(res.statusCode).toBe(400);
+  });
+
+  it("returns 400 if token expired", async () => {
+    // make token older
+    const tokenInMemory = tokenStore.get(email);
+    tokenInMemory.createdAt = Date.now() - RESET_TOKEN_TTL_MS - 1;
+    const res = await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+    expect(res.statusCode).toBe(400);
+    jest.useRealTimers();
   });
 });

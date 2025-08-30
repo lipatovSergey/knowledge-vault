@@ -7,7 +7,7 @@ const schemas = {
   passwordReset: z
     .object({
       email: z.string().email("Invalid email"),
-      token: z.string().min(16),
+      token: z.string().regex(/^[a-f0-9]{32}$/, "Invalid token format"),
       newPassword: z.string().min(6, "Password must be at least 6 characters"),
       newPasswordConfirmation: z
         .string()
