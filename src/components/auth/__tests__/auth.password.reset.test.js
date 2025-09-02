@@ -33,14 +33,14 @@ describe("POST /api/auth/password/reset", () => {
     expect(res.statusCode).toBe(204);
   });
 
-  it("get 400 if token from DB and token from request different", async () => {
+  it("get 204 if token from DB and token from request different", async () => {
     const res = await agent.post(route).send({
       email: email,
       token: "84663d4c6d2bc544986002e613f20080",
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(204);
   });
 
   it("get 204, updates password, old fails, new works", async () => {
@@ -65,7 +65,7 @@ describe("POST /api/auth/password/reset", () => {
     expect(newPasswordRes.statusCode).toBe(200);
   });
 
-  it("after password reset request with old token should return 400", async () => {
+  it("after password reset request with old token should return 204", async () => {
     await agent.post(route).send({
       email: email,
       token: emailToken,
@@ -79,10 +79,10 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(204);
   });
 
-  it("returns 400 if token expired", async () => {
+  it("returns 204 if token expired", async () => {
     // make token older
     const tokenInMemory = tokenStore.get(email);
     tokenInMemory.createdAt = Date.now() - RESET_TOKEN_TTL_MS - 1;
@@ -92,7 +92,7 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(204);
     jest.useRealTimers();
   });
 
@@ -131,6 +131,16 @@ describe("POST /api/auth/password/reset", () => {
     });
     expect(resetRes.statusCode).toBe(204);
     const meResAfter = await agent.get("/api/users/me");
-    expect(meResAfter.statusCode).toBe(400);
+    expect(meResAfter.statusCode).toBe(401);
+  });
+
+  it("return 204 if user with passed email doesn't exist", async () => {
+    const res = await agent.post(route).send({
+      email: "notbdemail@gmail.com",
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+    expect(res.statusCode).toBe(204);
   });
 });

@@ -5,6 +5,7 @@ const mail = require("../../services/mail/index.js"); // синглтон-поч
 const { generateToken } = require("../../utils/token.util.js");
 const tokenStore = require("./token-memory.store.js");
 const destroySession = require("../../utils/destroy-session.util.js");
+const { BadRequestError } = require("../../errors/errors.class.js");
 
 const authController = {
   async forgotPassword(req, res, next) {
@@ -42,11 +43,12 @@ const authController = {
       );
       await tokenStore.remove(body.email);
       await destroySession(req);
-      return res
-        .status(204)
-        .json({ message: "Password has been updated successfully" });
+      return res.status(204).end();
     } catch (err) {
-      next(err);
+      if (err instanceof BadRequestError) {
+        return res.status(204).end();
+      }
+      return next(err);
     }
   },
 };
