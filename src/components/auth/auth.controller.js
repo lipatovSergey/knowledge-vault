@@ -4,6 +4,7 @@ const userRepo = require("../users/user.repository.mongo"); // репозито�
 const mail = require("../../services/mail/index.js"); // синглтон-почта
 const { generateToken } = require("../../utils/token.util.js");
 const tokenStore = require("./token-memory.store.js");
+const destroySession = require("../../utils/destroy-session.util.js");
 
 const authController = {
   async forgotPassword(req, res, next) {
@@ -39,8 +40,8 @@ const authController = {
         body.newPassword,
         userRepo,
       );
-      tokenStore.remove(body.email);
-
+      await tokenStore.remove(body.email);
+      await destroySession(req);
       return res
         .status(204)
         .json({ message: "Password has been updated successfully" });

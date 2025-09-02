@@ -105,4 +105,32 @@ describe("POST /api/auth/password/reset", () => {
     });
     expect(res.statusCode).toBe(400);
   });
+
+  it("returns 400 if password and password confirmation doesn't match", async () => {
+    const res = await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "123qwer",
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("after successful password change destroy user's session", async () => {
+    await agent.post("/api/users/login").send({
+      email: "test@example.com",
+      password: "pass123",
+    });
+    const meResBefore = await agent.get("/api/users/me");
+    expect(meResBefore.statusCode).toBe(200);
+    const resetRes = await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass456",
+      newPasswordConfirmation: "pass456",
+    });
+    expect(resetRes.statusCode).toBe(204);
+    const meResAfter = await agent.get("/api/users/me");
+    expect(meResAfter.statusCode).toBe(400);
+  });
 });
