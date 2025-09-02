@@ -18,10 +18,14 @@ describe("User logout", () => {
   });
 
   it("should logout user and delete session", async () => {
+    const meResBefore = await agent.get("/api/users/me");
+    expect(meResBefore.statusCode).toBe(200);
     const res = await agent.post(route);
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("message", "Logged out");
     expect(res.headers["set-cookie"][0]).toMatch(/connect\.sid=;/);
+    const meResAfter = await agent.get("/api/users/me");
+    expect(meResAfter.statusCode).toBe(401);
   });
 
   it("should return 401 and message 'Unauthorized' if no session cookie was passed", async () => {
