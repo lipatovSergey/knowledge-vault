@@ -2,7 +2,6 @@ const store = new Map();
 
 function save(email, token) {
   store.set(email, { token, createdAt: Date.now() });
-  console.log(store);
 }
 
 function get(email) {
