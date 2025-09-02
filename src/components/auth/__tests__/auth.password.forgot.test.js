@@ -18,7 +18,7 @@ describe("POST /api/auth/password/forgot", () => {
 
   it("drops a reset email into the mailbox for existing user", async () => {
     const res = await agent.post(route).send({ email });
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(204);
 
     const msg = mailbox.lastTo(email);
     expect(msg).toBeDefined();
@@ -27,8 +27,7 @@ describe("POST /api/auth/password/forgot", () => {
 
   it("returns 200 with a neutral message", async () => {
     const res = await agent.post(route).send({ email: "test@test.com" });
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("message");
+    expect(res.statusCode).toBe(204);
   });
 
   it("returns 400 on invalid email format", async () => {
@@ -42,5 +41,10 @@ describe("POST /api/auth/password/forgot", () => {
     const msg = mailbox.lastTo(email);
     expect(msg).toBeDefined();
     expect(msg.meta?.rawToken).toBeDefined();
+  });
+
+  it("returns 204 even if there no user with passed email in DB", async () => {
+    const res = await agent.post(route).send({ email: "notdbemail@gmail.com" });
+    expect(res.statusCode).toBe(204);
   });
 });

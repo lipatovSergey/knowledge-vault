@@ -10,7 +10,7 @@ const { BadRequestError } = require("../../errors/errors.class.js");
 const authController = {
   async forgotPassword(req, res, next) {
     try {
-      const email = req.validatedData.email; // валидацию добавим в следующей итерации
+      const email = req.validatedData.email;
       const user = await userRepo.findByEmail(email);
 
       if (user) {
@@ -19,14 +19,12 @@ const authController = {
         await mail.sendPasswordReset({
           to: email,
           subject: "Reset your password",
-          text: "Reset token will be added later", // временно
+          text: "Reset token will be added later",
           meta: { rawToken },
         });
       }
 
-      return res
-        .status(200)
-        .json({ message: "If this account exists, an email has been sent" });
+      return res.status(204).end();
     } catch (err) {
       next(err);
     }
