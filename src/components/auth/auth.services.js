@@ -1,6 +1,7 @@
 const { BadRequestError } = require("../../errors/errors.class.js");
 const tokenStore = require("./token-memory.store.js");
 const { RESET_TOKEN_TTL_MS } = require("../../config/env.js");
+const { now } = require("../../utils/clock.js");
 
 function checkTokens(data) {
   const inMemoryToken = tokenStore.get(data.email);
@@ -13,7 +14,7 @@ function checkTokens(data) {
     throw new BadRequestError("Invalid or expired token");
   }
 
-  if (Date.now() - inMemoryToken.createdAt > RESET_TOKEN_TTL_MS) {
+  if (now() - inMemoryToken.createdAt > RESET_TOKEN_TTL_MS) {
     tokenStore.remove(data.email);
     throw new BadRequestError("Invalid or expired token");
   }

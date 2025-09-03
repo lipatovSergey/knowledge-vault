@@ -1,7 +1,10 @@
 const request = require("supertest");
 const mailbox = require("../../../../tests/mailbox.helper.js");
-const tokenStore = require("../token-memory.store.js");
 const { RESET_TOKEN_TTL_MS } = require("../../../config/env.js");
+const {
+  __setNowForTests,
+  __resetNowForTests,
+} = require("../../../utils/clock.js");
 
 describe("POST /api/auth/password/reset", () => {
   const route = "/api/auth/password/reset";
@@ -11,7 +14,6 @@ describe("POST /api/auth/password/reset", () => {
 
   beforeEach(async () => {
     mailbox.clear();
-    tokenStore.clear();
     agent = request.agent(global.app);
     await agent.post("/api/users").send({
       name: "User",
@@ -33,14 +35,14 @@ describe("POST /api/auth/password/reset", () => {
     expect(res.statusCode).toBe(204);
   });
 
-  it("get 204 if token from DB and token from request different", async () => {
+  it("get 400 if token from DB and token from request different", async () => {
     const res = await agent.post(route).send({
       email: email,
       token: "84663d4c6d2bc544986002e613f20080",
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(204);
+    expect(res.statusCode).toBe(400);
   });
 
   it("get 204, updates password, old fails, new works", async () => {
@@ -65,7 +67,7 @@ describe("POST /api/auth/password/reset", () => {
     expect(newPasswordRes.statusCode).toBe(200);
   });
 
-  it("after password reset request with old token should return 204", async () => {
+  it("after password reset request with old token should return 400", async () => {
     await agent.post(route).send({
       email: email,
       token: emailToken,
@@ -79,27 +81,28 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(204);
+    expect(res.statusCode).toBe(400);
   });
 
-  it("returns 204 if token expired", async () => {
-    // make token older
-    const tokenInMemory = tokenStore.get(email);
-    tokenInMemory.createdAt = Date.now() - RESET_TOKEN_TTL_MS - 1;
+  it("returns 400 if token expired", async () => {
+    const message = mailbox.lastTo(email);
+    const emailTime = message.createdAt.getTime();
+    const fakeNow = emailTime + RESET_TOKEN_TTL_MS + 100;
+    __setNowForTests(() => fakeNow);
     const res = await agent.post(route).send({
       email: email,
       token: emailToken,
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(204);
-    jest.useRealTimers();
+    expect(res.statusCode).toBe(400);
+    __resetNowForTests();
   });
 
   it("returns 400 if token validation fails", async () => {
     const res = await agent.post(route).send({
       email: email,
-      token: "84663d4c6d2bc544986002e613f/008-",
+      token: "84663d4C6d2bc544986002e613f/008-",
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
@@ -112,6 +115,16 @@ describe("POST /api/auth/password/reset", () => {
       token: emailToken,
       newPassword: "pass456",
       newPasswordConfirmation: "123qwer",
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("returns 400 if new password shorter then 6 symbols", async () => {
+    const res = await agent.post(route).send({
+      email: email,
+      token: emailToken,
+      newPassword: "pass",
+      newPasswordConfirmation: "pass",
     });
     expect(res.statusCode).toBe(400);
   });
@@ -134,13 +147,13 @@ describe("POST /api/auth/password/reset", () => {
     expect(meResAfter.statusCode).toBe(401);
   });
 
-  it("return 204 if user with passed email doesn't exist", async () => {
+  it("return 400 if user with passed email doesn't exist", async () => {
     const res = await agent.post(route).send({
       email: "notbdemail@gmail.com",
       token: emailToken,
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.statusCode).toBe(204);
+    expect(res.statusCode).toBe(400);
   });
 });

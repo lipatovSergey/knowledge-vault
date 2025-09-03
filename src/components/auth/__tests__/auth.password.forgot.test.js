@@ -25,7 +25,7 @@ describe("POST /api/auth/password/forgot", () => {
     expect(msg.type).toBe("password-reset");
   });
 
-  it("returns 200 with a neutral message", async () => {
+  it("returns 204 with a neutral message", async () => {
     const res = await agent.post(route).send({ email: "test@test.com" });
     expect(res.statusCode).toBe(204);
   });
@@ -46,5 +46,13 @@ describe("POST /api/auth/password/forgot", () => {
   it("returns 204 even if there no user with passed email in DB", async () => {
     const res = await agent.post(route).send({ email: "notdbemail@gmail.com" });
     expect(res.statusCode).toBe(204);
+  });
+
+  it("if user sends request twice new token replace the old one", async () => {
+    await agent.post(route).send({ email });
+    const oldToken = mailbox.lastTo(email).meta.rawToken;
+    await agent.post(route).send({ email });
+    const newToken = mailbox.lastTo(email).meta.rawToken;
+    expect(oldToken).not.toEqual(newToken);
   });
 });

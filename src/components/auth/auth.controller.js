@@ -5,7 +5,6 @@ const mail = require("../../services/mail/index.js"); // синглтон-поч
 const { generateToken } = require("../../utils/token.util.js");
 const tokenStore = require("./token-memory.store.js");
 const destroySession = require("../../utils/destroy-session.util.js");
-const { BadRequestError } = require("../../errors/errors.class.js");
 
 const authController = {
   async forgotPassword(req, res, next) {
@@ -15,13 +14,13 @@ const authController = {
 
       if (user) {
         const rawToken = await generateToken(16);
-        tokenStore.save(email, rawToken);
         await mail.sendPasswordReset({
           to: email,
           subject: "Reset your password",
           text: "Reset token will be added later",
           meta: { rawToken },
         });
+        tokenStore.save(email, rawToken);
       }
 
       return res.status(204).end();
@@ -43,10 +42,7 @@ const authController = {
       await destroySession(req);
       return res.status(204).end();
     } catch (err) {
-      if (err instanceof BadRequestError) {
-        return res.status(204).end();
-      }
-      return next(err);
+      next(err);
     }
   },
 };
