@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const resetTokenSchema = new mongoose.Schema(
   {
+    // TODO: add format for selector
     selector: {
       type: String,
       unique: true,
@@ -27,6 +28,10 @@ const resetTokenSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    usedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     strict: "throw",
@@ -50,6 +55,14 @@ const resetTokenSchema = new mongoose.Schema(
 resetTokenSchema.virtual("isExpired").get(function () {
   return this.expiresAt <= new Date();
 });
+
+// query helpers
+resetTokenSchema.query.active = function () {
+  return this.where({
+    usedAt: null,
+    expiresAt: { $gt: new Date() },
+  });
+};
 
 // indexes
 // Date.now() > expiresAt, wait 0 seconds and delete
