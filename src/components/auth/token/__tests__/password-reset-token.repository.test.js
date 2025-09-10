@@ -68,10 +68,23 @@ describe("password-reset-token repository methods for existing token", () => {
     );
     expect(mongoose.isValidObjectId(foundToken.userId)).toBe(true);
     expect(mongoose.isValidObjectId(foundToken._id)).toBe(true);
+    expect(Object.keys(foundToken).sort()).toEqual(
+      ["_id", "userId", "validatorHash"].sort(),
+    );
   });
 
   it("consumeBySelector method change usedAt field to Date.now", async () => {
     const methodResponse = await resetTokenRepo.consumeBySelector(selector);
-    expect(methodResponse).toBeTruthy();
+    expect(methodResponse).toBe(true);
+  });
+
+  it("repeatable consumeBySelector is impossible", async () => {
+    const first = await resetTokenRepo.consumeBySelector(selector);
+    expect(first).toBe(true);
+    const second = await resetTokenRepo.consumeBySelector(selector);
+    expect(second).toBe(false);
+    // no active token with this selector
+    const after = await resetTokenRepo.findActiveBySelector(selector);
+    expect(after).toBeNull();
   });
 });
