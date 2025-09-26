@@ -3,9 +3,8 @@ const { promisify } = require("node:util");
 // make promise from callback
 const randomBytesAsync = promisify(randomBytes);
 
-async function generateToken(len = 16) {
-  const buf = await randomBytesAsync(len);
-  return buf.toString("hex");
+async function random(len) {
+  return await randomBytesAsync(len);
 }
 
-module.exports = { generateToken };
+module.exports = { random };

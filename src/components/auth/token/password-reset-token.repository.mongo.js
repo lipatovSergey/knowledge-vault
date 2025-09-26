@@ -25,6 +25,11 @@ const resetTokenRepo = {
       .exec();
     return !!doc;
   },
+
+  async removeAllForUser(userId) {
+    const res = await ResetTokenModel.deleteMany({ userId }).exec();
+    return res.deletedCount ?? 0;
+  },
 };
 
 module.exports = resetTokenRepo;

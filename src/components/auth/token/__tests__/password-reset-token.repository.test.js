@@ -42,10 +42,11 @@ describe("password-reset-token repository: token create", () => {
 
 describe("password-reset-token repository methods for existing token", () => {
   let selector;
+  let userId;
   beforeEach(async () => {
     selector = "a".repeat(32);
     const validatorHash = "bcrypt-hash-placeholder";
-    const userId = new mongoose.Types.ObjectId();
+    userId = new mongoose.Types.ObjectId();
     const expiresAt = new Date(Date.now() + 60_000);
 
     await resetTokenRepo.create({
@@ -86,5 +87,24 @@ describe("password-reset-token repository methods for existing token", () => {
     // no active token with this selector
     const after = await resetTokenRepo.findActiveBySelector(selector);
     expect(after).toBeNull();
+  });
+
+  it("method removeAllForUser deletes all user's tokens, active and nonactive", async () => {
+    // add one more active token for user
+    await resetTokenRepo.create({
+      selector: "b".repeat(32),
+      validatorHash: "bcrypt-hash-placeholder",
+      userId: userId,
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    // made first token nonactive
+    await resetTokenRepo.consumeBySelector(selector);
+
+    const deleted = await resetTokenRepo.removeAllForUser(userId);
+    expect(deleted).toBe(2);
+
+    const left = await resetTokenModel.countDocuments({ userId });
+    expect(left).toBe(0);
   });
 });
