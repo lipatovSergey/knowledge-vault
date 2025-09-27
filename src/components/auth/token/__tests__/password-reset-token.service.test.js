@@ -8,7 +8,6 @@ describe("PasswordResetTokenService", () => {
 		let mockResetTokenRepo;
 		let mockBcrypt;
 		let mockRandom;
-		let mockNow;
 		let mockTtlMs = 900000;
 
 		beforeEach(() => {
@@ -22,30 +21,33 @@ describe("PasswordResetTokenService", () => {
 				.fn()
 				.mockResolvedValueOnce(Buffer.from("fake-selector-bytes"))
 				.mockResolvedValueOnce(Buffer.from("fake-validator-bytes"));
-			mockNow = jest
-				.fn()
-				.mockReturnValue(new Date("2025-01-01T00:00:00.000Z").getTime());
 
 			tokenService = createResetTokenService({
 				resetTokenRepo: mockResetTokenRepo,
 				bcrypt: mockBcrypt,
 				random: mockRandom,
 				ttlMs: mockTtlMs,
-				now: mockNow,
 			});
 		});
 
 		it("should correctly call dependencies and return a token pair on user ID", async () => {
+			const startTime = Date.now();
 			const userId = "654321a99e1e646d1fad1234";
 			const tokenPair = await tokenService.createTokenForUser(userId);
 
 			// Assert: Check interactions and output
-			expect(mockResetTokenRepo.create).toHaveBeenCalledWith({
-				selector: "ZmFrZS1zZWxlY3Rvci1ieXRlcw",
-				validatorHash: "mock-hashed-validator",
-				userId: "654321a99e1e646d1fad1234",
-				expiresAt: new Date(mockNow() + mockTtlMs),
-			});
+			expect(mockResetTokenRepo.create).toHaveBeenCalledTimes(1);
+			const callArgs = mockResetTokenRepo.create.mock.calls[0][0];
+			expect(callArgs.selector).toBe("ZmFrZS1zZWxlY3Rvci1ieXRlcw");
+			expect(callArgs.validatorHash).toBe("mock-hashed-validator");
+			expect(callArgs.userId).toBe("654321a99e1e646d1fad1234");
+
+			// Check that expiresAt is within a reasonable range (e.g., 100ms)
+			const expectedExpiresAt = startTime + mockTtlMs;
+			const actualExpiresAt = callArgs.expiresAt.getTime();
+			expect(actualExpiresAt).toBeGreaterThanOrEqual(expectedExpiresAt);
+			expect(actualExpiresAt).toBeLessThan(expectedExpiresAt + 100);
+
 			expect(mockBcrypt.hash).toHaveBeenCalledWith(
 				"ZmFrZS12YWxpZGF0b3ItYnl0ZXM",
 				10
@@ -75,7 +77,6 @@ describe("PasswordResetTokenService", () => {
 				bcrypt: mockBcrypt,
 				random: null,
 				ttlMs: 0,
-				now: null,
 			});
 		});
 

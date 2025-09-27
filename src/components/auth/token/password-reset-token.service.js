@@ -1,12 +1,6 @@
 const { BadRequestError } = require("../../../errors/errors.class");
 
-function createResetTokenService({
-	resetTokenRepo,
-	bcrypt,
-	random,
-	ttlMs,
-	now,
-}) {
+function createResetTokenService({ resetTokenRepo, bcrypt, random, ttlMs }) {
 	return {
 		async createTokenForUser(userId) {
 			const selector = (await random(16)).toString("base64url");
@@ -17,7 +11,7 @@ function createResetTokenService({
 				selector,
 				validatorHash,
 				userId: userId,
-				expiresAt: new Date(now() + ttlMs),
+				expiresAt: new Date(Date.now() + ttlMs),
 			});
 			return `${selector}.${validator}`;
 		},
@@ -32,7 +26,6 @@ function createResetTokenService({
 
 			const foundToken = await resetTokenRepo.findActiveBySelector(selector);
 
-			console.log("foundToken", foundToken);
 			// If no token is found, we compare against a dummy hash to ensure the response time is consistent.
 			// The cost of a single bcrypt.hash call is negligible in this context.
 			const hashToCompare = foundToken
