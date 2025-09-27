@@ -1,3 +1,5 @@
+const { BadRequestError } = require("../../../errors/errors.class");
+
 function createResetTokenService({
 	resetTokenRepo,
 	bcrypt,
@@ -19,7 +21,33 @@ function createResetTokenService({
 			});
 			return `${selector}.${validator}`;
 		},
-		async verifyAndConsume(tokenPair) {},
+		async verifyAndConsume(tokenPair) {
+			if (!tokenPair || typeof tokenPair !== "string") {
+				throw new BadRequestError("Invalid or expired token");
+			}
+			const [selector, validator] = tokenPair.split(".", 2);
+			if (!selector || !validator) {
+				throw new BadRequestError("Invalid or expired token");
+			}
+
+			const foundToken = await resetTokenRepo.findActiveBySelector(selector);
+
+			// If no token is found, we compare against a dummy hash to ensure the response time is consistent.
+			// The cost of a single bcrypt.hash call is negligible in this context.
+			const hashToCompare = foundToken
+				? foundToken.validatorHash
+				: await bcrypt.hash("dummy", 10);
+
+			const isValid = await bcrypt.compare(validator, hashToCompare);
+
+			// Now we can safely check both conditions without leaking timing information.
+			if (!foundToken || !isValid) {
+				throw new BadRequestError("Invalid or expired token");
+			}
+
+			await resetTokenRepo.consumeBySelector(selector);
+			return foundToken.userId;
+		},
 		async removeAllForUser(userId) {},
 	};
 }
