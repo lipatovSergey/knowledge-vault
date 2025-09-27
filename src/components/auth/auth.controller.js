@@ -1,10 +1,8 @@
-const authServices = require("./auth.services.js");
 const userServices = require("../users/user.services.js");
-const userRepo = require("../users/user.repository.mongo"); // репозиторий уже есть
-const mail = require("../../services/mail/index.js"); // синглтон-почта
-const { generateToken } = require("../../utils/random.util.js");
-const tokenStore = require("./token-memory.store.js");
+const userRepo = require("../users/user.repository.mongo");
+const mail = require("../../services/mail/index.js");
 const destroySession = require("../../utils/destroy-session.util.js");
+const { tokenService } = require("./token/index.js");
 
 const authController = {
 	async forgotPassword(req, res, next) {
@@ -13,14 +11,15 @@ const authController = {
 			const user = await userRepo.findByEmail(email);
 
 			if (user) {
-				const rawToken = await generateToken(16);
+				const rawToken = await tokenService.createTokenForUser(user._id);
+				const resetLink = `frontend-url/password-reset?token${rawToken}`;
 				await mail.sendPasswordReset({
 					to: email,
 					subject: "Reset your password",
-					text: "Reset token will be added later",
-					meta: { rawToken },
+					text: `To reset your password please use the following link ${resetLink}`,
+					html: `<p>Hello,</p><p>You requested a password reset. Please click the link below to set a new password:</p><p><a href="${resetLink}">Reset Password</a></p><p>If you did not request this, please ignore this email.</p>`,
+					meta: { rawToken }, // for tests
 				});
-				tokenStore.save(email, rawToken);
 			}
 
 			return res.status(204).end();
@@ -32,13 +31,9 @@ const authController = {
 	async resetPassword(req, res, next) {
 		try {
 			const body = req.validatedData;
-			await authServices.checkTokens(body);
-			await userServices.updateUserPassword(
-				body.email,
-				body.newPassword,
-				userRepo
-			);
-			await tokenStore.remove(body.email);
+			const userId = await tokenService.verifyAndConsume(body.token);
+			await userServices.updateUserPassword(userId, body.newPassword, userRepo);
+			await tokenService.removeAllTokensForUser(userId);
 			await destroySession(req);
 			return res.status(204).end();
 		} catch (err) {
