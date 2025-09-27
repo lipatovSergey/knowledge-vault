@@ -1,4 +1,4 @@
-const { BadRequestError } = require("../../../errors/errors.class");
+const { BadRequestError, AppError } = require("../../../errors/errors.class");
 
 function createResetTokenService({
 	resetTokenRepo,
@@ -9,17 +9,22 @@ function createResetTokenService({
 }) {
 	return {
 		async createTokenForUser(userId) {
-			const selector = (await random(16)).toString("base64url");
-			const validator = (await random(32)).toString("base64url");
-			const saltRounds = 10;
-			const validatorHash = await bcrypt.hash(validator, saltRounds);
-			await resetTokenRepo.create({
-				selector,
-				validatorHash,
-				userId: userId,
-				expiresAt: new Date(now() + ttlMs),
-			});
-			return `${selector}.${validator}`;
+			try {
+				const selector = (await random(16)).toString("base64url");
+				const validator = (await random(32)).toString("base64url");
+				const saltRounds = 10;
+				const validatorHash = await bcrypt.hash(validator, saltRounds);
+				await resetTokenRepo.create({
+					selector,
+					validatorHash,
+					userId: userId,
+					expiresAt: new Date(now() + ttlMs),
+				});
+				return `${selector}.${validator}`;
+			} catch (error) {
+				// Log the original error here if you have a logger
+				throw new AppError("Failed to create a reset token.");
+			}
 		},
 		async verifyAndConsume(tokenPair) {
 			if (!tokenPair || typeof tokenPair !== "string") {
@@ -48,7 +53,13 @@ function createResetTokenService({
 			await resetTokenRepo.consumeBySelector(selector);
 			return foundToken.userId;
 		},
-		async removeAllForUser(userId) {},
+		async removeAllTokensForUser(userId) {
+			try {
+				return resetTokenRepo.removeAllForUser(userId);
+			} catch (error) {
+				throw new AppError("Failed to remove user tokens.");
+			}
+		},
 	};
 }
 
