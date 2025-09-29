@@ -1,6 +1,5 @@
 const request = require("supertest");
 const mailbox = require("../../../../tests/mailbox.helper.js");
-const { RESET_TOKEN_TTL_MS } = require("../../../config/env.js");
 const bcrypt = require("bcrypt");
 const {
 	createExpiredResetToken,
@@ -95,11 +94,13 @@ describe("POST /api/auth/password/reset", () => {
 
 	it("returns 400 if token validation fails", async () => {
 		const res = await agent.post(route).send({
-			token: "84663d4C6d2bc544986002e613f/008-",
+			token: "invalid-token-format.with/slash",
 			newPassword: "pass456",
 			newPasswordConfirmation: "pass456",
 		});
 		expect(res.statusCode).toBe(400);
+		expect(res.body.message).toBe("Invalid or expired token");
+		expect(res.body.errors).toBeUndefined();
 	});
 
 	it("returns 400 if password and password confirmation doesn't match", async () => {
