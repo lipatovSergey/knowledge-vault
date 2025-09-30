@@ -1,7 +1,7 @@
-const { it } = require("zod/locales");
 const {
 	createResetTokenService,
 } = require("../password-reset-token.service.js");
+const { BadRequestError } = require("../../../../errors/errors.class");
 
 describe("PasswordResetTokenService", () => {
 	describe("createTokenForUser", () => {
@@ -63,50 +63,121 @@ describe("PasswordResetTokenService", () => {
 		let tokenService;
 		let mockResetTokenRepo;
 		let mockBcrypt;
-
 		beforeEach(() => {
 			mockResetTokenRepo = {
 				findActiveBySelector: jest.fn(),
 				consumeBySelector: jest.fn(),
 			};
+
 			mockBcrypt = {
 				compare: jest.fn(),
+				hash: jest.fn(),
 			};
 
 			tokenService = createResetTokenService({
 				resetTokenRepo: mockResetTokenRepo,
 				bcrypt: mockBcrypt,
-				random: null,
-				ttlMs: 0,
+				random: jest.fn(),
+				ttlMs: 900000,
 			});
 		});
 
-		it("should return userId for valid token and consume it", async () => {
+		it("should verify a valid token, consume it, and return the user ID", async () => {
+			// arrange
 			const selector = "valid-selector";
 			const validator = "valid-validator";
 			const tokenPair = `${selector}.${validator}`;
-			const fakeStoredToken = {
-				userId: "654321a99e1e646d1fad1234",
-				validatorHash: "mocked-hashed-validator",
+			const mockUserId = "user-123";
+			const mockTokenFromDB = {
+				userId: mockUserId,
+				validatorHash: "hashed-validator-from-DB",
 			};
 
 			mockResetTokenRepo.findActiveBySelector.mockResolvedValue(
-				fakeStoredToken
+				mockTokenFromDB
 			);
 			mockBcrypt.compare.mockResolvedValue(true);
 
-			const userId = await tokenService.verifyAndConsume(tokenPair);
-			expect(userId).toBe(fakeStoredToken.userId);
+			// act
+			const resultUserId = await tokenService.verifyAndConsume(tokenPair);
+
+			// assert
 			expect(mockResetTokenRepo.findActiveBySelector).toHaveBeenCalledWith(
 				selector
 			);
 			expect(mockBcrypt.compare).toHaveBeenCalledWith(
 				validator,
-				fakeStoredToken.validatorHash
+				mockTokenFromDB.validatorHash
 			);
 			expect(mockResetTokenRepo.consumeBySelector).toHaveBeenCalledWith(
 				selector
 			);
+			expect(resultUserId).toBe(mockUserId);
+		});
+
+		it.each([
+			["null", null],
+			["undefined", undefined],
+			["not a string", 12345],
+			["an empty string", ""],
+			["missing a dot", "invalidtoken"],
+			["with a leading dot", ".invalidtoken"],
+			["with a trailing dot", "invalidtoken."],
+		])(
+			"should throw BadRequestError if passed token pair is %s",
+			async (_, invalidTokenPair) => {
+				await expect(
+					tokenService.verifyAndConsume(invalidTokenPair)
+				).rejects.toThrow(BadRequestError);
+			}
+		);
+
+		it("should throw BadRequestError and perform dummy hash to prevent timing attacks", async () => {
+			const selector = "non-existing-selector";
+			const validator = "any-validator";
+			const tokenPair = `${selector}.${validator}`;
+			const dummyHash = "dummy-hashed-value";
+
+			mockResetTokenRepo.findActiveBySelector.mockResolvedValue(null);
+			mockBcrypt.hash.mockResolvedValue(dummyHash);
+			await expect(tokenService.verifyAndConsume(tokenPair)).rejects.toThrow(
+				BadRequestError
+			);
+			expect(mockResetTokenRepo.findActiveBySelector).toHaveBeenCalledWith(
+				selector
+			);
+			expect(mockBcrypt.hash).toHaveBeenCalledWith("dummy", 10);
+			expect(mockBcrypt.compare).toHaveBeenCalledWith(validator, dummyHash);
+		});
+
+		it("should throw BadRequestError if passed validator is invalid", async () => {
+			const selector = "valid-selector";
+			const validator = "invalid-validator";
+			const tokenPair = `${selector}.${validator}`;
+			const mockTokenFromDB = {
+				userId: "some-user-id",
+				validatorHash: "hashed-validator-from-DB",
+			};
+
+			mockResetTokenRepo.findActiveBySelector.mockResolvedValue(
+				mockTokenFromDB
+			);
+			mockBcrypt.compare.mockResolvedValue(false);
+
+			await expect(tokenService.verifyAndConsume(tokenPair)).rejects.toThrow(
+				BadRequestError
+			);
+
+			// Assert that the correct checks were performed
+			expect(mockResetTokenRepo.findActiveBySelector).toHaveBeenCalledWith(
+				selector
+			);
+			expect(mockBcrypt.compare).toHaveBeenCalledWith(
+				validator,
+				mockTokenFromDB.validatorHash
+			);
+			// Assert that the token was NOT consumed on failure
+			expect(mockResetTokenRepo.consumeBySelector).not.toHaveBeenCalled();
 		});
 	});
 });
