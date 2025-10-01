@@ -2,7 +2,7 @@ const request = require("supertest");
 const it = global.it;
 
 describe("User logout", () => {
-	const route = "/api/users/logout";
+	const route = "/api/auth/logout";
 	let agent;
 	beforeEach(async () => {
 		agent = request.agent(global.app);

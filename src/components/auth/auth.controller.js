@@ -23,6 +23,17 @@ const authController = {
 			next(error);
 		}
 	},
+
+	async logoutUser(req, res, next) {
+		try {
+			await destroySession(req);
+			res.clearCookie("connect.sid");
+			res.status(200).json({ message: "Logged out" });
+		} catch (error) {
+			next(error);
+		}
+	},
+
 	async forgotPassword(req, res, next) {
 		try {
 			const email = req.validatedData.email;

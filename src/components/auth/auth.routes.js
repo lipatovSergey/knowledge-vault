@@ -4,6 +4,7 @@ const validate = require("../../middleware/validate.middleware.js");
 const validateToken = require("../../middleware/validate-token.middleware.js");
 const { schemas } = require("./auth.validator.js");
 const requireGuest = require("../../middleware/require-guest.middleware.js");
+const requireAuth = require("../../middleware/require-auth.middleware.js");
 
 const router = express.Router();
 
@@ -13,6 +14,9 @@ router.post(
 	validate(schemas.userLogin),
 	authController.loginUser
 );
+
+// log-out authenticated (logged in) user
+router.post("/logout", requireAuth, authController.logoutUser);
 
 router.post(
 	"/password/forgot",

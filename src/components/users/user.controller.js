@@ -1,6 +1,5 @@
 const { userService } = require("./index.js");
 const destroySession = require("../../utils/destroy-session.util.js");
-const regenerateSession = require("../../utils/regenerate-session.util.js");
 
 const userController = {
 	async createUser(req, res, next) {
@@ -14,16 +13,6 @@ const userController = {
 
 			await userService.createUser(userData);
 			res.status(201).json({ message: "User created successfully" });
-		} catch (error) {
-			next(error);
-		}
-	},
-
-	async logoutUser(req, res, next) {
-		try {
-			await destroySession(req);
-			res.clearCookie("connect.sid");
-			res.status(200).json({ message: "Logged out" });
 		} catch (error) {
 			next(error);
 		}

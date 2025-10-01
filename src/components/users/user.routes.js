@@ -9,8 +9,6 @@ const { schemas } = require("./user.validator.js");
 const router = express.Router();
 // create new user
 router.post("/", validate(schemas.userCreate), userController.createUser);
-// log-out authenticated (logged in) user
-router.post("/logout", requireAuth, userController.logoutUser);
 // get user's info by himself (authenticated)
 router.get("/me", requireAuth, userController.getUserInfo);
 // delete user by himself(authenticated)
