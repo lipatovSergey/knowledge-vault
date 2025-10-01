@@ -3,5 +3,8 @@
   "db": {
     "uri": "mongodb://localhost:27017/knowledge-vault-test"
   },
-  "session_secret": "123"
+  "session_secret": "123",
+  "frontend": {
+    "url": "http://localhost:3000"
+  }
 }

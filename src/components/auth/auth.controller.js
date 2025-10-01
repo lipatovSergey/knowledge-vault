@@ -4,6 +4,7 @@ const { UnauthorizedError } = require("../../errors/errors.class.js");
 const destroySession = require("../../utils/destroy-session.util.js");
 const { tokenService } = require("./token/index.js");
 const regenerateSession = require("../../utils/regenerate-session.util.js");
+const { FRONTEND_URL } = require("../../config/env.js");
 
 const authController = {
 	async loginUser(req, res, next) {
@@ -46,8 +47,8 @@ const authController = {
 
 			if (user) {
 				const rawToken = await tokenService.createTokenForUser(user._id);
-				// TODO: перенести frontend url в env
-				const resetLink = `frontend-url/password-reset?token${rawToken}`;
+				const frontendBaseUrl = FRONTEND_URL || "";
+				const resetLink = `${frontendBaseUrl.replace(/\/$/, "")}/password-reset?token=${rawToken}`;
 				await mail.sendPasswordReset({
 					to: email,
 					subject: "Reset your password",

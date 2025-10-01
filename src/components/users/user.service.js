@@ -2,6 +2,7 @@ const {
 	ConflictError,
 	UnauthorizedError,
 	NotFoundError,
+	BadRequestError,
 } = require("../../errors/errors.class");
 
 function createUserService({ userRepo, bcrypt }) {

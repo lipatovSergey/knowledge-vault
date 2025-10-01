@@ -5,6 +5,9 @@
   },
   "session_secret": "",
   "node_end": "development",
+  "frontend": {
+    "url": ""
+  },
   "auth": {
     "reset_token_ttl_ms": 900000
   }
