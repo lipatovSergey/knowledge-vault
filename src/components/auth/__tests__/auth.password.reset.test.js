@@ -50,13 +50,13 @@ describe("POST /api/auth/password/reset", () => {
 		});
 		expect(res.statusCode).toBe(204);
 
-		const oldPasswordRes = await agent.post("/api/users/login").send({
+		const oldPasswordRes = await agent.post("/api/auth/login").send({
 			email: email,
 			password: "pass123",
 		});
 		expect(oldPasswordRes.statusCode).toBe(401);
 
-		const newPasswordRes = await agent.post("/api/users/login").send({
+		const newPasswordRes = await agent.post("/api/auth/login").send({
 			email: email,
 			password: "pass456",
 		});
@@ -122,7 +122,7 @@ describe("POST /api/auth/password/reset", () => {
 	});
 
 	it("after successful password change destroy user's session", async () => {
-		await agent.post("/api/users/login").send({
+		await agent.post("/api/auth/login").send({
 			email: "test@example.com",
 			password: "pass123",
 		});
