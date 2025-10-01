@@ -30,12 +30,6 @@ describe("POST /api/auth/password/forgot", () => {
 		expect(res.statusCode).toBe(204);
 	});
 
-	it("returns 400 on invalid email format", async () => {
-		const res = await agent.post(route).send({ email: "invalid" });
-		expect(res.statusCode).toBe(400);
-		expect(res.body.errors).toHaveProperty("email");
-	});
-
 	it("includes a raw token in the reset email meta", async () => {
 		await agent.post(route).send({ email: email });
 		const msg = mailbox.lastTo(email);
@@ -54,5 +48,11 @@ describe("POST /api/auth/password/forgot", () => {
 		await agent.post(route).send({ email });
 		const newToken = mailbox.lastTo(email).meta.rawToken;
 		expect(oldToken).not.toEqual(newToken);
+	});
+
+	it("returns 400 on invalid email format", async () => {
+		const res = await agent.post(route).send({ email: "invalid" });
+		expect(res.statusCode).toBe(400);
+		expect(res.body.errors).toHaveProperty("email");
 	});
 });

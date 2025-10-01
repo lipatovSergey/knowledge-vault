@@ -74,9 +74,13 @@ describe("password-reset-token repository methods for existing token", () => {
 		);
 	});
 
-	it("consumeBySelector method change usedAt field to Date.now", async () => {
+	it("consumeBySelector method sets the usedAt field", async () => {
 		const methodResponse = await resetTokenRepo.consumeBySelector(selector);
 		expect(methodResponse).toBe(true);
+
+		// Directly check the database state to confirm the side-effect
+		const tokenInDb = await resetTokenModel.findOne({ selector }).lean();
+		expect(tokenInDb.usedAt).toBeInstanceOf(Date);
 	});
 
 	it("repeatable consumeBySelector is impossible", async () => {

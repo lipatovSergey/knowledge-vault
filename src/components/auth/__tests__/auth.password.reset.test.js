@@ -33,15 +33,6 @@ describe("POST /api/auth/password/reset", () => {
 		expect(res.statusCode).toBe(204);
 	});
 
-	it("get 400 if token from DB and token from request different", async () => {
-		const res = await agent.post(route).send({
-			token: "84663d4c6d2bc544986002e613f20080",
-			newPassword: "pass456",
-			newPasswordConfirmation: "pass456",
-		});
-		expect(res.statusCode).toBe(400);
-	});
-
 	it("get 204, updates password, old fails, new works", async () => {
 		const res = await agent.post(route).send({
 			token: emailToken,
@@ -61,6 +52,32 @@ describe("POST /api/auth/password/reset", () => {
 			password: "pass456",
 		});
 		expect(newPasswordRes.statusCode).toBe(200);
+	});
+
+	it("after successful password change destroy user's session", async () => {
+		await agent.post("/api/auth/login").send({
+			email: "test@example.com",
+			password: "pass123",
+		});
+		const meResBefore = await agent.get("/api/users/me");
+		expect(meResBefore.statusCode).toBe(200);
+		const resetRes = await agent.post(route).send({
+			token: emailToken,
+			newPassword: "pass456",
+			newPasswordConfirmation: "pass456",
+		});
+		expect(resetRes.statusCode).toBe(204);
+		const meResAfter = await agent.get("/api/users/me");
+		expect(meResAfter.statusCode).toBe(401);
+	});
+
+	it("get 400 if token from DB and token from request different", async () => {
+		const res = await agent.post(route).send({
+			token: "84663d4c6d2bc544986002e613f20080",
+			newPassword: "pass456",
+			newPasswordConfirmation: "pass456",
+		});
+		expect(res.statusCode).toBe(400);
 	});
 
 	it("after password reset request with old token should return 400", async () => {
@@ -119,22 +136,5 @@ describe("POST /api/auth/password/reset", () => {
 			newPasswordConfirmation: "pass",
 		});
 		expect(res.statusCode).toBe(400);
-	});
-
-	it("after successful password change destroy user's session", async () => {
-		await agent.post("/api/auth/login").send({
-			email: "test@example.com",
-			password: "pass123",
-		});
-		const meResBefore = await agent.get("/api/users/me");
-		expect(meResBefore.statusCode).toBe(200);
-		const resetRes = await agent.post(route).send({
-			token: emailToken,
-			newPassword: "pass456",
-			newPasswordConfirmation: "pass456",
-		});
-		expect(resetRes.statusCode).toBe(204);
-		const meResAfter = await agent.get("/api/users/me");
-		expect(meResAfter.statusCode).toBe(401);
 	});
 });

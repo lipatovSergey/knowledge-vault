@@ -46,6 +46,7 @@ const authController = {
 
 			if (user) {
 				const rawToken = await tokenService.createTokenForUser(user._id);
+				// TODO: перенести frontend url в env
 				const resetLink = `frontend-url/password-reset?token${rawToken}`;
 				await mail.sendPasswordReset({
 					to: email,

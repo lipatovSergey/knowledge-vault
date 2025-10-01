@@ -30,6 +30,29 @@ describe("User login", () => {
 		expect(res.headers["set-cookie"][0]).toMatch(/connect\.sid=/);
 	});
 
+	it("regenerates session ID on successful login", async () => {
+		const agent = request.agent(global.app);
+		// create guest session
+		const touchRes = await agent.get("/test/touch");
+		expect(touchRes.status).toBe(200);
+		const cookieBefore = touchRes.headers["set-cookie"][0];
+		expect(cookieBefore).toMatch(/connect\.sid=/);
+
+		// login with the same agent
+		const loginRes = await agent.post("/api/auth/login").send({
+			email: "test@example.com",
+			password: "pass123",
+		});
+		expect(loginRes.status).toBe(200);
+		const cookieAfter = loginRes.headers["set-cookie"][0];
+		expect(cookieAfter).toMatch(/connect\.sid=/);
+
+		// compare sessions ids
+		const sidBefore = cookieBefore.match(/connect\.sid=([^;]+)/)[1];
+		const sidAfter = cookieAfter.match(/connect\.sid=([^;]+)/)[1];
+		expect(sidBefore).not.toBe(sidAfter);
+	});
+
 	it("should return 401 if email is incorrect", async () => {
 		const res = await request(global.app).post(route).send({
 			email: "wrong@example.com",
@@ -68,29 +91,6 @@ describe("User login", () => {
 		expect(res.body).toHaveProperty("message", "Validation Failed");
 		expect(res.body.errors).toHaveProperty("password");
 		expect(res.body.errors.password[0]).toBe("Password is required");
-	});
-
-	it("regenerates session ID on successful login", async () => {
-		const agent = request.agent(global.app);
-		// create guest session
-		const touchRes = await agent.get("/test/touch");
-		expect(touchRes.status).toBe(200);
-		const cookieBefore = touchRes.headers["set-cookie"][0];
-		expect(cookieBefore).toMatch(/connect\.sid=/);
-
-		// login with the same agent
-		const loginRes = await agent.post("/api/auth/login").send({
-			email: "test@example.com",
-			password: "pass123",
-		});
-		expect(loginRes.status).toBe(200);
-		const cookieAfter = loginRes.headers["set-cookie"][0];
-		expect(cookieAfter).toMatch(/connect\.sid=/);
-
-		// compare sessions ids
-		const sidBefore = cookieBefore.match(/connect\.sid=([^;]+)/)[1];
-		const sidAfter = cookieAfter.match(/connect\.sid=([^;]+)/)[1];
-		expect(sidBefore).not.toBe(sidAfter);
 	});
 
 	it("should return 409 if user is already logged in", async () => {
