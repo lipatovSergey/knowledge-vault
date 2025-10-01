@@ -1,6 +1,6 @@
-const userServices = require("../users/user.services.js");
-const userRepo = require("../users/user.repository.mongo");
+const { userService } = require("../users/index.js");
 const mail = require("../../services/mail/index.js");
+const { UnauthorizedError } = require("../../errors/errors.class.js");
 const destroySession = require("../../utils/destroy-session.util.js");
 const { tokenService } = require("./token/index.js");
 
@@ -8,7 +8,12 @@ const authController = {
 	async forgotPassword(req, res, next) {
 		try {
 			const email = req.validatedData.email;
-			const user = await userRepo.findByEmail(email);
+			// We try to find the user. If the service throws UnauthorizedError (user not found),
+			// we catch it and treat it as a "success" from a security perspective to prevent email enumeration.
+			const user = await userService.findUserByEmail(email).catch(err => {
+				if (err instanceof UnauthorizedError) return null;
+				throw err;
+			});
 
 			if (user) {
 				const rawToken = await tokenService.createTokenForUser(user._id);
@@ -24,7 +29,7 @@ const authController = {
 
 			return res.status(204).end();
 		} catch (err) {
-			next(err);
+			return next(err);
 		}
 	},
 
@@ -32,8 +37,7 @@ const authController = {
 		try {
 			const body = req.validatedData;
 			const userId = await tokenService.verifyAndConsume(body.token);
-			console.log(userId);
-			await userServices.updateUserPassword(userId, body.newPassword, userRepo);
+			await userService.updateUserPassword(userId, body.newPassword);
 			await tokenService.removeAllTokensForUser(userId);
 			await destroySession(req);
 			return res.status(204).end();
