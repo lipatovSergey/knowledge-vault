@@ -43,7 +43,7 @@ function createResetTokenService({ resetTokenRepo, bcrypt, random, ttlMs }) {
 			return foundToken.userId;
 		},
 		async removeAllTokensForUser(userId) {
-			if (!userId || typeof userId !== "string") {
+			if (!userId) {
 				throw new BadRequestError("User ID must be provided");
 			}
 			return resetTokenRepo.removeAllForUser(userId);

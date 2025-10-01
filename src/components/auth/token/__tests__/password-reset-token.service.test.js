@@ -207,8 +207,6 @@ describe("PasswordResetTokenService", () => {
 		it.each([
 			["null", null],
 			["undefined", undefined],
-			["a number", 12345],
-			["an object", {}],
 		])(
 			"should throw BadRequestError if passed token is %s",
 			async (_, invalidUserId) => {

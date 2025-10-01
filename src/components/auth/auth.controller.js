@@ -32,6 +32,7 @@ const authController = {
 		try {
 			const body = req.validatedData;
 			const userId = await tokenService.verifyAndConsume(body.token);
+			console.log(userId);
 			await userServices.updateUserPassword(userId, body.newPassword, userRepo);
 			await tokenService.removeAllTokensForUser(userId);
 			await destroySession(req);
