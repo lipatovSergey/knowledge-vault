@@ -180,4 +180,42 @@ describe("PasswordResetTokenService", () => {
 			expect(mockResetTokenRepo.consumeBySelector).not.toHaveBeenCalled();
 		});
 	});
+
+	describe("removeAllTokensForUser", () => {
+		let tokenService;
+		let mockResetTokenRepo;
+
+		beforeEach(() => {
+			mockResetTokenRepo = {
+				removeAllForUser: jest.fn(),
+			};
+
+			tokenService = createResetTokenService({
+				resetTokenRepo: mockResetTokenRepo,
+				bcrypt: jest.fn(),
+				random: jest.fn(),
+				ttlMs: 900000,
+			});
+		});
+
+		it("should call removeAllForUser with userId", async () => {
+			const userId = "user-123";
+			await tokenService.removeAllTokensForUser(userId);
+			expect(mockResetTokenRepo.removeAllForUser).toHaveBeenCalledWith(userId);
+		});
+
+		it.each([
+			["null", null],
+			["undefined", undefined],
+			["a number", 12345],
+			["an object", {}],
+		])(
+			"should throw BadRequestError if passed token is %s",
+			async (_, invalidUserId) => {
+				await expect(
+					tokenService.removeAllTokensForUser(invalidUserId)
+				).rejects.toThrow(BadRequestError);
+			}
+		);
+	});
 });
