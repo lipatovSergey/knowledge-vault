@@ -3,8 +3,16 @@ const authController = require("./auth.controller.js");
 const validate = require("../../middleware/validate.middleware.js");
 const validateToken = require("../../middleware/validate-token.middleware.js");
 const { schemas } = require("./auth.validator.js");
+const requireGuest = require("../../middleware/require-guest.middleware.js");
 
 const router = express.Router();
+
+router.post(
+	"/login",
+	requireGuest,
+	validate(schemas.userLogin),
+	authController.loginUser
+);
 
 router.post(
 	"/password/forgot",

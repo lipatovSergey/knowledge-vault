@@ -19,25 +19,6 @@ const userController = {
 		}
 	},
 
-	async loginUser(req, res, next) {
-		try {
-			const data = {
-				email: req.validatedData.email,
-				password: req.validatedData.password,
-			};
-
-			const user = await userService.findUserByEmail(data.email);
-			await userService.checkUserPassword(data.password, user.password);
-
-			// regeberate session ID for authenticated user
-			await regenerateSession(req);
-			req.session.userId = user._id;
-			return res.status(200).json({ message: "Login successful" });
-		} catch (error) {
-			next(error);
-		}
-	},
-
 	async logoutUser(req, res, next) {
 		try {
 			await destroySession(req);

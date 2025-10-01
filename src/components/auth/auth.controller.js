@@ -3,8 +3,26 @@ const mail = require("../../services/mail/index.js");
 const { UnauthorizedError } = require("../../errors/errors.class.js");
 const destroySession = require("../../utils/destroy-session.util.js");
 const { tokenService } = require("./token/index.js");
+const regenerateSession = require("../../utils/regenerate-session.util.js");
 
 const authController = {
+	async loginUser(req, res, next) {
+		try {
+			const data = {
+				email: req.validatedData.email,
+				password: req.validatedData.password,
+			};
+
+			const user = await userService.findUserByEmail(data.email);
+			await userService.checkUserPassword(data.password, user.password);
+			// regenerate session ID for authentificated user
+			await regenerateSession(req);
+			req.session.userId = user._id;
+			return res.status(200).json({ message: "Login successful" });
+		} catch (error) {
+			next(error);
+		}
+	},
 	async forgotPassword(req, res, next) {
 		try {
 			const email = req.validatedData.email;
