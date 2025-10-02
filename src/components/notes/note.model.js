@@ -10,18 +10,6 @@ const noteSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		tags: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "Tag",
-			},
-		],
-		linkedNotes: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "Note",
-			},
-		],
 		userId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
