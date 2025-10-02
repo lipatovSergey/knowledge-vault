@@ -8,6 +8,7 @@ const requireAuth = require("../../middleware/require-auth.middleware.js");
 
 const router = express.Router();
 
+// login user
 router.post(
 	"/login",
 	requireGuest,
@@ -18,16 +19,19 @@ router.post(
 // log-out authenticated (logged in) user
 router.post("/logout", requireAuth, authController.logoutUser);
 
+// user forgot his password
 router.post(
 	"/password/forgot",
 	validate(schemas.passwordForgot),
 	authController.forgotPassword
 );
 
+// reset user's password
 router.post(
 	"/password/reset",
 	validateToken(schemas.passwordResetToken),
 	validate(schemas.passwordResetPasswords),
 	authController.resetPassword
 );
+
 module.exports = router;
