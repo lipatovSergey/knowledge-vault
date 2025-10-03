@@ -32,6 +32,7 @@ function createUserService({ userRepo, bcrypt }) {
 		},
 
 		// use-case: find user by email
+		// TODO: create mapper for user
 		async findUserByEmail(email) {
 			const user = await userRepo.findByEmail(email);
 			if (!user) {
