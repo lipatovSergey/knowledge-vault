@@ -45,4 +45,69 @@ describe("/api/notes/", () => {
 
 		//TODO: check if note was created with get /api/notes/:id
 	});
+
+	it.each([
+		["title", { title: "", content: "valid-content" }],
+		["content", { title: "valid-title", content: "" }],
+	])(
+		"should throw 400 error if empty %s was passed in note data",
+		async (_, invalidData) => {
+			const res = await agent.post(route).send(invalidData);
+			expect(res.statusCode).toBe(400);
+			expect(res.body).toEqual(
+				expect.objectContaining({
+					message: expect.any(String),
+					errors: expect.any(Object),
+				})
+			);
+		}
+	);
+
+	it.each([
+		["title", { content: "valid-content" }],
+		["content", { title: "valid-title" }],
+	])(
+		"should throw 400 error if %s was not passed in note data",
+		async (_, invalidData) => {
+			const res = await agent.post(route).send(invalidData);
+			expect(res.statusCode).toBe(400);
+			expect(res.body).toEqual(
+				expect.objectContaining({
+					message: expect.any(String),
+					errors: expect.any(Object),
+				})
+			);
+		}
+	);
+
+	it("throws 401 error if user not authorized", async () => {
+		const noteData = { title: "valid-title", content: "valid-content" };
+		const res = await request(global.app).post(route).send(noteData);
+		expect(res.statusCode).toBe(401);
+		expect(res.body).toHaveProperty("message");
+	});
+
+	it("throws 400 error if title longer then 120 symbols", async () => {
+		const noteData = { title: "a".repeat(121), content: "valid-content" };
+		const res = await agent.post(route).send(noteData);
+		expect(res.statusCode).toBe(400);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				message: expect.any(String),
+				errors: expect.any(Object),
+			})
+		);
+	});
+
+	it("throws 400 error if content longer then 2000 symbols", async () => {
+		const noteData = { title: "valid-title", content: "a".repeat(2001) };
+		const res = await agent.post(route).send(noteData);
+		expect(res.statusCode).toBe(400);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				message: expect.any(String),
+				errors: expect.any(Object),
+			})
+		);
+	});
 });
