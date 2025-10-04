@@ -15,6 +15,16 @@ const noteController = {
 			next(error);
 		}
 	},
+
+	async getNote(req, res, next) { 
+		try {
+			const noteId = req.params.id
+			const noteInfo = await noteService.getNote(noteId)
+			res.status(200).json(noteInfo)
+		} catch (error) {
+			next(error)
+		}
+	}
 };
 
 module.exports = noteController;

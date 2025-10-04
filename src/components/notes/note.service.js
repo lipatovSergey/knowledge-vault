@@ -7,6 +7,12 @@ function createNoteService({ noteRepo }) {
 			const newNote = await noteRepo.create(noteData);
 			return toNoteDto(newNote);
 		},
+
+		// use-case: get single note info
+		async getNote(noteId) {
+			const noteInfo = await noteRepo.getNote(noteId)
+			return toNoteDto(noteInfo)
+		}
 	};
 }
 

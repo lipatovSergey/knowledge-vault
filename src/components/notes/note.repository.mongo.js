@@ -7,6 +7,12 @@ const noteRepo = {
 		const newNote = new NoteModel(noteData);
 		return await newNote.save();
 	},
+
+	// finds and returns note info from DB
+	async getNote(noteId) {
+		const noteInfo = await NoteModel.findById(noteId);
+		return noteInfo;
+	},
 };
 
 module.exports = noteRepo;

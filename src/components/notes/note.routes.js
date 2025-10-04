@@ -14,4 +14,7 @@ router.post(
 	noteController.createNote
 );
 
+// TODO: Добавить валидатор для params и добавить валидатор
+router.get("/:id", requireAuth, noteController.getNote)
+
 module.exports = router;

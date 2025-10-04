@@ -13,6 +13,11 @@ const schemas = {
 			.min(1, "Content is required")
 			.max(2000, "Content max length 2000 symbols"),
 	}),
+	getNote: z.object({
+		params: z.object({
+			id: z.string()
+		})
+	})
 };
 
 module.exports = { schemas };
