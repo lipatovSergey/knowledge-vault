@@ -1,4 +1,5 @@
 const z = require("zod");
+const { Types } = require("mongoose");
 
 const schemas = {
 	createNote: z.object({
@@ -14,10 +15,10 @@ const schemas = {
 			.max(2000, "Content max length 2000 symbols"),
 	}),
 	getNote: z.object({
-		params: z.object({
-			id: z.string()
-		})
-	})
+		id: z
+			.string()
+			.refine(value => Types.ObjectId.isValid(value), "Invalid ObjectId"),
+	}),
 };
 
 module.exports = { schemas };

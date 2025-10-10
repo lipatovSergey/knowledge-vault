@@ -1,3 +1,7 @@
+const {
+	NotFoundError,
+	ForbiddenError,
+} = require("../../errors/errors.class.js");
 const { toNoteDto } = require("./note.mapper.js");
 
 function createNoteService({ noteRepo }) {
@@ -9,10 +13,19 @@ function createNoteService({ noteRepo }) {
 		},
 
 		// use-case: get single note info
-		async getNote(noteId) {
-			const noteInfo = await noteRepo.getNote(noteId)
-			return toNoteDto(noteInfo)
-		}
+		async getNote(noteId, userId) {
+			const noteInfo = await noteRepo.getNote(noteId);
+			if (!noteInfo) {
+				throw new NotFoundError("Note not found");
+			}
+			const noteInfoObject = noteInfo.toObject();
+			const noteOwnerId = noteInfoObject.userId.toString();
+
+			if (userId !== noteOwnerId) {
+				throw new ForbiddenError();
+			}
+			return toNoteDto(noteInfo);
+		},
 	};
 }
 

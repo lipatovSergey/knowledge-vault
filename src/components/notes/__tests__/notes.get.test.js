@@ -1,5 +1,6 @@
 const request = require("supertest");
 const it = global.it;
+const { Types } = require("mongoose");
 
 describe("GET /api/notes/:id", () => {
 	let route;
@@ -40,5 +41,17 @@ describe("GET /api/notes/:id", () => {
 		expect(Object.keys(res.body).sort()).toEqual(
 			["id", "title", "content", "createdAt", "updatedAt"].sort()
 		);
+	});
+
+	it("returns 400 status code if passed note id invalid", async () => {
+		const res = await agent.get("/api/notes/12345678");
+		expect(res.statusCode).toBe(400);
+		expect(res.body).toHaveProperty("errors.id");
+	});
+
+	it("returns 404 status code if note wasn't found in DB", async () => {
+		const missingId = new Types.ObjectId().toString();
+		const res = await agent.get(`/api/notes/${missingId}`);
+		expect(res.statusCode).toBe(404);
 	});
 });

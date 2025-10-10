@@ -18,8 +18,10 @@ const noteController = {
 
 	async getNote(req, res, next) {
 		try {
-			const noteId = req.params.id;
-			const noteInfo = await noteService.getNote(noteId);
+			const noteId = req.validatedParams.id;
+			const userId = req.session.userId;
+			const noteInfo = await noteService.getNote(noteId, userId);
+			console.log(noteInfo);
 			res.status(200).json(noteInfo);
 		} catch (error) {
 			next(error);
