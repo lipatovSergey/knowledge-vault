@@ -27,7 +27,6 @@ describe("GET /api/notes/:id", () => {
 
 	it("return 200 status code and plain note object with id, title, content, createdAt, updatedAt fields", async () => {
 		const res = await agent.get(route);
-		console.log(res.body)
 		expect(res.statusCode).toBe(200);
 		expect(res.body).toEqual(
 			expect.objectContaining({

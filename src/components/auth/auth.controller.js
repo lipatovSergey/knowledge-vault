@@ -10,8 +10,8 @@ const authController = {
 	async loginUser(req, res, next) {
 		try {
 			const data = {
-				email: req.validatedData.email,
-				password: req.validatedData.password,
+				email: req.validatedBody.email,
+				password: req.validatedBody.password,
 			};
 
 			const user = await userService.findUserByEmail(data.email);
@@ -37,7 +37,7 @@ const authController = {
 
 	async forgotPassword(req, res, next) {
 		try {
-			const email = req.validatedData.email;
+			const email = req.validatedBody.email;
 			// We try to find the user. If the service throws UnauthorizedError (user not found),
 			// we catch it and treat it as a "success" from a security perspective to prevent email enumeration.
 			const user = await userService.findUserByEmail(email).catch(err => {
@@ -48,7 +48,10 @@ const authController = {
 			if (user) {
 				const rawToken = await tokenService.createTokenForUser(user._id);
 				const frontendBaseUrl = FRONTEND_URL || "";
-				const resetLink = `${frontendBaseUrl.replace(/\/$/, "")}/password-reset?token=${rawToken}`;
+				const resetLink = `${frontendBaseUrl.replace(
+					/\/$/,
+					""
+				)}/password-reset?token=${rawToken}`;
 				await mail.sendPasswordReset({
 					to: email,
 					subject: "Reset your password",
@@ -66,8 +69,9 @@ const authController = {
 
 	async resetPassword(req, res, next) {
 		try {
-			const body = req.validatedData;
-			const userId = await tokenService.verifyAndConsume(body.token);
+			const body = req.validatedBody;
+			const token = req.validatedResetToken;
+			const userId = await tokenService.verifyAndConsume(token);
 			await userService.updateUserPassword(userId, body.newPassword);
 			await tokenService.removeAllTokensForUser(userId);
 			await destroySession(req);

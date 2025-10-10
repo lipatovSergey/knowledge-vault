@@ -1,7 +1,7 @@
 const express = require("express");
 const authController = require("./auth.controller.js");
-const validate = require("../../middleware/validate.middleware.js");
-const validateToken = require("../../middleware/validate-token.middleware.js");
+const validateBody = require("../../middleware/validate-body.middleware.js");
+const validateResetToken = require("../../middleware/validate-reset-token.middleware.js");
 const { schemas } = require("./auth.validator.js");
 const requireGuest = require("../../middleware/require-guest.middleware.js");
 const requireAuth = require("../../middleware/require-auth.middleware.js");
@@ -12,7 +12,7 @@ const router = express.Router();
 router.post(
 	"/login",
 	requireGuest,
-	validate(schemas.userLogin),
+	validateBody(schemas.userLogin),
 	authController.loginUser
 );
 
@@ -22,15 +22,15 @@ router.post("/logout", requireAuth, authController.logoutUser);
 // user forgot his password
 router.post(
 	"/password/forgot",
-	validate(schemas.passwordForgot),
+	validateBody(schemas.passwordForgot),
 	authController.forgotPassword
 );
 
 // reset user's password
 router.post(
 	"/password/reset",
-	validateToken(schemas.passwordResetToken),
-	validate(schemas.passwordResetPasswords),
+	validateResetToken(schemas.passwordResetToken),
+	validateBody(schemas.passwordResetPasswords),
 	authController.resetPassword
 );
 

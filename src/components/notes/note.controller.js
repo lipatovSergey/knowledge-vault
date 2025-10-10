@@ -4,8 +4,8 @@ const noteController = {
 	async createNote(req, res, next) {
 		try {
 			const noteData = {
-				title: req.validatedData.title,
-				content: req.validatedData.content,
+				title: req.validatedBody.title,
+				content: req.validatedBody.content,
 				userId: req.session.userId,
 			};
 
@@ -16,15 +16,15 @@ const noteController = {
 		}
 	},
 
-	async getNote(req, res, next) { 
+	async getNote(req, res, next) {
 		try {
-			const noteId = req.params.id
-			const noteInfo = await noteService.getNote(noteId)
-			res.status(200).json(noteInfo)
+			const noteId = req.params.id;
+			const noteInfo = await noteService.getNote(noteId);
+			res.status(200).json(noteInfo);
 		} catch (error) {
-			next(error)
+			next(error);
 		}
-	}
+	},
 };
 
 module.exports = noteController;
