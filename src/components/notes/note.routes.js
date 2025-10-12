@@ -9,18 +9,24 @@ const router = express.Router();
 
 // create new note
 router.post(
-	"/",
-	requireAuth,
-	validateBody(schemas.createNote),
-	noteController.createNote
+  "/",
+  requireAuth,
+  validateBody(schemas.createNote),
+  noteController.createNote,
 );
 
-// TODO: Добавить валидатор для params и добавить валидатор
 router.get(
-	"/:id",
-	requireAuth,
-	validateParams(schemas.getNote),
-	noteController.getNote
+  "/:id",
+  requireAuth,
+  validateParams(schemas.getNote),
+  noteController.getNote,
+);
+
+router.delete(
+  "/:id",
+  requireAuth,
+  validateParams(schemas.deleteNote),
+  noteController.deleteNote,
 );
 
 module.exports = router;
