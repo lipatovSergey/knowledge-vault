@@ -59,7 +59,7 @@ describe("DELETE /api/notes/:id", () => {
     expect(res.body).toHaveProperty("message", "Note not found");
   });
 
-  it("returns 403 status code if request send not by note's owner", async () => {
+  it("returns 404 status code if request send not by note's owner", async () => {
     // create new user with separate agent
     const intrudetAgent = request.agent(global.app);
     await intrudetAgent.post("/api/users").send({
@@ -73,8 +73,8 @@ describe("DELETE /api/notes/:id", () => {
     });
 
     const res = await intrudetAgent.delete(route);
-    expect(res.statusCode).toBe(403);
-    expect(res.body).toHaveProperty("message", "Access denied");
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty("message", "Note not found");
   });
 
   it("returns 401 status code if request was send by not authorized user", async () => {

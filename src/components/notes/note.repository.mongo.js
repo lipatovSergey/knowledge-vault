@@ -9,11 +9,12 @@ const noteRepo = {
   },
 
   // finds and returns note info from DB
-  async getNote(noteId) {
-    const noteInfo = await NoteModel.findById(noteId);
+  async getNote(noteId, userId) {
+    const noteInfo = await NoteModel.findOne({ _id: noteId, userId }).lean();
     return noteInfo;
   },
 
+  // TODO: Check if it's used somewhere
   // find and returns note's owners's id
   async getNoteOwnerId(noteId) {
     const noteInfo = await NoteModel.findById(noteId).select("userId").lean();
@@ -24,8 +25,8 @@ const noteRepo = {
   },
 
   // deletes note from db by ID
-  async deleteNote(noteId) {
-    const { deletedCount } = await NoteModel.deleteOne({ _id: noteId });
+  async deleteNote(noteId, userId) {
+    const { deletedCount } = await NoteModel.deleteOne({ _id: noteId, userId });
     return deletedCount === 1;
   },
 };

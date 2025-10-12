@@ -13,4 +13,3 @@
 - Unsure where to convert `ObjectId` to string. Chose to do it in the service so the repository stays close to raw database output.
 - Wondered if the delete method needs to return anything. Decided to return a boolean so other callers can assert the result and so tests stay explicit.
 - Questioned why console logs stayed empty in tests. Realized the global error handler turns exceptions into HTTP responses, so logs are silent unless I log manually.
-
