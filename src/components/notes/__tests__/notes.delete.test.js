@@ -86,7 +86,6 @@ describe("DELETE /api/notes/:id", () => {
   it("returns 401 status code if user logged out before request send", async () => {
     await agent.post("/api/auth/logout");
     const res = await agent.delete(route);
-    console.log(res.errors);
     expect(res.statusCode).toBe(401);
     expect(res.body).toHaveProperty("message", "Unauthorized");
   });

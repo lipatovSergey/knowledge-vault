@@ -46,6 +46,18 @@ describe("PATCH /api/notes/:id", () => {
     expect(res.body).toHaveProperty("content", changedContent);
   });
 
+  it("should update note's title and content in DB, returns 200 and updated note", async () => {
+    const changedTitle = "changed-valid-title";
+    const changedContent = "changed-valid-content";
+    const res = await agent.patch(route).send({
+      title: changedTitle,
+      content: changedContent,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("title", changedTitle);
+    expect(res.body).toHaveProperty("content", changedContent);
+  });
+
   it("returns 404 status code if note wasn't found in DB", async () => {
     const missingId = new Types.ObjectId().toString();
     const res = await agent.patch(`/api/notes/${missingId}`).send({
@@ -84,7 +96,6 @@ describe("PATCH /api/notes/:id", () => {
   it("returns 401 status code if user logged out before request send", async () => {
     await agent.post("/api/auth/logout");
     const res = await agent.patch(route);
-    console.log(res.errors);
     expect(res.statusCode).toBe(401);
     expect(res.body).toHaveProperty("message", "Unauthorized");
   });
