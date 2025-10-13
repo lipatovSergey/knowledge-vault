@@ -1,9 +1,12 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2020",
-		"checkJs": false,
-		"types": ["jest"]
-	},
-	"include": ["src", "tests"]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "checkJs": false,
+    "types": ["jest", "node"],
+    "moduleDetection": "legacy"
+  },
+
+  "typeAcquisition": { "enable": true },
+  "include": ["src", "tests"]
 }

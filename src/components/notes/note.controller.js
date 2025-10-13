@@ -39,6 +39,20 @@ const noteController = {
       next(error);
     }
   },
+
+  // updates note's title or content or both
+  async patchNote(req, res, next) {
+    try {
+      const noteId = req.validatedParams.id;
+      const userId = req.session.userId;
+      const data = req.validatedBody;
+      const updatedNote = await noteService.updateNote(noteId, userId, data);
+
+      res.status(200).json(updatedNote);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = noteController;

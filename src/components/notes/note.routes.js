@@ -18,15 +18,23 @@ router.post(
 router.get(
   "/:id",
   requireAuth,
-  validateParams(schemas.getNote),
+  validateParams(schemas.noteIdInParams),
   noteController.getNote,
 );
 
 router.delete(
   "/:id",
   requireAuth,
-  validateParams(schemas.deleteNote),
+  validateParams(schemas.noteIdInParams),
   noteController.deleteNote,
+);
+
+router.patch(
+  "/:id",
+  requireAuth,
+  validateParams(schemas.noteIdInParams),
+  validateBody(schemas.patchNote),
+  noteController.patchNote,
 );
 
 module.exports = router;

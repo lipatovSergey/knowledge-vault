@@ -1,6 +1,5 @@
 const request = require("supertest");
 const it = global.it;
-const { Types } = require("mongoose");
 
 describe("PATCH /api/notes/:id", () => {
   let route;
@@ -29,9 +28,20 @@ describe("PATCH /api/notes/:id", () => {
   });
 
   it("should update note's title in DB, returns 200 and updated note", async () => {
+    const changedTitle = "changed-valid-title";
     const res = await agent.patch(route).send({
-      title: "updated-valid-title",
+      title: changedTitle,
     });
     expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("title", changedTitle);
+  });
+
+  it("should update note's content in DB, returns 200 and updated note", async () => {
+    const changedContent = "changed-valid-content";
+    const res = await agent.patch(route).send({
+      content: changedContent,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("content", changedContent);
   });
 });
