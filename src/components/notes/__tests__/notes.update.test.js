@@ -1,5 +1,6 @@
 const request = require("supertest");
 const it = global.it;
+const { Types } = require("mongoose");
 
 describe("PATCH /api/notes/:id", () => {
   let route;
@@ -43,5 +44,48 @@ describe("PATCH /api/notes/:id", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("content", changedContent);
+  });
+
+  it("returns 404 status code if note wasn't found in DB", async () => {
+    const missingId = new Types.ObjectId().toString();
+    const res = await agent.patch(`/api/notes/${missingId}`).send({
+      title: "changed-title",
+    });
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty("message", "Note not found");
+  });
+
+  it("returns 404 status code if request send not by note's owner", async () => {
+    // create new user with separate agent
+    const intrudetAgent = request.agent(global.app);
+    await intrudetAgent.post("/api/users").send({
+      name: "User2",
+      email: "test2@example.com",
+      password: "pass1234",
+    });
+    await intrudetAgent.post("/api/auth/login").send({
+      email: "test2@example.com",
+      password: "pass1234",
+    });
+
+    const res = await intrudetAgent.patch(route).send({
+      title: "changed-title",
+    });
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty("message", "Note not found");
+  });
+
+  it("returns 401 status code if request was send by not authorized user", async () => {
+    const res = await request(global.app).patch(route);
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toHaveProperty("message", "Unauthorized");
+  });
+
+  it("returns 401 status code if user logged out before request send", async () => {
+    await agent.post("/api/auth/logout");
+    const res = await agent.patch(route);
+    console.log(res.errors);
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toHaveProperty("message", "Unauthorized");
   });
 });
