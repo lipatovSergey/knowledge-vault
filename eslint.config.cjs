@@ -1,7 +1,9 @@
 const nodePlugin = require("eslint-plugin-n");
+const jsdoc = require("eslint-plugin-jsdoc");
 // eslint.config.js
 module.exports = [
   nodePlugin.configs["flat/recommended-script"],
+  jsdoc.configs["flat/recommended"],
   {
     files: ["**/*.js"],
     languageOptions: {
@@ -16,6 +18,7 @@ module.exports = [
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
+    plugins: { jsdoc },
     rules: {
       "no-unused-vars": "warn",
       "no-redeclare": "error",
@@ -25,6 +28,9 @@ module.exports = [
       "n/exports-style": ["error", "module.exports"],
       "n/no-unsupported-features/node-builtins": "error",
       "n/no-unsupported-features/es-syntax": "error",
+      "jsdoc/require-returns": "warn",
+      "jsdoc/require-param-description": "warn",
+      "jsdoc/require-jsdoc": ["off", { publicOnly: true }],
     },
   },
 ];

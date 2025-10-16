@@ -34,7 +34,18 @@ describe("PATCH /api/notes/:id", () => {
       title: changedTitle,
     });
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("title", changedTitle);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        id: noteId,
+        title: changedTitle,
+        content: content,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }),
+    );
+    expect(Object.keys(res.body).sort()).toEqual(
+      ["id", "title", "content", "createdAt", "updatedAt"].sort(),
+    );
   });
 
   it("should update note's content in DB, returns 200 and updated note", async () => {
@@ -43,7 +54,18 @@ describe("PATCH /api/notes/:id", () => {
       content: changedContent,
     });
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("content", changedContent);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        id: noteId,
+        title: title,
+        content: changedContent,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }),
+    );
+    expect(Object.keys(res.body).sort()).toEqual(
+      ["id", "title", "content", "createdAt", "updatedAt"].sort(),
+    );
   });
 
   it("should update note's title and content in DB, returns 200 and updated note", async () => {
@@ -54,15 +76,70 @@ describe("PATCH /api/notes/:id", () => {
       content: changedContent,
     });
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("title", changedTitle);
-    expect(res.body).toHaveProperty("content", changedContent);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        id: noteId,
+        title: changedTitle,
+        content: changedContent,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }),
+    );
+    expect(Object.keys(res.body).sort()).toEqual(
+      ["id", "title", "content", "createdAt", "updatedAt"].sort(),
+    );
   });
 
-  it("returns 404 status code if note wasn't found in DB", async () => {
+  it.only("return 422 if passed title empty string", async () => {
+    const res = await agent.patch(route).send({
+      title: "",
+    });
+    expect(res.statusCode).toBe(422);
+    expect(res.body.errors).toHaveProperty("fieldErrors.title");
+  });
+
+  it.only("return 422 if passed title empty string", async () => {
+    const res = await agent.patch(route).send({
+      content: "",
+    });
+    console.log(res.body);
+    expect(res.statusCode).toBe(422);
+    expect(res.body.errors).toHaveProperty("fieldErrors.content");
+  });
+
+  it("returns 422 status code if passed note id invalid", async () => {
+    const res = await agent.patch("/api/notes/12345678");
+    expect(res.statusCode).toBe(422);
+    expect(res.body.errors).toHaveProperty("fieldErrors.id");
+  });
+
+  it("returns 400 error if title longer then 120 symbols", async () => {
+    const noteData = { title: "a".repeat(121) };
+    const res = await agent.patch(route).send(noteData);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty("errors.title");
+  });
+
+  it("returns 400 error if content longer then 2000 symbols", async () => {
+    const noteData = { content: "a".repeat(2001) };
+    const res = await agent.patch(route).send(noteData);
+    console.log(res.body);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty("errors.content");
+  });
+
+  it("returns 400 status code if passed empty body", async () => {
+    const res = await agent.patch(route).send({});
+    console.log(res.body);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it.only("returns 404 status code if note wasn't found in DB", async () => {
     const missingId = new Types.ObjectId().toString();
     const res = await agent.patch(`/api/notes/${missingId}`).send({
       title: "changed-title",
     });
+    console.log(res.body);
     expect(res.statusCode).toBe(404);
     expect(res.body).toHaveProperty("message", "Note not found");
   });

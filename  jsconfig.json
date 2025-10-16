@@ -2,9 +2,12 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2020",
-    "checkJs": false,
     "types": ["jest", "node"],
-    "moduleDetection": "legacy"
+    "moduleDetection": "legacy",
+    "checkJs": true,
+    "allowJs": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
   },
 
   "typeAcquisition": { "enable": true },
