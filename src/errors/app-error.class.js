@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * Base application error that formats responses according to RFC 7807.
  * @see https://datatracker.ietf.org/doc/html/rfc7807
@@ -11,9 +13,7 @@ class AppError extends Error {
    * @param {number} [opts.statusCode=500] HTTP status for client
    * @param {string} [opts.level="warn"] Logger level (warn|error|info)
    * @param {string} [opts.type="about:blank"] Identifier of error type from RFC 7807. Falls back to "about:blank".
-   * @param {string} [opts.code] Machine code. Optional.
    * @param {object|undefined} [opts.details] Additional diagnostic data (e.g. result of zodError.flatten()).
-   * @param {Error} [opts.cause] Root cause preserved for error chains.
    */
 
   constructor(message = "Unexpected error", opts = {}) {
@@ -23,13 +23,10 @@ class AppError extends Error {
       statusCode = 500,
       level = "warn",
       type = "about:blank",
-      code,
       details,
-      cause,
     } = opts;
 
     super(message);
-    this.cause = cause;
     this.title = title;
     this.statusCode = statusCode;
     this.level = level;
@@ -37,7 +34,6 @@ class AppError extends Error {
     // RFC 7807 fields (опционально, но полезно)
     this.type = type; // напр. "urn:problem:validation-error"
     this.detail = detail; // одно ключевое сообщение для человека
-    this.code = code; // ваш машинный код, если есть
     // Машинные детали (например, zod.flatten())
     this.details = details; // { fieldErrors, formErrors } или иное
     Error.captureStackTrace(this, this.constructor);

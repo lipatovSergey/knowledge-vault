@@ -23,13 +23,12 @@ function errorHandler(err, req, res, next) {
   // Известные (операционные) ошибки нашего приложения → RFC 7807
   if (err instanceof AppError) {
     const problem = {
-      type: err.type || "about:blank",
       title: err.title, // краткий заголовок
-      status: err.statusCode, // HTTP статус
       detail: err.detail, // одно ключевое сообщение (может быть undefined)
+      status: err.statusCode, // HTTP статус
+      type: err.type || "about:blank",
       instance: req.originalUrl, // путь запроса
       // RFC 7807 extensions — любые доп. поля верхнего уровня
-      ...(err.code && { code: err.code }),
       ...(err.details && { errors: err.details }), // напр. zod.flatten() + { source }
     };
 
@@ -39,12 +38,16 @@ function errorHandler(err, req, res, next) {
 
   // Неизвестные/необработанные ошибки → 500 в формате RFC 7807
   const problem500 = {
-    type: "about:blank",
     title:
       NODE_ENV !== "production"
         ? "Error unknown by custom error handler"
         : "Internal Server Error",
+    detail:
+      NODE_ENV !== "production"
+        ? err.message || "Unexpected error"
+        : "Internal Server Error",
     status: 500,
+    type: "about:blank",
     instance: req.originalUrl,
     ...(NODE_ENV !== "production" && { stack: err.stack }),
   };
