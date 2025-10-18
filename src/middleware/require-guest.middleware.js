@@ -1,6 +1,8 @@
-function requireGuest(req, res, next) {
+const { ConflictError } = require("../errors/errors.class.js");
+
+function requireGuest(req, _res, next) {
   if (req.session.userId) {
-    return res.status(409).json({ message: "User already logged in" });
+    throw new ConflictError();
   }
   next();
 }

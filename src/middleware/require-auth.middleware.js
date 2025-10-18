@@ -1,6 +1,8 @@
-function requireAuth(req, res, next) {
+const { UnauthorizedError } = require("../errors/errors.class.js");
+
+function requireAuth(req, _res, next) {
   if (!req.session.userId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    throw new UnauthorizedError();
   }
   next();
 }
