@@ -1,18 +1,18 @@
 const z = require("zod");
 
 const schemas = {
-	// TODO: add passpoword verification
-	userCreate: z.object({
-		name: z.string().min(1, "Name is required"),
-		email: z.string().email("Invalid email"),
-		password: z.string().min(6, "Password must be at least 6 characters"),
-	}),
+  // TODO: add passpoword verification
+  userCreate: z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  }),
 
-	userInfoPatch: z.object({
-		name: z.string().min(1, "Name is required"),
-	}),
+  userInfoPatch: z.object({
+    name: z.string().min(1, "Name is required"),
+  }),
 };
 
 module.exports = {
-	schemas,
+  schemas,
 };
