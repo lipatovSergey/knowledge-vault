@@ -1,15 +1,19 @@
 const request = require("supertest");
 const mailbox = require("../../../../tests/mailbox.helper.js");
+const {
+  createExpectValidationError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
 describe("POST /api/auth/password/forgot", () => {
   const route = "/api/auth/password/forgot";
   const email = "test@example.com";
+  const expectValidationError = createExpectValidationError(route);
   let agent;
 
   beforeEach(async () => {
     mailbox.clear();
     agent = request.agent(global.app);
-    await agent.post("/api/users").send({
+    await agent.post("/api/user").send({
       name: "User",
       email: email,
       password: "pass123",
@@ -52,13 +56,6 @@ describe("POST /api/auth/password/forgot", () => {
 
   it("returns 422 on invalid email format", async () => {
     const res = await agent.post(route).send({ email: "invalid" });
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: "/api/auth/password/forgot",
-      errors: { source: "body" },
-    });
-    expect(res.body.errors.fieldErrors).toHaveProperty("email");
+    expectValidationError(res, ["email"]);
   });
 });

@@ -1,10 +1,19 @@
 const request = require("supertest");
 const it = global.it;
+const {
+  createExpectUnauthorizedError,
+  createExpectValidationError,
+  createExpectConflictError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
 describe("User login", () => {
   const route = "/api/auth/login";
+  const expectUnauthorizedError = createExpectUnauthorizedError(route);
+  const expectValidationError = createExpectValidationError(route);
+  const expectConflictError = createExpectConflictError(route);
+
   beforeEach(async () => {
-    await request(global.app).post("/api/users").send({
+    await request(global.app).post("/api/user").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
@@ -58,14 +67,7 @@ describe("User login", () => {
       email: "wrong@example.com",
       password: "pass123",
     });
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toMatchObject({
-      title: "Unauthorized",
-      detail: "Invalid email or password",
-      status: 401,
-      type: "urn:problem:unauthorized",
-      instance: "/api/auth/login",
-    });
+    expectUnauthorizedError(res);
   });
 
   it("should return 401 if password is incorrect", async () => {
@@ -73,14 +75,7 @@ describe("User login", () => {
       email: "test@example.com",
       password: "pass124",
     });
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toMatchObject({
-      title: "Unauthorized",
-      detail: "Invalid email or password",
-      status: 401,
-      type: "urn:problem:unauthorized",
-      instance: "/api/auth/login",
-    });
+    expectUnauthorizedError(res);
   });
 
   it("should return 422 if email is an empty string", async () => {
@@ -88,14 +83,7 @@ describe("User login", () => {
       email: "",
       password: "pass123",
     });
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: "/api/auth/login",
-      errors: { source: "body" },
-    });
-    expect(res.body.errors.fieldErrors).toHaveProperty("email");
+    expectValidationError(res, ["email"]);
   });
 
   it("should return 422 if password is an empty string", async () => {
@@ -103,14 +91,7 @@ describe("User login", () => {
       email: "test@example.com",
       password: "",
     });
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: "/api/auth/login",
-      errors: { source: "body" },
-    });
-    expect(res.body.errors.fieldErrors).toHaveProperty("password");
+    expectValidationError(res, ["password"]);
   });
 
   it("should return 409 if user is already logged in", async () => {
@@ -128,13 +109,6 @@ describe("User login", () => {
         email: "test@example.com",
         password: "pass123",
       });
-    expect(res.statusCode).toBe(409);
-    expect(res.body).toMatchObject({
-      title: "Conflict",
-      detail: "Conflict",
-      status: 409,
-      type: "urn:problem:conflict",
-      instance: "/api/auth/login",
-    });
+    expectConflictError(res);
   });
 });

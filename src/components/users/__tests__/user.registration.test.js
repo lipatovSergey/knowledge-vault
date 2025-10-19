@@ -1,24 +1,13 @@
 const request = require("supertest");
+const {
+  createExpectValidationError,
+  createExpectConflictError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
 describe("User registration", () => {
-  const route = "/api/users";
-  function expectValidationError(res, expectedFields = []) {
-    expect(res.statusCode).toBe(422);
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: "/api/users",
-      errors: { source: "body" },
-    });
-    expect(res.body.errors.fieldErrors).toEqual(
-      expect.objectContaining(
-        Object.fromEntries(
-          expectedFields.map((key) => [key, expect.any(Array)]),
-        ),
-      ),
-    );
-  }
+  const route = "/api/user";
+  const expectValidationError = createExpectValidationError(route);
+  const expectConflictError = createExpectConflictError(route);
 
   it("should register a new user", async () => {
     const res = await request(global.app).post(route).send({
@@ -77,13 +66,6 @@ describe("User registration", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    expect(res.statusCode).toBe(409);
-    expect(res.body).toMatchObject({
-      title: "Conflict",
-      detail: "User already exists",
-      status: 409,
-      type: "urn:problem:conflict",
-      instance: "/api/users",
-    });
+    expectConflictError(res);
   });
 });

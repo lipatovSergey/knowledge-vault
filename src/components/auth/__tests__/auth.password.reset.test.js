@@ -4,17 +4,23 @@ const bcrypt = require("bcrypt");
 const {
   createExpiredResetToken,
 } = require("../../../../tests/helpers/password-reset-token.factory.js");
+const {
+  createExpectBadRequestError,
+  createExpectValidationError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
 describe("POST /api/auth/password/reset", () => {
   const route = "/api/auth/password/reset";
   const email = "test@example.com";
+  const expectBadRequestError = createExpectBadRequestError(route);
+  const expectValidationError = createExpectValidationError(route);
   let agent;
   let emailToken;
 
   beforeEach(async () => {
     mailbox.clear();
     agent = request.agent(global.app);
-    await agent.post("/api/users").send({
+    await agent.post("/api/user").send({
       name: "User",
       email: email,
       password: "pass123",
@@ -59,7 +65,7 @@ describe("POST /api/auth/password/reset", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    const meResBefore = await agent.get("/api/users/me");
+    const meResBefore = await agent.get("/api/user/me");
     expect(meResBefore.statusCode).toBe(200);
     const resetRes = await agent.post(route).send({
       token: emailToken,
@@ -67,7 +73,7 @@ describe("POST /api/auth/password/reset", () => {
       newPasswordConfirmation: "pass456",
     });
     expect(resetRes.statusCode).toBe(204);
-    const meResAfter = await agent.get("/api/users/me");
+    const meResAfter = await agent.get("/api/user/me");
     expect(meResAfter.statusCode).toBe(401);
   });
 
@@ -77,14 +83,7 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.body).toMatchObject({
-      title: "Bad Request",
-      detail: "Invalid or expired token",
-      status: 400,
-      type: "urn:problem:bad-request",
-      instance: "/api/auth/password/reset",
-    });
-    expect(res.statusCode).toBe(400);
+    expectBadRequestError(res);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -100,14 +99,7 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.body).toMatchObject({
-      title: "Bad Request",
-      detail: "Invalid or expired token",
-      status: 400,
-      type: "urn:problem:bad-request",
-      instance: "/api/auth/password/reset",
-    });
-    expect(res.statusCode).toBe(400);
+    expectBadRequestError(res);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -122,14 +114,7 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.body).toMatchObject({
-      title: "Bad Request",
-      detail: "Invalid or expired token",
-      status: 400,
-      type: "urn:problem:bad-request",
-      instance: "/api/auth/password/reset",
-    });
-    expect(res.statusCode).toBe(400);
+    expectBadRequestError(res);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -139,14 +124,7 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expect(res.body).toMatchObject({
-      title: "Bad Request",
-      detail: "Invalid or expired token",
-      status: 400,
-      type: "urn:problem:bad-request",
-      instance: "/api/auth/password/reset",
-    });
-    expect(res.statusCode).toBe(400);
+    expectBadRequestError(res);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -156,16 +134,7 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "123qwer",
     });
-    expect(res.statusCode).toBe(422);
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      detail: "Passwords do not match",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: "/api/auth/password/reset",
-      errors: { source: "body" },
-    });
-    expect(res.body.errors.formErrors).toContain("Passwords do not match");
+    expectValidationError(res, [], 1);
   });
 
   it("returns 422 if new password shorter then 6 symbols", async () => {
@@ -175,19 +144,6 @@ describe("POST /api/auth/password/reset", () => {
       newPasswordConfirmation: "pass",
     });
     console.log(res.body);
-    expect(res.statusCode).toBe(422);
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: "/api/auth/password/reset",
-      errors: { source: "body" },
-    });
-    expect(res.body.errors.fieldErrors).toEqual(
-      expect.objectContaining({
-        newPassword: expect.any(Array),
-        newPasswordConfirmation: expect.any(Array),
-      }),
-    );
+    expectValidationError(res, ["newPassword", "newPasswordConfirmation"]);
   });
 });

@@ -11,12 +11,12 @@ const { sessionMiddleware } = require("./middleware/session.middleware");
 app.use(sessionMiddleware);
 
 // note routes connection
-const noteRoutes = require("./components/notes/note.routes");
-app.use("/api/notes", noteRoutes);
+const noteRoutes = require("./components/note/note.routes");
+app.use("/api/note", noteRoutes);
 
 // user routes connection
 const userRoutes = require("./components/users/user.routes");
-app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes);
 
 const authRoutes = require("./components/auth/auth.routes.js");
 app.use("/api/auth", authRoutes);

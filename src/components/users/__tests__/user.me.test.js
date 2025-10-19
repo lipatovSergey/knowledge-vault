@@ -1,13 +1,21 @@
 const request = require("supertest");
 const it = global.it;
+const {
+  createExpectValidationError,
+  createExpectUnauthorizedError,
+  createExpectNotFoundError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
 describe("/api/users/me", () => {
-  const route = "/api/users/me";
+  const route = "/api/user/me";
   let agent;
+  const expectValidationError = createExpectValidationError(route);
+  const expectUnauthorizedError = createExpectUnauthorizedError(route);
+  const expectNotFoundError = createExpectNotFoundError(route);
 
   beforeEach(async () => {
     agent = request.agent(global.app);
-    await agent.post("/api/users").send({
+    await agent.post("/api/user").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
@@ -28,13 +36,7 @@ describe("/api/users/me", () => {
 
     it("should return 401 if no session cookie was passed", async () => {
       const res = await request(global.app).get(route);
-      expect(res.statusCode).toBe(401);
-      expect(res.body).toMatchObject({
-        title: "Unauthorized",
-        status: 401,
-        type: "urn:problem:unauthorized",
-        instance: "/api/users/me",
-      });
+      expectUnauthorizedError(res);
     });
 
     it("should return 404 if user not found (fake session)", async () => {
@@ -42,15 +44,8 @@ describe("/api/users/me", () => {
       const fakeId = "64ffacacacacacacacacacac"; // валидный ObjectId-формат
 
       await agent.post(`/test/session/${fakeId}`); // сессия сохранена
-      const res = await agent.get("/api/users/me"); // requireAuth пропустит
-      expect(res.statusCode).toBe(404);
-      expect(res.body).toMatchObject({
-        title: "Not found",
-        detail: "User not found",
-        status: 404,
-        type: "urn:problem:not-found",
-        instance: "/api/users/me",
-      });
+      const res = await agent.get("/api/user/me"); // requireAuth пропустит
+      expectNotFoundError(res);
     });
   });
 
@@ -63,13 +58,7 @@ describe("/api/users/me", () => {
 
     it("should return 401 and message 'Unauthorized' if no session cookie was passed", async () => {
       const res = await request(global.app).delete(route);
-      expect(res.statusCode).toBe(401);
-      expect(res.body).toMatchObject({
-        title: "Unauthorized",
-        status: 401,
-        type: "urn:problem:unauthorized",
-        instance: "/api/users/me",
-      });
+      expectUnauthorizedError(res);
     });
   });
 
@@ -84,27 +73,14 @@ describe("/api/users/me", () => {
 
     it("should return 401 and 'Unauthorized' if no session cookie was passed", async () => {
       const res = await request(global.app).patch(route);
-      expect(res.statusCode).toBe(401);
-      expect(res.body).toMatchObject({
-        title: "Unauthorized",
-        status: 401,
-        type: "urn:problem:unauthorized",
-        instance: "/api/users/me",
-      });
+      expectUnauthorizedError(res);
     });
 
     it("should return 422 if name wasn't passed", async () => {
       const res = await agent.patch(route).send({
         name: "",
       });
-      expect(res.body).toMatchObject({
-        title: "Validation failed",
-        status: 422,
-        type: "urn:problem:validation-error",
-        instance: "/api/users/me",
-        errors: { source: "body" },
-      });
-      expect(res.body.errors.fieldErrors).toHaveProperty("name");
+      expectValidationError(res);
     });
 
     it("should return 404 if user not found (fake session)", async () => {
@@ -112,17 +88,10 @@ describe("/api/users/me", () => {
       const fakeId = "64ffacacacacacacacacacac"; // валидный ObjectId-формат
 
       await agent.post(`/test/session/${fakeId}`); // сессия сохранена
-      const res = await agent.patch("/api/users/me").send({
+      const res = await agent.patch("/api/user/me").send({
         name: "Updated",
-      }); // requireAuth пропустит
-      expect(res.statusCode).toBe(404);
-      expect(res.body).toMatchObject({
-        title: "Not found",
-        detail: "User not found",
-        status: 404,
-        type: "urn:problem:not-found",
-        instance: "/api/users/me",
       });
+      expectNotFoundError(res);
     });
   });
 });
