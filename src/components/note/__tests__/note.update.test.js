@@ -1,17 +1,26 @@
 const request = require("supertest");
 const it = global.it;
 const { Types } = require("mongoose");
+const {
+  createExpectUnauthorizedError,
+  createExpectBadRequestError,
+  createExpectNotFoundError,
+  createExpectValidationError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
-describe("PATCH /api/notes/:id", () => {
+describe("PATCH /api/note/:id", () => {
   let route;
   let agent;
   let noteId;
   const title = "valid-title";
   const content = "valid-content";
 
+  let expectUnauthorizedError;
+  let expectNotFoundError;
+  let expectValidationError;
   beforeEach(async () => {
     agent = request.agent(global.app);
-    await agent.post("/api/users").send({
+    await agent.post("/api/user").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
@@ -20,12 +29,15 @@ describe("PATCH /api/notes/:id", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    const res = await agent.post("/api/notes").send({
+    const res = await agent.post("/api/note").send({
       title: title,
       content: content,
     });
     noteId = res.body.id;
-    route = `/api/notes/${noteId}`;
+    route = `/api/note/${noteId}`;
+    expectValidationError = createExpectValidationError(route);
+    expectNotFoundError = createExpectNotFoundError(route);
+    expectUnauthorizedError = createExpectUnauthorizedError(route);
   });
 
   it("should update note's title in DB, returns 200 and updated note", async () => {
@@ -90,64 +102,58 @@ describe("PATCH /api/notes/:id", () => {
     );
   });
 
-  it.only("return 422 if passed title empty string", async () => {
+  it("returns 400 status code if passed note id invalid", async () => {
+    const fakeRoute = "/api/note/12345678";
+    const expectBadRequestError = createExpectBadRequestError(fakeRoute);
+    const res = await agent.patch(fakeRoute);
+    expectBadRequestError(res);
+  });
+
+  it("return 422 if passed title empty string", async () => {
     const res = await agent.patch(route).send({
       title: "",
     });
-    expect(res.statusCode).toBe(422);
-    expect(res.body.errors).toHaveProperty("fieldErrors.title");
+    expectValidationError(res, ["title"], 1);
   });
 
-  it.only("return 422 if passed title empty string", async () => {
+  it("return 422 if passed title empty string", async () => {
     const res = await agent.patch(route).send({
       content: "",
     });
-    console.log(res.body);
-    expect(res.statusCode).toBe(422);
-    expect(res.body.errors).toHaveProperty("fieldErrors.content");
+    expectValidationError(res, ["content"], 1);
   });
 
-  it("returns 422 status code if passed note id invalid", async () => {
-    const res = await agent.patch("/api/notes/12345678");
-    expect(res.statusCode).toBe(422);
-    expect(res.body.errors).toHaveProperty("fieldErrors.id");
-  });
-
-  it("returns 400 error if title longer then 120 symbols", async () => {
+  it("returns 422 error if title longer then 120 symbols", async () => {
     const noteData = { title: "a".repeat(121) };
     const res = await agent.patch(route).send(noteData);
-    expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("errors.title");
+    expectValidationError(res, ["title"], 1);
   });
 
-  it("returns 400 error if content longer then 2000 symbols", async () => {
+  it("returns 422 error if content longer then 2000 symbols", async () => {
     const noteData = { content: "a".repeat(2001) };
     const res = await agent.patch(route).send(noteData);
-    console.log(res.body);
-    expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("errors.content");
+    expectValidationError(res, ["content"], 1);
   });
 
-  it("returns 400 status code if passed empty body", async () => {
+  it("returns 422 status code if passed empty body", async () => {
     const res = await agent.patch(route).send({});
-    console.log(res.body);
-    expect(res.statusCode).toBe(400);
+    expectValidationError(res, [], 1);
   });
 
-  it.only("returns 404 status code if note wasn't found in DB", async () => {
+  it("returns 404 status code if note wasn't found in DB", async () => {
     const missingId = new Types.ObjectId().toString();
-    const res = await agent.patch(`/api/notes/${missingId}`).send({
+    const route = `/api/note/${missingId}`;
+    expectNotFoundError = createExpectNotFoundError(route);
+    const res = await agent.patch(route).send({
       title: "changed-title",
     });
-    console.log(res.body);
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toHaveProperty("message", "Note not found");
+    expectNotFoundError(res);
   });
 
   it("returns 404 status code if request send not by note's owner", async () => {
     // create new user with separate agent
     const intrudetAgent = request.agent(global.app);
-    await intrudetAgent.post("/api/users").send({
+    await intrudetAgent.post("/api/user").send({
       name: "User2",
       email: "test2@example.com",
       password: "pass1234",
@@ -160,20 +166,17 @@ describe("PATCH /api/notes/:id", () => {
     const res = await intrudetAgent.patch(route).send({
       title: "changed-title",
     });
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toHaveProperty("message", "Note not found");
+    expectNotFoundError(res);
   });
 
   it("returns 401 status code if request was send by not authorized user", async () => {
     const res = await request(global.app).patch(route);
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toHaveProperty("message", "Unauthorized");
+    expectUnauthorizedError(res);
   });
 
   it("returns 401 status code if user logged out before request send", async () => {
     await agent.post("/api/auth/logout");
     const res = await agent.patch(route);
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toHaveProperty("message", "Unauthorized");
+    expectUnauthorizedError(res);
   });
 });

@@ -1,7 +1,7 @@
 const { ZodValidationError } = require("../errors/errors.class");
 
 function validateBody(schema) {
-  return (req, res, next) => {
+  return (req, _res, next) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
       return next(new ZodValidationError(result.error, "body"));

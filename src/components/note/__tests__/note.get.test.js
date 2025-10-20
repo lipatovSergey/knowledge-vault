@@ -1,15 +1,22 @@
 const request = require("supertest");
 const it = global.it;
 const { Types } = require("mongoose");
+const {
+  createExpectUnauthorizedError,
+  createExpectBadRequestError,
+  createExpectNotFoundError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
-describe("GET /api/notes/:id", () => {
+describe("GET /api/note/:id", () => {
   let route;
   let agent;
   let noteId;
+  let expectNotFoundError;
+  let expectUnauthorizedError;
 
   beforeEach(async () => {
     agent = request.agent(global.app);
-    await agent.post("/api/users").send({
+    await agent.post("/api/user").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
@@ -18,12 +25,14 @@ describe("GET /api/notes/:id", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    const res = await agent.post("/api/notes").send({
+    const res = await agent.post("/api/note").send({
       title: "valid-title",
       content: "valid-content",
     });
     noteId = res.body.id;
-    route = `/api/notes/${noteId}`;
+    route = `/api/note/${noteId}`;
+    expectNotFoundError = createExpectNotFoundError(route);
+    expectUnauthorizedError = createExpectUnauthorizedError(route);
   });
 
   it("return 200 status code and plain note object with id, title, content, createdAt, updatedAt fields", async () => {
@@ -44,22 +53,23 @@ describe("GET /api/notes/:id", () => {
   });
 
   it("returns 400 status code if passed note id invalid", async () => {
-    const res = await agent.get("/api/notes/12345678");
-    expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("errors.id");
+    const route = "/api/note/12345678";
+    const expectBadRequestError = createExpectBadRequestError(route);
+    const res = await agent.get(route);
+    expectBadRequestError(res);
   });
 
   it("returns 404 status code if note wasn't found in DB", async () => {
     const missingId = new Types.ObjectId().toString();
-    const res = await agent.get(`/api/notes/${missingId}`);
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toHaveProperty("message", "Note not found");
+    expectNotFoundError = createExpectNotFoundError(`/api/note/${missingId}`);
+    const res = await agent.get(`/api/note/${missingId}`);
+    expectNotFoundError(res);
   });
 
   it("returns 404 status code if request send not by note's owner", async () => {
     // create new user with separate agent
     const intrudetAgent = request.agent(global.app);
-    await intrudetAgent.post("/api/users").send({
+    await intrudetAgent.post("/api/user").send({
       name: "User2",
       email: "test2@example.com",
       password: "pass1234",
@@ -70,20 +80,17 @@ describe("GET /api/notes/:id", () => {
     });
 
     const res = await intrudetAgent.get(route);
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toHaveProperty("message", "Note not found");
+    expectNotFoundError(res);
   });
 
   it("returns 401 status code if request was send by not authorized user", async () => {
     const res = await request(global.app).get(route);
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toHaveProperty("message", "Unauthorized");
+    expectUnauthorizedError(res);
   });
 
   it("returns 401 status code if user logged out before request send", async () => {
     await agent.post("/api/auth/logout");
     const res = await agent.get(route);
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toHaveProperty("message", "Unauthorized");
+    expectUnauthorizedError(res);
   });
 });

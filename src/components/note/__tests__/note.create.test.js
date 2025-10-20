@@ -1,29 +1,19 @@
 const request = require("supertest");
 const it = global.it;
+const {
+  createExpectValidationError,
+  createExpectUnauthorizedError,
+} = require("../../../../tests/helpers/expect-problem.factories.js");
 
 describe("/api/notes/", () => {
-  const route = "/api/notes";
+  const route = "/api/note";
   let agent;
-  function expectValidationError(res, instance, expectedFields = []) {
-    expect(res.statusCode).toBe(422);
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: instance,
-    });
-    expect(res.body.errors.fieldErrors).toEqual(
-      expect.objectContaining(
-        Object.fromEntries(
-          expectedFields.map((key) => [key, expect.any(Array)]),
-        ),
-      ),
-    );
-  }
+  const expectValidationError = createExpectValidationError(route);
+  const expectUnauthorizedError = createExpectUnauthorizedError(route);
 
   beforeEach(async () => {
     agent = request.agent(global.app);
-    await agent.post("/api/users").send({
+    await agent.post("/api/user").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
@@ -59,7 +49,16 @@ describe("/api/notes/", () => {
       ["id", "title", "content", "createdAt", "updatedAt"].sort(),
     );
 
-    //TODO: check if note was created with get /api/notes/:id
+    const getRes = await agent.get(`${route}/${res.body.id}`);
+    expect(getRes.body).toEqual(
+      expect.objectContaining({
+        id: res.body.id,
+        title: note.title,
+        content: note.content,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }),
+    );
   });
 
   it.each([
@@ -69,7 +68,6 @@ describe("/api/notes/", () => {
     "should throw 422 error if empty %s was passed in note data",
     async (_, invalidData, expectedFields) => {
       const res = await agent.post(route).send(invalidData);
-      expect(res.statusCode).toBe(422);
       expectValidationError(res, expectedFields);
     },
   );
@@ -81,23 +79,9 @@ describe("/api/notes/", () => {
     "should throw 422 error if %s was not passed in note data",
     async (_, invalidData, expectedFields) => {
       const res = await agent.post(route).send(invalidData);
-      expect(res.statusCode).toBe(422);
-      expect(res.statusCode).toBe(422);
       expectValidationError(res, expectedFields);
     },
   );
-
-  it("throws 401 error if user not authorized", async () => {
-    const noteData = { title: "valid-title", content: "valid-content" };
-    const res = await request(global.app).post(route).send(noteData);
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toMatchObject({
-      title: "Unauthorized",
-      status: 401,
-      type: "urn:problem:unauthorized",
-      instance: "/api/notes",
-    });
-  });
 
   it("throws 422 error if title longer then 120 symbols", async () => {
     const noteData = { title: "a".repeat(121), content: "valid-content" };
@@ -111,5 +95,11 @@ describe("/api/notes/", () => {
     const res = await agent.post(route).send(noteData);
     expect(res.statusCode).toBe(422);
     expectValidationError(res, ["content"]);
+  });
+
+  it("throws 401 error if user not authorized", async () => {
+    const noteData = { title: "valid-title", content: "valid-content" };
+    const res = await request(global.app).post(route).send(noteData);
+    expectUnauthorizedError(res);
   });
 });

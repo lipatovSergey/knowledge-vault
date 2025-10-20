@@ -143,7 +143,6 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass",
       newPasswordConfirmation: "pass",
     });
-    console.log(res.body);
     expectValidationError(res, ["newPassword", "newPasswordConfirmation"]);
   });
 });
