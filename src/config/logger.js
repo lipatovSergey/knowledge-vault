@@ -1,5 +1,5 @@
 const { createLogger, format, transports } = require("winston");
-const { NODE_ENV } = require("./env");
+const NODE_ENV = process.env.NODE_ENV ?? "development";
 
 const prettyFormat = format.printf(({ timestamp, level, message, ...meta }) => {
   const metaString = Object.entries(meta)

@@ -36,6 +36,16 @@ function createNoteService({ noteRepo }) {
 
       return toNoteDto(updatedNote);
     },
+
+    // use-case: get all user's notes by user's id
+    async getNotesList(userId) {
+      const notesList = await noteRepo.getNotesList(userId);
+      if (!notesList) {
+        throw new NotFoundError();
+      }
+
+      return notesList.map((note) => toNoteDto(note));
+    },
   };
 }
 

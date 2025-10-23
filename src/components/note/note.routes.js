@@ -15,6 +15,9 @@ router.post(
   noteController.createNote,
 );
 
+// get list of all user's notes
+router.get("/", requireAuth, noteController.getNotesList);
+
 router.get(
   "/:id",
   requireAuth,

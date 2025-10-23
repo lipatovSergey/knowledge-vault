@@ -1,14 +1,9 @@
 {
-	"port": 3000,
-	"db": {
-		"uri": "mongodb://localhost:27017/knowledge-vault-dev"
-	},
-	"session_secret": "",
-	"node_env": "development",
-	"frontend": {
-		"url": ""
-	},
-	"auth": {
-		"reset_token_ttl_ms": 900000
-	}
+  "port": 3000,
+  "auth": {
+    "reset_token_ttl_ms": 900000
+  },
+  "db": {
+    "name": "knowledge-vault-dev"
+  }
 }

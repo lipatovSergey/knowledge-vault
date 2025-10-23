@@ -33,6 +33,12 @@ const noteRepo = {
     ).lean();
     return result;
   },
+
+  // gets all user's notes sorted from newest to oldest
+  async getNotesList(userId) {
+    const result = await NoteModel.find({ userId }).sort({ updatedAt: -1 });
+    return result;
+  },
 };
 
 module.exports = noteRepo;

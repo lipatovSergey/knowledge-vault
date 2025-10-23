@@ -53,6 +53,18 @@ const noteController = {
       next(error);
     }
   },
+
+  // gets array of all user's notes
+  async getNotesList(req, res, next) {
+    try {
+      const userId = req.session.userId;
+      const notesList = await noteService.getNotesList(userId);
+
+      res.status(200).json(notesList);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = noteController;

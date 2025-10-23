@@ -1,6 +1,6 @@
 const express = require("express");
 const errorHandler = require("./middleware/error-handler.middleware");
-const { NODE_ENV } = require("./config/env");
+const NODE_ENV = process.env.NODE_ENV ?? "development";
 
 const app = express();
 app.use(express.json());

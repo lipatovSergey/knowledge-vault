@@ -1,14 +1,6 @@
 {
-	"port": "PORT",
-	"db": {
-		"uri": "MONGO_URI"
-	},
-	"session_secret": "SESSION_SECRET",
-	"node_env": "NODE_ENV",
-	"frontend": {
-		"url": "FRONTEND_URL"
-	},
-	"auth": {
-		"reset_token_ttl_ms": "RESET_TOKEN_TTL_MS"
-	}
+  "db": {
+    "uri": "MONGO_URI"
+  },
+  "session_secret": "SESSION_SECRET"
 }
