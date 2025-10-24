@@ -64,6 +64,7 @@ For production set environment variables outside the repository:
 ### HTTP Validation
 
 - Separate middleware validates specific request segments: `validateBody`, `validateParams`, `validateResetToken`, etc.
+
 - Each middleware stores validated data in its own namespace (`req.validatedBody`, `req.validatedParams`, `req.validatedResetToken`) to avoid conflicts and ease debugging.
 - Controllers read only validated data; the order of middleware in routes reflects the transformation pipeline.
 - Adding a new input source means writing a dedicated middleware and documenting its namespace so the team always knows where to look.
@@ -96,21 +97,21 @@ Cross-cutting utilities (sessions, crypto, logging, validation helpers) remain s
 
 ## API Overview
 
-| Area  | Method & Path                 | Purpose                                             | Access                |
-| ----- | ----------------------------- | --------------------------------------------------- | --------------------- |
-| Auth  | `POST /api/auth/login`        | Login with session regeneration                     | Guest only            |
-|       | `POST /api/auth/logout`       | Destroy session, clear cookie                       | Authenticated         |
-|       | `POST /api/auth/password/forgot` | Start password reset with neutral response         | Public                |
-|       | `POST /api/auth/password/reset`  | Validate token, change password, destroy session   | Public (token-based)  |
-| Users | `POST /api/user`              | Register user with Zod validation                   | Public                |
-|       | `GET /api/user/me`            | Retrieve own profile                                | Authenticated         |
-|       | `PATCH /api/user/me`          | Update display name                                 | Authenticated         |
-|       | `DELETE /api/user/me`         | Self-delete account and logout                      | Authenticated         |
-| Notes | `POST /api/note`              | Create note                                         | Authenticated         |
-|       | `GET /api/note`               | List all notes for current user                     | Authenticated         |
-|       | `GET /api/note/:id`           | Fetch single note                                   | Owner                 |
-|       | `PATCH /api/note/:id`         | Update title/content                                | Owner                 |
-|       | `DELETE /api/note/:id`        | Delete note                                         | Owner                 |
+| Area  | Method & Path                    | Purpose                                          | Access               |
+| ----- | -------------------------------- | ------------------------------------------------ | -------------------- |
+| Auth  | `POST /api/auth/login`           | Login with session regeneration                  | Guest only           |
+|       | `POST /api/auth/logout`          | Destroy session, clear cookie                    | Authenticated        |
+|       | `POST /api/auth/password/forgot` | Start password reset with neutral response       | Public               |
+|       | `POST /api/auth/password/reset`  | Validate token, change password, destroy session | Public (token-based) |
+| Users | `POST /api/user`                 | Register user with Zod validation                | Public               |
+|       | `GET /api/user/me`               | Retrieve own profile                             | Authenticated        |
+|       | `PATCH /api/user/me`             | Update display name                              | Authenticated        |
+|       | `DELETE /api/user/me`            | Self-delete account and logout                   | Authenticated        |
+| Notes | `POST /api/note`                 | Create note                                      | Authenticated        |
+|       | `GET /api/note`                  | List all notes for current user                  | Authenticated        |
+|       | `GET /api/note/:id`              | Fetch single note                                | Owner                |
+|       | `PATCH /api/note/:id`            | Update title/content                             | Owner                |
+|       | `DELETE /api/note/:id`           | Delete note                                      | Owner                |
 
 Error responses follow RFC 7807 (Problem+JSON) with fields `title`, `status`, `type`, `detail`, `instance`, and `errors` for validation issues.
 
