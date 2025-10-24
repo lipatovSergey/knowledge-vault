@@ -1,5 +1,6 @@
-// tests/test.setup.js
 jest.setTimeout(60_000); // first start need to download binary
+
+// Ensure the app runs in the expected mode even when tests aren’t launched via the npm scripts.
 process.env.NODE_ENV = "test";
 
 const mongoose = require("mongoose");

@@ -1,11 +1,14 @@
 const express = require("express");
 const errorHandler = require("./middleware/error-handler.middleware");
-const NODE_ENV = process.env.NODE_ENV ?? "development";
+const NODE_ENV = process.env.NODE_ENV;
+if (!NODE_ENV) {
+  throw new Error("NODE_ENV is not set. Use npm scripts to run the app");
+}
 
 const app = express();
 app.use(express.json());
 
-console.log(`server running in ${NODE_ENV} mode`);
+console.log(`Server running in ${NODE_ENV} mode.`);
 // session
 const { sessionMiddleware } = require("./middleware/session.middleware");
 app.use(sessionMiddleware);
