@@ -1,7 +1,11 @@
+const eslintConfig = require("@eslint/js");
 const nodePlugin = require("eslint-plugin-n");
+const jestPlugin = require("eslint-plugin-jest");
 const jsdoc = require("eslint-plugin-jsdoc");
+const globals = require("globals");
 // eslint.config.js
 module.exports = [
+  eslintConfig.configs.recommended,
   nodePlugin.configs["flat/recommended-script"],
   jsdoc.configs["flat/recommended"],
   {
@@ -10,9 +14,8 @@ module.exports = [
       ecmaVersion: "latest",
       sourceType: "commonjs",
       globals: {
+        ...globals.node,
         console: "readonly",
-        module: "readonly",
-        require: "readonly",
       },
     },
     linterOptions: {
@@ -20,7 +23,10 @@ module.exports = [
     },
     plugins: { jsdoc },
     rules: {
-      "no-unused-vars": "warn",
+      "no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "no-redeclare": "error",
       semi: ["error", "always"],
       quotes: ["error", "double"],
@@ -31,6 +37,32 @@ module.exports = [
       "jsdoc/require-returns": "warn",
       "jsdoc/require-param-description": "warn",
       "jsdoc/require-jsdoc": ["off", { publicOnly: true }],
+    },
+  },
+  {
+    files: ["**/*.test.js", "**/__tests__/**/*.js", "tests/**/*.js"],
+    ...jestPlugin.configs["flat/recommended"],
+    languageOptions: {
+      ...jestPlugin.configs["flat/recommended"].languageOptions,
+      globals: {
+        ...jestPlugin.configs["flat/recommended"].languageOptions.globals,
+        ...globals.node,
+      },
+    },
+    rules: {
+      "jest/expect-expect": [
+        "warn",
+        {
+          assertFunctionNames: [
+            "expect",
+            "expectValidationError",
+            "expectConflictError",
+            "expectUnauthorizedError",
+            "expectNotFoundError",
+            "expectBadRequestError",
+          ],
+        },
+      ],
     },
   },
 ];

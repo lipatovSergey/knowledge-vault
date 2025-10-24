@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * Base application error that formats responses according to RFC 7807.
+ * Base application error that formats responses according to RFC7807.
  * @see https://datatracker.ietf.org/doc/html/rfc7807
  */
 class AppError extends Error {

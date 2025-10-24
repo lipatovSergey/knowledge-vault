@@ -1,5 +1,4 @@
 const request = require("supertest");
-const it = global.it;
 const {
   createExpectUnauthorizedError,
 } = require("../../../../tests/helpers/expect-problem.factories.js");
