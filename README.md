@@ -6,7 +6,7 @@ Backend project for personal knowledge management built on the MERN stack. The c
 
 ## Quick Overview
 
-- Node.js 18+, Express 5, MongoDB/Mongoose, Jest + Supertest.
+- Node.js 20+, Express 5, MongoDB/Mongoose, Jest + Supertest.
 - Layered architecture (routes → controllers → services → repositories) separates HTTP, business logic, and persistence concerns.
 - Session-based authentication with secure reset tokens, session regeneration, and neutral responses.
 - Development was driven by TDD and inspired by [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices/tree/master).
@@ -26,7 +26,7 @@ Backend project for personal knowledge management built on the MERN stack. The c
 
 ### Requirements
 
-- Node.js ≥ 18.18
+- Node.js ≥ 20
 - MongoDB (local instance or Atlas cluster)
 
 ### Installation
@@ -138,7 +138,7 @@ Error responses follow RFC 7807 (Problem+JSON) with fields `title`, `status`, `t
 
 ## Local Run Checklist
 
-1. Install Node.js ≥ 18.18 and MongoDB (or use an Atlas cluster).
+1. Install Node.js ≥ 20 and MongoDB (or use an Atlas cluster).
 2. `npm install`
 3. Configure environment variables (see “Configuration” above).
 4. `npm run dev` to start the development server with nodemon.
