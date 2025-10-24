@@ -1,169 +1,220 @@
 # Knowledge Vault
 
-Backend-проект для персонального управления знаниями на стеке MERN. Репозиторий демонстрирует производственные подходы к Express 5, сессионной аутентификации, безопасному восстановлению пароля и тестированию через Jest + Supertest.
+Backend project for personal knowledge management built on the MERN stack. The code base showcases production-grade practices for Express 5, session-based authentication, secure password recovery, and integration testing with Jest + Supertest.
 
 ---
 
-## Кратко о продукте
+## Quick Overview
 
 - Node.js 18+, Express 5, MongoDB/Mongoose, Jest + Supertest.
-- Многослойная архитектура (routes → controllers → services → repositories), которая разделяет HTTP, бизнес-логику и работу с БД.
-- Сессионная аутентификация с безопасным восстановлением пароля: хэшированные токены, регенерация сессии, нейтральные ответы.
-- При разработке я использовал TDD подход и опирался на лучшие практики [NODE.js Best Practices](https://github.com/goldbergyoni/nodebestpractices/tree/master)
+- Layered architecture (routes → controllers → services → repositories) separates HTTP, business logic, and persistence concerns.
+- Session-based authentication with secure reset tokens, session regeneration, and neutral responses.
+- Development was driven by TDD and inspired by [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices/tree/master).
 
 ---
 
-## Ключевые возможности
+## Key Features
 
-- **Жизненный цикл пользователя**: регистрация, логин/логаут, профиль `me`, обновление имени, сессии с express-session.
-- **Восстановление пароля**: селектор/валидатор, сохранённые токены в MongoDB, уничтожение после применения, тестовый почтовый ящик.
-- **Домен знаний**: заметки с тегами и связями (сейчас реализовано создание; структура готова для расширения).
-- **Инженерные практики**: централизованный error handler, логирование через Winston, санитизация тел запросов, graceful shutdown.
+- **User lifecycle**: registration, login/logout, profile `me`, name update, sessions implemented with `express-session`.
+- **Password recovery**: selector/validator token pair stored in MongoDB, one-time usage, neutral responses, in-memory mailer for tests.
+- **Notes**: full CRUD for a single note plus a list endpoint scoped to the authenticated user.
+- **Engineering practices**: centralized RFC 7807 error handler, Winston logging, sanitized request logging, graceful shutdown hooks.
 
 ---
 
-## Обзор архитектуры
+## Quick Start
 
-### Валидация HTTP-запросов
+### Requirements
 
-- Валидация разделена на специализированные middleware по сегментам запроса: `validateBody`, `validateResetToken` и т.д. Каждое отвечает только за свою часть пайплайна.
-- Каждое middleware пишет результат в отдельный канал (`req.validatedBody`, `req.validatedResetToken`, `req.validatedParams` и др.), что предотвращает конфликт данных и упрощает отладку.
-- Контроллеры читают из соответствующего канала, а порядок подключения middleware в роутинге явно отражает цепочку подготовки данных.
-- При добавлении новых источников входных данных создаём новый канал и middleware, а соглашение фиксируем в документации, чтобы команда всегда знала, где искать валидированную информацию.
+- Node.js ≥ 18.18
+- MongoDB (local instance or Atlas cluster)
+
+### Installation
+
+```bash
+npm install
+```
+
+### Configuration
+
+The project uses the `config` package. For local development create `.env.development` next to `package.json`:
+
+```env
+MONGO_URI=mongodb://localhost:27017/knowledge-vault-dev
+SESSION_SECRET=dev-secret
+FRONTEND_URL=http://localhost:3000
+```
+
+For production set environment variables outside the repository:
+
+- `MONGO_URI` — connection string (cluster + database alias)
+- `SESSION_SECRET` — session signing secret
+- `FRONTEND_URL` — base URL used in password-reset emails
+
+### NPM Scripts
+
+- `npm run dev` — development mode (`NODE_ENV=development`, `nodemon`)
+- `npm test` — Jest + Supertest with in-memory MongoDB (`mongodb-memory-server`)
+- `npm start` — production mode (`NODE_ENV=production`)
+
+---
+
+## Architecture Overview
+
+### HTTP Validation
+
+- Separate middleware validates specific request segments: `validateBody`, `validateParams`, `validateResetToken`, etc.
+- Each middleware stores validated data in its own namespace (`req.validatedBody`, `req.validatedParams`, `req.validatedResetToken`) to avoid conflicts and ease debugging.
+- Controllers read only validated data; the order of middleware in routes reflects the transformation pipeline.
+- Adding a new input source means writing a dedicated middleware and documenting its namespace so the team always knows where to look.
 
 ```
-HTTP запрос
+HTTP Request
     ↓
 Routes (Express Router)
-    ↓         ↘ middleware: сессии, валидация, auth-гарды
-Controllers (принимают запрос, вызывают сервисы)
+    ↓        ↘ middleware: sessions, validation, auth guards
+Controllers (accept request, call services)
     ↓
-Services (бизнес-правила, безопасность, оркестрация)
+Services (business rules, security, orchestration)
     ↓
-Repositories (доступ к MongoDB через Mongoose)
+Repositories (MongoDB access via Mongoose)
     ↓
 MongoDB
 ```
 
-Кросс-срезовые утилиты (работа с сессией, крипто, логирование, валидация) остаются статeless и переиспользуемыми.
+Cross-cutting utilities (sessions, crypto, logging, validation helpers) remain stateless and reusable.
 
 ---
 
-## Основные модули
+## Core Modules
 
-- **Auth** (`src/components/auth`): логин/логаут, забытый пароль, регенерация сессий.
-- **Users** (`src/components/users`): регистрация, профиль, хеширование пароля, валидация через Zod.
-- **Notes** (`src/components/notes`): схема заметок и use-case создания, готовый фундамент для списка/фильтров/шеринга.
-
----
-
-## Обзор API
-
-| Область | Метод и путь                     | Назначение                                        | Доступ                  |
-| ------- | -------------------------------- | ------------------------------------------------- | ----------------------- |
-| Auth    | `POST /api/auth/login`           | Логин с регенерацией session ID                   | Только гость            |
-|         | `POST /api/auth/logout`          | Завершение сессии и очистка cookie                | Аутентифицирован        |
-|         | `POST /api/auth/password/forgot` | Нейтральный запуск восстановления пароля          | Публично                |
-|         | `POST /api/auth/password/reset`  | Проверка токена, смена пароля, уничтожение сессии | Публично (по токену)    |
-| Users   | `POST /api/users`                | Регистрация с валидаторами Zod                    | Публично                |
-|         | `GET /api/users/me`              | Получение собственного профиля                    | Аутентифицирован        |
-|         | `PATCH /api/users/me`            | Обновление имени                                  | Аутентифицирован        |
-|         | `DELETE /api/users/me`           | Самостоятельное удаление аккаунта + logout        | Аутентифицирован        |
-| Notes   | `POST /api/notes`                | Создание заметки (title/content/tags/links)       | Требует подключить auth |
-
-Примеры запросов/ответов можно добавить при финальной полировке.
+- **Auth** (`src/components/auth`) — login/logout, password reset flow, session regeneration.
+- **Users** (`src/components/users`) — registration, profile management, password hashing, Zod validation.
+- **Note** (`src/components/note`) — create/read/update/delete operations and the user-scoped notes list.
 
 ---
 
-## Безопасность и защита данных
+## API Overview
 
-- **Сессии**: `express-session` + `connect-mongo`. Гарды `requireGuest`/`requireAuth`. `regenerateSession` предотвращает фиксацию, `destroySession` оборачивает callback API в промис.
-- **Пароли**: `bcrypt` с настраиваемыми salt rounds. Проверки пароля вынесены в сервисы для единообразных ошибок.
-- **Reset-токены**: пара selector/validator. Валидатор хранится в виде bcrypt-хэша, TTL-индексы чистят устаревшее, тайминг-атаки нивелируются «фальшивым» хэшем.
-- **Валидация**: Zod-схемы, middleware складывает данные в `req.validatedData`.
-- **Логирование**: Winston пишет в консоль (кроме тестов) и файлы, тела запросов обрезаются от секретов.
+| Area  | Method & Path                 | Purpose                                             | Access                |
+| ----- | ----------------------------- | --------------------------------------------------- | --------------------- |
+| Auth  | `POST /api/auth/login`        | Login with session regeneration                     | Guest only            |
+|       | `POST /api/auth/logout`       | Destroy session, clear cookie                       | Authenticated         |
+|       | `POST /api/auth/password/forgot` | Start password reset with neutral response         | Public                |
+|       | `POST /api/auth/password/reset`  | Validate token, change password, destroy session   | Public (token-based)  |
+| Users | `POST /api/user`              | Register user with Zod validation                   | Public                |
+|       | `GET /api/user/me`            | Retrieve own profile                                | Authenticated         |
+|       | `PATCH /api/user/me`          | Update display name                                 | Authenticated         |
+|       | `DELETE /api/user/me`         | Self-delete account and logout                      | Authenticated         |
+| Notes | `POST /api/note`              | Create note                                         | Authenticated         |
+|       | `GET /api/note`               | List all notes for current user                     | Authenticated         |
+|       | `GET /api/note/:id`           | Fetch single note                                   | Owner                 |
+|       | `PATCH /api/note/:id`         | Update title/content                                | Owner                 |
+|       | `DELETE /api/note/:id`        | Delete note                                         | Owner                 |
+
+Error responses follow RFC 7807 (Problem+JSON) with fields `title`, `status`, `type`, `detail`, `instance`, and `errors` for validation issues.
 
 ---
 
-## Тестирование и качество
+## Security & Data Protection
 
-- **Jest + Supertest**: интеграционные сценарии для user/auth/password reset.
-- **In-memory Mongo**: `mongodb-memory-server` обеспечивает скорость и детерминированность; хуки очищают коллекции между тестами.
-- **Тестовый почтовый ящик**: имитация доставки писем для проверок без внешних зависимостей.
-- **ESLint**: flat-конфиг + `eslint-plugin-n`; строгие правила для Node и CommonJS.
-- **Devlog**: `docs/devlog/*` фиксирует TDD-циклы, дизайн-решения и компромиссы.
+- **Sessions**: `express-session` + `connect-mongo`, `requireGuest`/`requireAuth` guards, session regeneration on login, destroy helper that wraps callback API in a promise.
+- **Passwords**: `bcrypt` with configurable salt rounds, password checks centralized in services to provide consistent error messages.
+- **Reset tokens**: selector/validator pair, validator stored as bcrypt hash, TTL index cleans expired tokens, fake hashes mitigate timing attacks.
+- **Validation**: Zod schemas; middleware writes results to `req.validatedBody` / `req.validatedParams` / `req.validatedResetToken`.
+- **Logging**: Winston transports log structured events (without secrets) to console (except test) and files.
 
 ---
 
-## Запуск локально
+## Testing & Quality
 
-1. Установите Node.js ≥ 18.18 и MongoDB (или используйте облачный кластер/локальный инстанс).
+- **Jest + Supertest** cover user, auth, and password reset flows end-to-end.
+- **Mongo-memory-server** provides fast deterministic database for tests; hooks wipe collections between cases.
+- **In-memory mailer** allows asserting emails without external SMTP.
+- **ESLint** flat config with `eslint-plugin-n`, `eslint-plugin-jest`, `eslint-plugin-jsdoc`; strict rules for Node/CommonJS.
+- **Devlog** (`docs/devlog/*`) records TDD iterations, design decisions, and trade-offs.
+
+---
+
+## Local Run Checklist
+
+1. Install Node.js ≥ 18.18 and MongoDB (or use an Atlas cluster).
 2. `npm install`
-3. Настройте переменные окружения (см. раздел «Конфигурация»).
-4. `npm run dev` — запуск dev-сервера с nodemon.
-5. `npm test` — Jest в режиме in-band с использованием in-memory Mongo.
+3. Configure environment variables (see “Configuration” above).
+4. `npm run dev` to start the development server with nodemon.
+5. `npm test` to run Jest in-band against in-memory MongoDB.
 
 ---
 
-## Конфигурация
+## Configuration
 
-Конфиг читается через пакет `config`: `config/default.json`, `config/test.json` + переменные окружения. Маппинг:
+The `config` package composes settings from:
 
-| Ключ конфигурации         | Переменная окружения | Назначение                                     |
-| ------------------------- | -------------------- | ---------------------------------------------- |
-| `port`                    | `PORT`               | HTTP-порт                                      |
-| `db.uri`                  | `MONGO_URI`          | Строка подключения к MongoDB                   |
-| `session_secret`          | `SESSION_SECRET`     | Секрет для подписи сессий                      |
-| `node_env`                | `NODE_ENV`           | Режим (`development` / `production`)           |
-| `frontend.url`            | `FRONTEND_URL`       | Базовый URL фронтенда для ссылок сброса пароля |
-| `auth.reset_token_ttl_ms` | `RESET_TOKEN_TTL_MS` | Время жизни токена сброса пароля (мс)          |
+- `config/default.json` — baseline values (port, `db.name`, reset token TTL).
+- `config/test.json` — test-only overrides (port, test session secret).
+- `config/production.json` — production database name.
+- `config/custom-environment-variables.json` — mapping for `PORT`, `MONGO_URI`, `SESSION_SECRET`, optionally `FRONTEND_URL`.
+
+`MONGO_URI` and `SESSION_SECRET` **must** be provided via `.env.*` or environment variables; the app fails fast if they are missing.
 
 ---
 
-## Логирование и наблюдаемость
+## Logging & Observability
 
-- Форматированные логи с timestamp, уровнем и метаданными (без секретов).
-- Запись в `logs/error.log` и `logs/combined.log`; в тестовом режиме консольный транспорт отключён.
-- Error handler различает операционные `AppError` и неизвестные исключения, скрывает stack-trace в production.
+- Structured logs with timestamp, level, and metadata (sanitized payloads).
+- File transports: `logs/error.log` and `logs/combined.log`; console output is disabled in test mode.
+- Central error handler distinguishes operational `AppError` subclasses from unexpected exceptions and hides stack traces in production.
 
 ---
 
-## Структура проекта
+## Project Structure
 
 ```
-Будет описана по завершению первой версии проекта
+src/
+  app.js            # Express app factory
+  server.js         # MongoDB connection and HTTP server bootstrap
+  components/
+    auth/           # Routes, controllers, services for authentication
+    users/          # User domain use cases
+    note/           # Note CRUD and list endpoints
+  config/           # Winston logger, env exposure, DB connection
+  middleware/       # Sessions, validation, auth guards
+  errors/           # AppError hierarchy + Problem+JSON integration
+  utils/            # Session helpers, random util, body sanitizer
+tests/
+  helpers/          # Expect factories, in-memory mail helper
+  utils/            # In-memory Mongo bootstrap
 ```
 
 ---
 
-## Практики разработки
+## Engineering Practices
 
-- **TDD**: каждая фича стартует с красного теста → минимальная реализация → рефакторинг.
-- **Многослойность**: контроллеры тонкие, бизнес-правила в сервисах, доступ к БД в репозиториях.
-- **Dependency injection**: сервисы получают репозитории и утилиты через параметры, что упрощает подмену/моки.
-- **Документация**: README, devlog и TODO помогают отследить мотивацию решений и планы.
+- **TDD**: features start with a red test → minimal implementation → refactor.
+- **Layered design**: thin controllers, business logic in services, persistence in repositories.
+- **Dependency injection**: services accept repositories/utils as dependencies to simplify mocking.
+- **Documentation**: README, devlog, and TODOs capture reasoning and next steps.
 
 ---
 
 ## Roadmap
 
-1. Заменить хардкод `userId` в `note.controller` на данные из сессии (после подключения auth-мидлвари).
-2. Расширить домен заметок: список, фильтры, совместное использование.
-3. Подключить реальный почтовый транспорт (Nodemailer + SMTP/Ethereal) за интерфейсом `MailService`.
-4. Добавить rate limiting (логин, восстановление пароля) и управление активными сессиями.
-5. Добавить метрики запросов и аудит логов.
+1. Extend notes module (summary view, filters, bulk operations).
+2. Swap in a real mail transport (Nodemailer + SMTP/Ethereal) behind `MailService`.
+3. Introduce rate limiting (login, password reset) and active session management.
+4. Add observability (healthcheck, Prometheus metrics) and audit logging.
+5. Produce an OpenAPI contract and wire up minimal CI/CD.
 
 ---
 
-## Известные ограничения
+## Known Limitations
 
-- Notes-роут пока без auth-гарда и тестового покрытия — требуется доработка.
-- Почтовая доставка реализована через in-memory стор — нужен реальный транспорт и шаблоны писем.
-- Cookie `secure: false`; перед продом переключить на `true` и обеспечить HTTPS.
-- Пока нет Docker/CI — планируется для production-ready поставки.
+- Mail delivery relies on in-memory store; a production-ready transport/shaping layer is still required.
+- Session cookie currently has `secure: false`; switch to `true` and serve over HTTPS before going live.
+- Docker/CI pipeline is not yet part of the repository; planned for the next iteration.
 
 ---
 
-## Дополнительные материалы
+## Additional Materials
 
-- **Devlog**: `docs/devlog/*` — дневники TDD (например, фича восстановления пароля от 2025-08-25).
+- **Devlog**: `docs/devlog/*` — TDD journals (e.g., password reset feature notes).
