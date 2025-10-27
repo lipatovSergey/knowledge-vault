@@ -10,10 +10,10 @@ const router = express.Router();
 
 // login user
 router.post(
-	"/login",
-	requireGuest,
-	validateBody(schemas.userLogin),
-	authController.loginUser
+  "/login",
+  requireGuest,
+  validateBody(schemas.userLogin),
+  authController.loginUser,
 );
 
 // log-out authenticated (logged in) user
@@ -21,17 +21,17 @@ router.post("/logout", requireAuth, authController.logoutUser);
 
 // user forgot his password
 router.post(
-	"/password/forgot",
-	validateBody(schemas.passwordForgot),
-	authController.forgotPassword
+  "/password/forgot",
+  validateBody(schemas.passwordForgot),
+  authController.forgotPassword,
 );
 
 // reset user's password
 router.post(
-	"/password/reset",
-	validateResetToken(schemas.passwordResetToken),
-	validateBody(schemas.passwordResetPasswords),
-	authController.resetPassword
+  "/password/reset",
+  validateResetToken(schemas.passwordResetToken),
+  validateBody(schemas.passwordResetPasswords),
+  authController.resetPassword,
 );
 
 module.exports = router;

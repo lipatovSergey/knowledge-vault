@@ -1,24 +1,33 @@
 // src/middleware/error-handler.middleware.js
-const { AppError } = require("../errors/errors.class");
-const logger = require("../config/logger");
-const sanitizeBody = require("../utils/sanitize-body.util");
-const { NODE_ENV } = require("../config/env");
+import { AppError } from "../errors/errors.class";
+import type { Request, Response, NextFunction } from "express";
+const NODE_ENV = process.env.NODE_ENV;
 
-function errorHandler(err, req, res, next) {
+const normalizeUnknownError = (err: unknown): Error => {
+  if (err instanceof Error) return err;
+  if (typeof err === "string") return new Error(err);
+  // Fallback if JSON.stringify will fall for some reason
+  const serialized = (() => {
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return "[unserializable error]";
+    }
+  })();
+
+  return new Error(serialized || "Unexpected Error");
+};
+
+// TODO: Вернуть логирование через Winsonon и sanitize body
+
+function errorHandler(
+  err: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   // Если заголовки уже отправлены — отдаем управление встроенному обработчику Express
   if (res.headersSent) return next(err);
-
-  const level = err instanceof AppError ? err.level : "error";
-
-  // Логируем всегда
-  logger[level](err.message, {
-    name: err.name,
-    stack: err.stack,
-    statusCode: err.statusCode || 500,
-    path: req.originalUrl,
-    method: req.method,
-    body: sanitizeBody(req.body),
-  });
 
   // Известные (операционные) ошибки нашего приложения → RFC 7807
   if (err instanceof AppError) {
@@ -36,24 +45,22 @@ function errorHandler(err, req, res, next) {
     return res.status(err.statusCode).json(problem);
   }
 
-  // Неизвестные/необработанные ошибки → 500 в формате RFC 7807
-  const problem500 = {
-    title:
-      NODE_ENV !== "production"
-        ? "Error unknown by custom error handler"
-        : "Internal Server Error",
+  const normalizedError = normalizeUnknownError(err);
+
+  const problem = {
+    title: normalizedError.name,
     detail:
       NODE_ENV !== "production"
-        ? err.message || "Unexpected error"
+        ? normalizedError.message
         : "Internal Server Error",
     status: 500,
     type: "about:blank",
     instance: req.originalUrl,
-    ...(NODE_ENV !== "production" && { stack: err.stack }),
+    ...(NODE_ENV !== "production" ? { stack: normalizedError.stack } : {}),
   };
 
   res.type("application/problem+json");
-  return res.status(500).json(problem500);
+  return res.status(500).json(problem);
 }
 
-module.exports = errorHandler;
+export default errorHandler;

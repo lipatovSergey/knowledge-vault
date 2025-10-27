@@ -1,4 +1,7 @@
 {
   "port": 3001,
-  "session_secret": "test-secret"
+  "session_secret": "test-secret",
+  "db": {
+    "name": "knowledge-vault-test"
+  }
 }

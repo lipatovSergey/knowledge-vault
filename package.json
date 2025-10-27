@@ -8,9 +8,10 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "start": "NODE_ENV=production node src/server.js",
+    "start": "NODE_ENV=production node dist/server.js",
+    "build": "tsc --project tsconfig.build.json",
     "test": "NODE_ENV=test jest --runInBand",
-    "dev": "NODE_ENV=development nodemon src/server.js",
+    "dev": "NODE_ENV=development tsx watch src/server.ts",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -30,7 +31,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@types/config": "^3.3.5",
+    "@types/connect-mongo": "^3.1.2",
+    "@types/express": "^5.0.4",
+    "@types/express-session": "^1.18.2",
     "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.1",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9.32.0",
     "eslint-plugin-jest": "^29.0.1",
     "eslint-plugin-jsdoc": "^61.1.4",
@@ -39,6 +46,9 @@
     "jest": "^30.0.5",
     "mongodb-memory-server": "^10.2.0",
     "nodemon": "^3.1.10",
-    "supertest": "^7.1.4"
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }

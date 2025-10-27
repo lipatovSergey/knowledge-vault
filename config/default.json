@@ -6,5 +6,6 @@
   "db": {
     "name": "knowledge-vault-dev"
   },
-  "session_secret": "test-secret"
+  "session_secret": "test-secret",
+  "fronted_url": "localhost:2173"
 }
