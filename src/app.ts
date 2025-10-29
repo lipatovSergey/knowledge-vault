@@ -26,9 +26,11 @@ app.use("/api/auth", authRoutes);
 
 // test routes
 if (NODE_ENV === "test") {
-  import("../tests/test.routes").then(({ default: testRoutes }) => {
-    app.use("/test", testRoutes);
-  });
+  const { testRoutes } = require("../tests/test.routes.js");
+  app.use("/test", testRoutes);
+  // import("../tests/test.routes").then(({ default: testRoutes }) => {
+  //   app.use("/test", testRoutes);
+  // });
 }
 
 app.use(errorHandler);

@@ -1,13 +1,17 @@
-import { NoteDocument, NoteModel, NoteSchemaType } from "./note.model";
-import { CreateNoteParams, UpdateNotePayload } from "./note.types";
-import { MongoId, WithId } from "../../types/mongo";
+import {
+  NoteModel,
+  type NoteDocument,
+  type NoteSchemaType,
+} from "./note.model";
+import type { CreateNoteParams, UpdateNotePayload } from "./note.types";
+import type { MongoId, WithId } from "../../types/mongo";
 
 // methods of note
 const noteRepo = {
   // saves new document to MongoDB and return it
   async create(noteData: CreateNoteParams): Promise<NoteDocument> {
     const newNote = new NoteModel(noteData);
-    return await newNote.save();
+    return newNote.save();
   },
 
   // finds and returns note info from DB. Only for owner
@@ -46,4 +50,5 @@ const noteRepo = {
   },
 };
 
+export type NoteRepository = typeof noteRepo;
 export default noteRepo;

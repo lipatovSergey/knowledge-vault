@@ -1,10 +1,10 @@
-const express = require("express");
-const noteController = require("./note.controller");
 const requireAuth = require("../../middleware/require-auth.middleware.js");
 const validateBody = require("../../middleware/validate-body.middleware.js");
 const validateParams = require("../../middleware/validate-params.middleware.js");
 const { schemas } = require("./note.validator.js");
 
+import noteController from "./note.controller";
+import express from "express";
 const router = express.Router();
 
 // create new note
@@ -40,4 +40,4 @@ router.patch(
   noteController.patchNote,
 );
 
-module.exports = router;
+export default router;
