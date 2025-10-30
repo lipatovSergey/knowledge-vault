@@ -1,12 +1,16 @@
 import noteService from "./index";
 import { Request, Response, NextFunction } from "express";
-import { CreateNoteParams, UpdateNotePayload } from "./note.types";
+import type {
+  CreateNoteDto,
+  NoteIdInParams,
+  UpdateNoteDto,
+} from "./note.validator";
 import { MongoId } from "../../types/mongo";
 
 const noteController = {
   async createNote(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = req.validatedBody as CreateNoteParams;
+      const body = req.validatedBody as CreateNoteDto;
       const userId = req.session.userId as MongoId;
 
       const noteData = {
@@ -25,8 +29,8 @@ const noteController = {
   // returns note mapped info, only for note's owner
   async getNote(req: Request, res: Response, next: NextFunction) {
     try {
-      const params = req.validatedParams as { noteId: MongoId };
-      const noteId = params.noteId;
+      const params = req.validatedParams as NoteIdInParams;
+      const noteId = params.id;
       const userId = req.session.userId as MongoId;
       const noteInfo = await noteService.getNote(noteId, userId);
       res.status(200).json(noteInfo);
@@ -38,8 +42,8 @@ const noteController = {
   // deletes note from db, only for note's owner
   async deleteNote(req: Request, res: Response, next: NextFunction) {
     try {
-      const params = req.validatedParams as { noteId: MongoId };
-      const noteId = params.noteId;
+      const params = req.validatedParams as NoteIdInParams;
+      const noteId = params.id;
       const userId = req.session.userId as MongoId;
       await noteService.deleteNote(noteId, userId);
       res.status(200).json({ message: "Note deleted" });
@@ -51,10 +55,10 @@ const noteController = {
   // updates note's title or content or both
   async patchNote(req: Request, res: Response, next: NextFunction) {
     try {
-      const params = req.validatedParams as { noteId: MongoId };
-      const noteId = params.noteId;
+      const params = req.validatedParams as NoteIdInParams;
+      const noteId = params.id;
       const userId = req.session.userId as MongoId;
-      const data = req.validatedBody as UpdateNotePayload;
+      const data = req.validatedBody as UpdateNoteDto;
       const updatedNote = await noteService.updateNote(noteId, userId, data);
 
       res.status(200).json(updatedNote);

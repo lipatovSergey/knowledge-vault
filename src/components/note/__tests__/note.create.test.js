@@ -4,7 +4,7 @@ const {
   createExpectUnauthorizedError,
 } = require("../../../../tests/helpers/expect-problem.factories.js");
 
-describe("/api/notes/", () => {
+describe("/api/note/", () => {
   const route = "/api/note";
   let agent;
   const expectValidationError = createExpectValidationError(route);

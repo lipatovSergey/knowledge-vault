@@ -3,13 +3,13 @@ import {
   type NoteDocument,
   type NoteSchemaType,
 } from "./note.model";
-import type { CreateNoteParams, UpdateNotePayload } from "./note.types";
+import type { CreateNoteDto, UpdateNoteDto } from "./note.validator";
 import type { MongoId, WithId } from "../../types/mongo";
 
 // methods of note
 const noteRepo = {
   // saves new document to MongoDB and return it
-  async create(noteData: CreateNoteParams): Promise<NoteDocument> {
+  async create(noteData: CreateNoteDto): Promise<NoteDocument> {
     const newNote = new NoteModel(noteData);
     return newNote.save();
   },
@@ -33,7 +33,7 @@ const noteRepo = {
   async updateNote(
     noteId: MongoId,
     userId: MongoId,
-    data: UpdateNotePayload,
+    data: UpdateNoteDto,
   ): Promise<WithId<NoteSchemaType> | null> {
     const result = NoteModel.findOneAndUpdate({ _id: noteId, userId }, data, {
       returnDocument: "after",

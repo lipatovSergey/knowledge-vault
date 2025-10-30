@@ -1,17 +1,14 @@
 const { NotFoundError } = require("../../errors/errors.class.js");
 import toNoteDto from "./note.mapper";
 import type { MongoId } from "../../types/mongo";
-import type {
-  CreateNoteParams,
-  NoteDto,
-  UpdateNotePayload,
-} from "./note.types";
+import type { NoteDto } from "./note.types";
 import type { NoteRepository } from "./note.repository.mongo";
+import type { CreateNoteDto, UpdateNoteDto } from "./note.validator";
 
 function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
   return {
     // Use-case: create new note
-    async createNote(noteData: CreateNoteParams): Promise<NoteDto> {
+    async createNote(noteData: CreateNoteDto): Promise<NoteDto> {
       const newNote = await noteRepo.create(noteData);
       return toNoteDto(newNote);
     },
@@ -38,7 +35,7 @@ function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
     async updateNote(
       noteId: MongoId,
       userId: MongoId,
-      data: UpdateNotePayload,
+      data: UpdateNoteDto,
     ): Promise<NoteDto> {
       const updatedNote = await noteRepo.updateNote(noteId, userId, data);
       if (!updatedNote) {

@@ -1,7 +1,7 @@
 const requireAuth = require("../../middleware/require-auth.middleware.js");
 const validateBody = require("../../middleware/validate-body.middleware.js");
 const validateParams = require("../../middleware/validate-params.middleware.js");
-const { schemas } = require("./note.validator.js");
+import noteSchemas from "./note.validator";
 
 import noteController from "./note.controller";
 import express from "express";
@@ -11,7 +11,7 @@ const router = express.Router();
 router.post(
   "/",
   requireAuth,
-  validateBody(schemas.createNote),
+  validateBody(noteSchemas.createNote),
   noteController.createNote,
 );
 
@@ -21,22 +21,22 @@ router.get("/", requireAuth, noteController.getNotesList);
 router.get(
   "/:id",
   requireAuth,
-  validateParams(schemas.noteIdInParams),
+  validateParams(noteSchemas.noteIdInParams),
   noteController.getNote,
 );
 
 router.delete(
   "/:id",
   requireAuth,
-  validateParams(schemas.noteIdInParams),
+  validateParams(noteSchemas.noteIdInParams),
   noteController.deleteNote,
 );
 
 router.patch(
   "/:id",
   requireAuth,
-  validateParams(schemas.noteIdInParams),
-  validateBody(schemas.patchNote),
+  validateParams(noteSchemas.noteIdInParams),
+  validateBody(noteSchemas.patchNote),
   noteController.patchNote,
 );
 
