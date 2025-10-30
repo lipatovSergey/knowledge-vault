@@ -1,7 +1,7 @@
-const z = require("zod");
-const { Types } = require("mongoose");
+import { z } from "zod";
+import { Types } from "mongoose";
 
-const schemas = {
+const noteSchemas = {
   // body
   createNote: z.object({
     title: z
@@ -42,4 +42,8 @@ const schemas = {
     }),
 };
 
-module.exports = { schemas };
+export type CreateNoteDto = z.infer<typeof noteSchemas.createNote>;
+export type UpdateNoteDto = z.infer<typeof noteSchemas.patchNote>;
+export type NoteIdInParams = z.infer<typeof noteSchemas.noteIdInParams>;
+
+export default noteSchemas;
