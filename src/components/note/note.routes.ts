@@ -1,10 +1,10 @@
 const requireAuth = require("../../middleware/require-auth.middleware.js");
-const validateBody = require("../../middleware/validate-body.middleware.js");
-const validateParams = require("../../middleware/validate-params.middleware.js");
+import validateBody from "../../middleware/validate-body.middleware";
+import validateParams from "../../middleware/validate-params.middleware";
 import noteSchemas from "./note.validator";
 
 import noteController from "./note.controller";
-import express from "express";
+import express, { RequestHandler } from "express";
 const router = express.Router();
 
 // create new note
@@ -12,7 +12,7 @@ router.post(
   "/",
   requireAuth,
   validateBody(noteSchemas.createNote),
-  noteController.createNote,
+  noteController.createNote as RequestHandler,
 );
 
 // get list of all user's notes
@@ -22,14 +22,14 @@ router.get(
   "/:id",
   requireAuth,
   validateParams(noteSchemas.noteIdInParams),
-  noteController.getNote,
+  noteController.getNote as RequestHandler,
 );
 
 router.delete(
   "/:id",
   requireAuth,
   validateParams(noteSchemas.noteIdInParams),
-  noteController.deleteNote,
+  noteController.deleteNote as RequestHandler,
 );
 
 router.patch(
@@ -37,7 +37,7 @@ router.patch(
   requireAuth,
   validateParams(noteSchemas.noteIdInParams),
   validateBody(noteSchemas.patchNote),
-  noteController.patchNote,
+  noteController.patchNote as RequestHandler,
 );
 
 export default router;
