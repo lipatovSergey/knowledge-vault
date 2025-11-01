@@ -2,7 +2,7 @@ const express = require("express");
 const userController = require("./user.controller.js");
 // middlewares
 const requireAuth = require("../../middleware/require-auth.middleware.js");
-const validateBody = require("../../middleware/validate-body.middleware.js");
+const validateBody = require("../../middleware/validate-body.middleware.ts");
 // validate chemas
 const { schemas } = require("./user.validator.js");
 
@@ -15,10 +15,10 @@ router.get("/me", requireAuth, userController.getUserInfo);
 router.delete("/me", requireAuth, userController.deleteUser);
 // update user info
 router.patch(
-	"/me",
-	requireAuth,
-	validateBody(schemas.userInfoPatch),
-	userController.updateUserName
+  "/me",
+  requireAuth,
+  validateBody(schemas.userInfoPatch),
+  userController.updateUserName,
 );
 
 module.exports = router;

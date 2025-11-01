@@ -1,8 +1,7 @@
-// @ts-check
-const z = require("zod");
-const AppError = require("./app-error.class");
+import { z } from "zod";
+import { AppError } from "./app-error.class";
 
-class BadRequestError extends AppError {
+export class BadRequestError extends AppError {
   constructor(message = "Bad request", opts = {}) {
     super(message, {
       title: "Bad Request",
@@ -14,7 +13,7 @@ class BadRequestError extends AppError {
   }
 }
 
-class UnauthorizedError extends AppError {
+export class UnauthorizedError extends AppError {
   constructor(message = "Unauthorized", opts = {}) {
     super(message, {
       title: "Unauthorized",
@@ -26,7 +25,7 @@ class UnauthorizedError extends AppError {
   }
 }
 
-class NotFoundError extends AppError {
+export class NotFoundError extends AppError {
   constructor(message = "Not found", opts = {}) {
     super(message, {
       title: "Not found",
@@ -38,7 +37,7 @@ class NotFoundError extends AppError {
   }
 }
 
-class ConflictError extends AppError {
+export class ConflictError extends AppError {
   constructor(message = "Conflict", opts = {}) {
     super(message, {
       title: "Conflict",
@@ -50,7 +49,7 @@ class ConflictError extends AppError {
   }
 }
 
-class ForbiddenError extends AppError {
+export class ForbiddenError extends AppError {
   constructor(message = "Access denied", opts = {}) {
     super(message, {
       title: "Access denied",
@@ -62,25 +61,21 @@ class ForbiddenError extends AppError {
   }
 }
 
-const ALLOWED_SOURCES = ["body", "query", "params", "headers"];
-
-class ZodValidationError extends AppError {
-  /**
-   * @param {import("zod").ZodError} zodError ZOD validation error object.
-   * @param {"body"|"query"|"params"|"headers"} source Part of request that contains field, that caused error.
-   * @param {string} [message] Human-readable fallback message;
-   * @param {object} [opts] Optional error fields.
-   */
-  constructor(zodError, source, message = "Validation failed", opts = {}) {
-    if (!ALLOWED_SOURCES.includes(source)) {
-      throw new RangeError(`Unsupported validation source: ${source}`);
-    }
+export class ZodValidationError extends AppError {
+  constructor(
+    zodError: z.ZodError,
+    source: "body" | "query" | "params" | "headers",
+    message = "Validation failed",
+    opts = {},
+  ) {
     const flattened = z.flattenError(zodError); // { fieldErrors, formErrors }
     // Выбираем одно ключевое сообщение для human-readable `detail`
     const primaryDetail =
-      flattened.formErrors?.[0] ||
-      Object.values(flattened.fieldErrors || {}).flat()[0] ||
-      "Validation failed";
+      flattened.formErrors?.[0] ??
+      Object.values(flattened.fieldErrors ?? {})
+        .flat()
+        .find((msg): msg is string => !!msg) ??
+      message;
 
     super(message, {
       title: "Validation failed",
@@ -95,13 +90,3 @@ class ZodValidationError extends AppError {
     });
   }
 }
-
-module.exports = {
-  BadRequestError,
-  UnauthorizedError,
-  NotFoundError,
-  ConflictError,
-  ZodValidationError,
-  ForbiddenError,
-  AppError,
-};

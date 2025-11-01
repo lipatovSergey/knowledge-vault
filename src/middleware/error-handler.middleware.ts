@@ -1,5 +1,5 @@
 // src/middleware/error-handler.middleware.js
-import { AppError } from "../errors/errors.class";
+import { AppError } from "../errors/app-error.class";
 import type { Request, Response, NextFunction } from "express";
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -26,19 +26,19 @@ function errorHandler(
   res: Response,
   next: NextFunction,
 ) {
-  // Если заголовки уже отправлены — отдаем управление встроенному обработчику Express
+  // If headers were send - give a control to build in Express error handler
   if (res.headersSent) return next(err);
 
-  // Известные (операционные) ошибки нашего приложения → RFC 7807
   if (err instanceof AppError) {
     const problem = {
-      title: err.title, // краткий заголовок
-      detail: err.detail, // одно ключевое сообщение (может быть undefined)
-      status: err.statusCode, // HTTP статус
+      title: err.title,
+      detail: err.detail,
+      status: err.statusCode,
       type: err.type || "about:blank",
-      instance: req.originalUrl, // путь запроса
-      // RFC 7807 extensions — любые доп. поля верхнего уровня
-      ...(err.details && { errors: err.details }), // напр. zod.flatten() + { source }
+      instance: req.originalUrl,
+      ...(err.details && typeof err.details === "object"
+        ? { errors: err.details }
+        : {}), // exm. zod.flatten() + { source }
     };
 
     res.type("application/problem+json");
