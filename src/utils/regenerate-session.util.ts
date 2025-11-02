@@ -1,4 +1,6 @@
-function regenerateSession(req) {
+import { Request } from "express";
+
+function regenerateSession(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
     req.session.regenerate((err) => {
       if (err) return reject(err);
@@ -7,4 +9,4 @@ function regenerateSession(req) {
   });
 }
 
-module.exports = regenerateSession;
+export default regenerateSession;

@@ -1,4 +1,6 @@
-function destroySession(req) {
+import { Request } from "express";
+
+function destroySession(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
     req.session.destroy((err) => {
       if (err) return reject(err);
@@ -7,4 +9,4 @@ function destroySession(req) {
   });
 }
 
-module.exports = destroySession;
+export default destroySession;
