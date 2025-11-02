@@ -2,7 +2,7 @@ import express from "express";
 import errorHandler from "./middleware/error-handler.middleware";
 import { sessionMiddleware } from "./middleware/session.middleware";
 import noteRoutes from "./components/note/note.routes";
-import userRoutes from "./components/users/user.routes";
+import userRoutes from "./components/user/user.routes";
 import authRoutes from "./components/auth/auth.routes";
 const NODE_ENV = process.env.NODE_ENV;
 if (!NODE_ENV) {

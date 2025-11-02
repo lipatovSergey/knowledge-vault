@@ -1,4 +1,4 @@
-const { NotFoundError } = require("../../errors/errors.class.js");
+import { NotFoundError } from "../../errors/errors.class.js";
 import toNoteDto from "./note.mapper";
 import type { MongoId } from "../../types/mongo";
 import type { CreateNotePayload, NoteDto } from "./note.types";

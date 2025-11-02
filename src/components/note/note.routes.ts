@@ -1,4 +1,4 @@
-const requireAuth = require("../../middleware/require-auth.middleware.js");
+import requireAuth from "../../middleware/require-auth.middleware";
 import validateBody from "../../middleware/validate-body.middleware";
 import validateParams from "../../middleware/validate-params.middleware";
 import noteSchemas from "./note.validator";

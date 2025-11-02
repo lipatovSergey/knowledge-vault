@@ -1,12 +1,12 @@
 import noteService from "./index";
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type {
   CreateNoteDto,
   NoteIdInParams,
   UpdateNoteDto,
 } from "./note.validator";
-import { MongoId } from "../../types/mongo";
-import {
+import type { MongoId } from "../../types/mongo";
+import type {
   RequestWithValidatedBody,
   RequestWithValidatedParams,
 } from "../../types/validated-request";

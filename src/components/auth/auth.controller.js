@@ -1,4 +1,4 @@
-const { userService } = require("../users/index.js");
+const { userService } = require("../user/index.js");
 const mail = require("../../services/mail/index.js");
 const { UnauthorizedError } = require("../../errors/errors.class.js");
 const destroySession = require("../../utils/destroy-session.util.js");
