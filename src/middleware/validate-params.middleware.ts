@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
 import type { RequestWithValidatedParams } from "../types/validated-request";
 import type { ParamsDictionary } from "express-serve-static-core";
-const { BadRequestError } = require("../errors/errors.class");
+import { BadRequestError } from "../errors/errors.class";
 
 // validates request's params, write validated data to req.validatedParams
 function validateParams<Params extends ParamsDictionary>(

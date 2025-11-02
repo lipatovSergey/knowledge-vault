@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
 import type { RequestWithValidatedBody } from "../types/validated-request";
 
-const { ZodValidationError } = require("../errors/errors.class");
+import { ZodValidationError } from "../errors/errors.class";
 
 function validateBody<Body>(schema: ZodType<Body>): RequestHandler {
   return (req, _res, next) => {

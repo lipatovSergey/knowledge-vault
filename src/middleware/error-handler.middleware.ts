@@ -26,7 +26,7 @@ function errorHandler(
   res: Response,
   next: NextFunction,
 ) {
-  // If headers were send - give a control to build in Express error handler
+  // If headers were send (exm. error happened when response was send partly) - give a control to build in Express error handler
   if (res.headersSent) return next(err);
 
   if (err instanceof AppError) {
