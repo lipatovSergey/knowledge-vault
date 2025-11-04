@@ -11,7 +11,21 @@ function isUserDocument(value: unknown): value is UserDocument {
   );
 }
 
-function toUserDto(rawUser: WithId<UserSchemaType> | UserDocument) {
+export type UserDto = {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type UserWithPasswordDto = {
+  id: string;
+  password: string;
+  email: string;
+};
+
+function toUserDto(rawUser: WithId<UserSchemaType> | UserDocument): UserDto {
   const source = isUserDocument(rawUser) ? rawUser.toObject() : rawUser;
 
   return {
@@ -23,4 +37,16 @@ function toUserDto(rawUser: WithId<UserSchemaType> | UserDocument) {
   };
 }
 
-export default toUserDto;
+function toUserWithPasswordDto(
+  rawUser: WithId<UserSchemaType> | UserDocument,
+): UserWithPasswordDto {
+  const source = isUserDocument(rawUser) ? rawUser.toObject() : rawUser;
+
+  return {
+    id: source._id.toString(),
+    password: source.password,
+    email: source.email,
+  };
+}
+
+export { toUserDto, toUserWithPasswordDto };

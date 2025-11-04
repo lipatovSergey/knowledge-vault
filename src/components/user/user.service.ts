@@ -3,14 +3,16 @@ import {
   UnauthorizedError,
   NotFoundError,
 } from "../../errors/errors.class";
-import toUserDto from "./user.mapper";
+import {
+  toUserDto,
+  toUserWithPasswordDto,
+  type UserDto,
+  type UserWithPasswordDto,
+} from "./user.mapper";
 import type { MongoId } from "../../types/mongo";
 import type { UserRepo } from "./user.repository.mongo";
-import type { UserDto } from "./user.types";
 import type { CreateUserDto, UpdateUserDto, UserEmail } from "./user.validator";
 import type * as bcryptType from "bcrypt";
-import type { UserSchemaType } from "./user.model";
-import type { WithId } from "mongodb";
 import { MongoServerError } from "mongodb";
 
 function createUserService({
@@ -47,12 +49,12 @@ function createUserService({
     },
 
     // use-case: find user by email
-    async findUserByEmail(email: UserEmail): Promise<WithId<UserSchemaType>> {
+    async findUserByEmail(email: UserEmail): Promise<UserWithPasswordDto> {
       const user = await userRepo.findByEmail(email);
       if (!user) {
         throw new UnauthorizedError("Invalid email or password");
       }
-      return user;
+      return toUserWithPasswordDto(user);
     },
 
     // use-case: find user by ID
