@@ -1,6 +1,17 @@
-const mongoose = require("mongoose");
+import {
+  Schema,
+  model,
+  type Model,
+  type InferSchemaType,
+  type HydratedDocument,
+  type Query,
+} from "mongoose";
 
-const resetTokenSchema = new mongoose.Schema(
+interface ResetTokenQueryHelpers {
+  active(this: Query<any, ResetTokenDocument>): Query<any, ResetTokenDocument>;
+}
+
+const resetTokenSchema = new Schema(
   {
     // TODO: add format for selector
     selector: {
@@ -14,7 +25,7 @@ const resetTokenSchema = new mongoose.Schema(
       select: false,
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
       immutable: true,
@@ -39,8 +50,8 @@ const resetTokenSchema = new mongoose.Schema(
       virtuals: true,
       getters: true,
       transform(_doc, ret) {
-        delete ret.__v;
-        delete ret.validatorHash;
+        Reflect.deleteProperty(ret, "__v");
+        Reflect.deleteProperty(ret, "validatorHash");
         return ret;
       },
     },
@@ -51,24 +62,26 @@ const resetTokenSchema = new mongoose.Schema(
   },
 );
 
-// vitrtual to check if token expired
-resetTokenSchema.virtual("isExpired").get(function () {
-  return this.expiresAt <= new Date();
-});
-
 // query helpers
-resetTokenSchema.query.active = function () {
+(
+  resetTokenSchema.query as Query<any, any> & { active(): Query<any, any> }
+).active = function () {
   return this.where({
     usedAt: null,
     expiresAt: { $gt: new Date() },
   });
 };
-
 // indexes
 // Date.now() > expiresAt, wait 0 seconds and delete
 resetTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // fast delete all user's active tokens
 resetTokenSchema.index({ userId: 1 });
 
-const ResetToken = mongoose.model("ResetToken", resetTokenSchema);
-module.exports = ResetToken;
+export type ResetTokenSchemaType = InferSchemaType<typeof resetTokenSchema>;
+export type ResetTokenDocument = HydratedDocument<ResetTokenSchemaType>;
+export const ResetTokenModel = model<
+  ResetTokenSchemaType,
+  Model<ResetTokenSchemaType, ResetTokenQueryHelpers>
+>("ResetToken", resetTokenSchema);
+
+export { resetTokenSchema };

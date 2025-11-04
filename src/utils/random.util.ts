@@ -6,3 +6,5 @@ const randomBytesAsync = promisify(randomBytes);
 export async function random(len: number) {
   return await randomBytesAsync(len);
 }
+
+export type RandomUtilType = typeof random;
