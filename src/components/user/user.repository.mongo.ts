@@ -18,9 +18,10 @@ const userRepo = {
     return newUser.save();
   },
 
-  // find user by email
+  // find user by email for login user
+  // Warning! Use carefully returns user document with password
   async findByEmail(email: UserEmail): Promise<WithId<UserSchemaType> | null> {
-    const user = UserModel.findOne({ email }).lean();
+    const user = UserModel.findOne({ email }).select("+password").lean();
     return user;
   },
 
