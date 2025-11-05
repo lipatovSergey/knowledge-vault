@@ -1,4 +1,4 @@
-import { BadRequestError } from "../errors/errors.class.js";
+import { BadRequestError } from "../errors/errors.class";
 import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
 

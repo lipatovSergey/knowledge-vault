@@ -1,5 +1,5 @@
-import createUserService from "./user.service.js";
-import userRepo from "./user.repository.mongo.js";
+import createUserService from "./user.service";
+import userRepo from "./user.repository.mongo";
 import bcrypt from "bcrypt";
 
 const userService = createUserService({ userRepo, bcrypt });

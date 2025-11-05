@@ -1,4 +1,4 @@
-// src/middleware/session.middleware.js
+// src/middleware/session.middleware
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";

@@ -2,13 +2,9 @@ import {
   type UserDocument,
   type UserSchemaType,
   UserModel,
-} from "./user.model.js";
-import type {
-  CreateUserDto,
-  UpdateUserDto,
-  UserEmail,
-} from "./user.validator.js";
-import type { WithId, MongoId } from "../../types/mongo.js";
+} from "./user.model";
+import type { CreateUserDto, UpdateUserDto, UserEmail } from "./user.validator";
+import type { WithId, MongoId } from "../../types/mongo";
 
 // methods of user
 const userRepo = {
@@ -21,13 +17,13 @@ const userRepo = {
   // find user by email for login user
   // Warning! Use carefully returns user document with password
   async findByEmail(email: UserEmail): Promise<WithId<UserSchemaType> | null> {
-    const user = UserModel.findOne({ email }).select("+password").lean();
+    const user = await UserModel.findOne({ email }).select("+password").lean();
     return user;
   },
 
   // find user by ID
   async findById(id: MongoId): Promise<WithId<UserSchemaType> | null> {
-    const user = UserModel.findById(id).lean();
+    const user = await UserModel.findById(id).lean();
     return user;
   },
 
@@ -42,7 +38,7 @@ const userRepo = {
     id: MongoId,
     data: UpdateUserDto,
   ): Promise<WithId<UserSchemaType> | null> {
-    const result = UserModel.findOneAndUpdate({ _id: id }, data, {
+    const result = await UserModel.findOneAndUpdate({ _id: id }, data, {
       returnDocument: "after",
       runValidators: true,
       context: "query",
