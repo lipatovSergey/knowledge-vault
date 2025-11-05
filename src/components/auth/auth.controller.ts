@@ -1,12 +1,24 @@
-const { userService } = require("../user/index.js");
-const mail = require("../../services/mail/index.js");
-const { UnauthorizedError } = require("../../errors/errors.class.js");
-const destroySession = require("../../utils/destroy-session.util.js");
-const { tokenService } = require("./token/index.js");
-const regenerateSession = require("../../utils/regenerate-session.util.js");
+import userService from "../user";
+import mailService from "../../services/mail";
+import { UnauthorizedError } from "../../errors/errors.class";
+import destroySession from "../../utils/destroy-session.util";
+import tokenService from "./token";
+import regenerateSession from "../../utils/regenerate-session.util";
+import type { Request, Response, NextFunction } from "express";
+import type { RequestWithValidatedBody } from "../../types/validated-request";
+import type {
+  ForgotPasswordDto,
+  LoginUserDto,
+  PasswordResetDto,
+} from "./auth.validator";
+import type { RequestWithValidatedResetToken } from "../../types/express";
 
 const authController = {
-  async loginUser(req, res, next) {
+  async loginUser(
+    req: RequestWithValidatedBody<LoginUserDto>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const data = {
         email: req.validatedBody.email,
@@ -15,16 +27,16 @@ const authController = {
 
       const user = await userService.findUserByEmail(data.email);
       await userService.checkUserPassword(data.password, user.password);
-      // regenerate session ID for authentificated user
+      // regenerate session ID for authenticated user
       await regenerateSession(req);
-      req.session.userId = user._id;
+      req.session.userId = user.id;
       return res.status(200).json({ message: "Login successful" });
     } catch (error) {
       next(error);
     }
   },
 
-  async logoutUser(req, res, next) {
+  async logoutUser(req: Request, res: Response, next: NextFunction) {
     try {
       await destroySession(req);
       res.clearCookie("connect.sid");
@@ -34,7 +46,11 @@ const authController = {
     }
   },
 
-  async forgotPassword(req, res, next) {
+  async forgotPassword(
+    req: RequestWithValidatedBody<ForgotPasswordDto>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const email = req.validatedBody.email;
       // We try to find the user. If the service throws UnauthorizedError (user not found),
@@ -45,14 +61,14 @@ const authController = {
       });
 
       if (user) {
-        const rawToken = await tokenService.createTokenForUser(user._id);
+        const rawToken = await tokenService.createTokenForUser(user.id);
         // TODO: заменить на FRONTEND_URL из config/env
         const frontendBaseUrl = "localhost:2173";
         const resetLink = `${frontendBaseUrl.replace(
           /\/$/,
           "",
         )}/password-reset?token=${rawToken}`;
-        await mail.sendPasswordReset({
+        await mailService.sendPasswordReset({
           to: email,
           subject: "Reset your password",
           text: `To reset your password please use the following link ${resetLink}`,
@@ -67,7 +83,12 @@ const authController = {
     }
   },
 
-  async resetPassword(req, res, next) {
+  async resetPassword(
+    req: RequestWithValidatedBody<PasswordResetDto> &
+      RequestWithValidatedResetToken,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const body = req.validatedBody;
       const token = req.validatedResetToken;
@@ -82,4 +103,4 @@ const authController = {
   },
 };
 
-module.exports = authController;
+export default authController;

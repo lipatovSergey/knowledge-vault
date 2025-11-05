@@ -17,6 +17,10 @@ export type RequestWithValidatedBody<Body> = import("express").Request & {
   validatedBody: Body;
 };
 
+export type RequestWithValidatedResetToken = import("express").Request & {
+  validatedResetToken: string;
+};
+
 export type RequestWithValidatedParams<
   Params extends ParamsDictionary = ParamsDictionary,
 > = import("express").Request & {

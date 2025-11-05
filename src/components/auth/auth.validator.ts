@@ -1,15 +1,15 @@
-const z = require("zod");
+import { z } from "zod";
 // TODO: After migration update validate-reset-token to use
 // type ResetTokenDto = z.infer<typeof passwordResetToken>
 
-const schemas = {
+const authSchemas = {
   userLogin: z.object({
     email: z.string().min(1, "Email is required"),
     password: z.string().min(1, "Password is required"),
   }),
 
   passwordForgot: z.object({
-    email: z.string().email("Invalid email"),
+    email: z.email("Invalid email"),
   }),
   passwordResetToken: z.object({
     token: z
@@ -28,6 +28,11 @@ const schemas = {
     }),
 };
 
-module.exports = {
-  schemas,
-};
+export type LoginUserDto = z.infer<typeof authSchemas.userLogin>;
+export type ForgotPasswordDto = z.infer<typeof authSchemas.passwordForgot>;
+export type ResetTokenDto = z.infer<typeof authSchemas.passwordResetToken>;
+export type PasswordResetDto = z.infer<
+  typeof authSchemas.passwordResetPasswords
+>;
+
+export default authSchemas;
