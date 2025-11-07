@@ -1,6 +1,17 @@
-function createExpectValidationError(instance) {
+import type { Response } from "supertest";
+
+type ErrorExpectation = (res: Response) => void;
+
+type ValidationErrorExpectation = (
+  res: Response,
+  expectedFields?: string[],
+  formErrorsLength?: number,
+  source?: string,
+) => void;
+
+export function createExpectValidationError(instance: string): ValidationErrorExpectation {
   return function expectValidationError(
-    res,
+    res: Response,
     expectedFields = [],
     formErrorsLength = 0,
     source = "body",
@@ -15,17 +26,15 @@ function createExpectValidationError(instance) {
     });
     expect(res.body.errors.fieldErrors).toEqual(
       expect.objectContaining(
-        Object.fromEntries(
-          expectedFields.map((key) => [key, expect.any(Array)]),
-        ),
+        Object.fromEntries(expectedFields.map((key) => [key, expect.any(Array)])),
       ),
     );
     expect(res.body.errors.formErrors).toHaveLength(formErrorsLength);
   };
 }
 
-function createExpectConflictError(instance) {
-  return function expectConflictError(res) {
+export function createExpectConflictError(instance: string): ErrorExpectation {
+  return function expectConflictError(res: Response) {
     expect(res.statusCode).toBe(409);
     expect(res.body).toMatchObject({
       title: "Conflict",
@@ -36,8 +45,8 @@ function createExpectConflictError(instance) {
   };
 }
 
-function createExpectUnauthorizedError(instance) {
-  return function expectUnauthorizedError(res) {
+export function createExpectUnauthorizedError(instance: string): ErrorExpectation {
+  return function expectUnauthorizedError(res: Response) {
     expect(res.statusCode).toBe(401);
     expect(res.body).toMatchObject({
       title: "Unauthorized",
@@ -48,7 +57,7 @@ function createExpectUnauthorizedError(instance) {
   };
 }
 
-function createExpectNotFoundError(instance) {
+export function createExpectNotFoundError(instance: string): ErrorExpectation {
   return function expectNotFoundError(res) {
     expect(res.statusCode).toBe(404);
     expect(res.body).toMatchObject({
@@ -60,8 +69,8 @@ function createExpectNotFoundError(instance) {
   };
 }
 
-function createExpectBadRequestError(instance) {
-  return function expectBadRequestError(res) {
+export function createExpectBadRequestError(instance: string): ErrorExpectation {
+  return function expectBadRequestError(res: Response) {
     expect(res.body).toMatchObject({
       title: "Bad Request",
       status: 400,
@@ -71,11 +80,3 @@ function createExpectBadRequestError(instance) {
     expect(res.statusCode).toBe(400);
   };
 }
-
-module.exports = {
-  createExpectValidationError,
-  createExpectConflictError,
-  createExpectUnauthorizedError,
-  createExpectNotFoundError,
-  createExpectBadRequestError,
-};

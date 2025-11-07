@@ -9,10 +9,12 @@ type LeanActiveToken = {
   validatorHash: string;
 };
 
-type CreateTokenData = Pick<
+export type CreateTokenData = Pick<
   ResetTokenSchemaType,
   "selector" | "validatorHash" | "expiresAt"
-> & { userId: MongoId };
+> & {
+  userId: MongoId;
+};
 
 const resetTokenRepo = {
   // saves new token to MongoDB and return it
@@ -20,9 +22,7 @@ const resetTokenRepo = {
     await new ResetTokenModel(resetTokenData).save();
   },
 
-  async findActiveBySelector(
-    selector: string,
-  ): Promise<LeanActiveToken | null> {
+  async findActiveBySelector(selector: string): Promise<LeanActiveToken | null> {
     return ResetTokenModel.findOne({ selector })
       .active()
       .select("_id userId +validatorHash")

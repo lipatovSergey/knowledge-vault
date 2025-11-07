@@ -1,5 +1,5 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+const router = Router();
 
 console.log("test router CONNECTED");
 // set fake userId to session
@@ -20,4 +20,4 @@ router.get("/unexpected-error", () => {
   throw new Error("Simulated unexpected error");
 });
 
-module.exports = router;
+export default router;

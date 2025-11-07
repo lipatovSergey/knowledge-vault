@@ -1,14 +1,10 @@
-import type { Collection } from "mongoose";
+import type { Collection } from "mongodb";
+import { startMemoryMongo, stopMemoryMongo } from "./utils/memory-mongo";
+import mongoose from "mongoose";
 jest.setTimeout(60_000); // first start need to download binary
 
 // Ensure the app runs in the expected mode even when tests aren’t launched via the npm scripts.
 process.env.NODE_ENV = "test";
-
-const mongoose = require("mongoose");
-const {
-  startMemoryMongo,
-  stopMemoryMongo,
-} = require("./utils/memory-mongo.js");
 
 beforeAll(async () => {
   const { default: connectDB } = await import("../src/config/db");
