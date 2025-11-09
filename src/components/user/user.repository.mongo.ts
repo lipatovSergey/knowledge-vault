@@ -1,8 +1,4 @@
-import {
-  type UserDocument,
-  type UserSchemaType,
-  UserModel,
-} from "./user.model";
+import { type UserDocument, type UserSchemaType, UserModel } from "./user.model";
 import type { CreateUserDto, UpdateUserDto, UserEmail } from "./user.validator";
 import type { WithId, MongoId } from "../../types/mongo";
 
@@ -34,10 +30,7 @@ const userRepo = {
   },
 
   // update user name by id
-  async updateUserData(
-    id: MongoId,
-    data: UpdateUserDto,
-  ): Promise<WithId<UserSchemaType> | null> {
+  async updateUserData(id: MongoId, data: UpdateUserDto): Promise<WithId<UserSchemaType> | null> {
     const result = await UserModel.findOneAndUpdate({ _id: id }, data, {
       returnDocument: "after",
       runValidators: true,

@@ -1,13 +1,16 @@
-const request = require("supertest");
-const {
+import request from "supertest";
+import {
   createExpectValidationError,
   createExpectUnauthorizedError,
   createExpectNotFoundError,
-} = require("../../../../tests/helpers/expect-problem.factories.js");
+} from "../../../../tests/helpers/expect-problem.factories";
+
+import type { AuthAgent, SupertestResponse, MessageResponse } from "../../../../tests/test.types";
+import type { UserDto } from "../user.mapper";
 
 describe("/api/users/me", () => {
   const route = "/api/user/me";
-  let agent;
+  let agent: AuthAgent;
   const expectValidationError = createExpectValidationError(route);
   const expectUnauthorizedError = createExpectUnauthorizedError(route);
   const expectNotFoundError = createExpectNotFoundError(route);
@@ -27,7 +30,7 @@ describe("/api/users/me", () => {
 
   describe("GET /me", () => {
     it("should get user's data", async () => {
-      const res = await agent.get(route);
+      const res: SupertestResponse<UserDto> = await agent.get(route);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("name", "User");
       expect(res.body).toHaveProperty("email", "test@example.com");
@@ -50,7 +53,7 @@ describe("/api/users/me", () => {
 
   describe("DELETE /me", () => {
     it("should delete user", async () => {
-      const res = await agent.delete(route);
+      const res: SupertestResponse<MessageResponse> = await agent.delete(route);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("message", "User deleted");
     });
@@ -63,8 +66,8 @@ describe("/api/users/me", () => {
 
   describe("PATCH /me", () => {
     it("should update user's name field", async () => {
-      const res = await agent.patch(route).send({
-        name: "Updated",
+      const res: SupertestResponse<UserDto> = await agent.patch(route).send({
+        name: "updated-name",
       });
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("updatedName", "Updated");

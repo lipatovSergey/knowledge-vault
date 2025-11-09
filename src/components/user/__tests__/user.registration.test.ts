@@ -1,8 +1,9 @@
-const request = require("supertest");
-const {
+import request from "supertest";
+import {
   createExpectValidationError,
   createExpectConflictError,
-} = require("../../../../tests/helpers/expect-problem.factories.js");
+} from "../../../../tests/helpers/expect-problem.factories";
+import type { SupertestResponse, MessageResponse } from "../../../../tests/test.types";
 
 describe("User registration", () => {
   const route = "/api/user";
@@ -10,7 +11,7 @@ describe("User registration", () => {
   const expectConflictError = createExpectConflictError(route);
 
   it("should register a new user", async () => {
-    const res = await request(global.app).post(route).send({
+    const res: SupertestResponse<MessageResponse> = await request(global.app).post(route).send({
       name: "Test User",
       email: "test@example.com",
       password: "pass123",
