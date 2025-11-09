@@ -23,10 +23,7 @@ module.exports = [
     },
     plugins: { jsdoc },
     rules: {
-      "no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-      ],
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "no-redeclare": "error",
       semi: ["error", "always"],
       quotes: ["error", "double"],
