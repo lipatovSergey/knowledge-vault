@@ -1,19 +1,22 @@
 import request from "supertest";
+import type { AuthAgent, SupertestResponse } from "../../../../tests/test.types";
 import {
-  createExpectValidationError,
-  createExpectUnauthorizedError,
-  createExpectNotFoundError,
-} from "../../../../tests/helpers/expect-problem.factories";
-
-import type { AuthAgent, SupertestResponse, MessageResponse } from "../../../../tests/test.types";
-import type { UserDto } from "../user.mapper";
+  userMeGetResponseSchema,
+  userMeDeleteResponseSchema,
+  userMePatchResponseSchema,
+  type UserMeDeleteResponse,
+  type UserMePatchResponse,
+  type UserMeGetResponse,
+} from "../../../contracts/user/me.contract";
+import {
+  notFoundErrorSchema,
+  unauthorizedErrorSchema,
+  validationErrorSchema,
+} from "../../../contracts/error/error.contract";
 
 describe("/api/users/me", () => {
   const route = "/api/user/me";
   let agent: AuthAgent;
-  const expectValidationError = createExpectValidationError(route);
-  const expectUnauthorizedError = createExpectUnauthorizedError(route);
-  const expectNotFoundError = createExpectNotFoundError(route);
 
   beforeEach(async () => {
     agent = request.agent(global.app);
@@ -30,15 +33,18 @@ describe("/api/users/me", () => {
 
   describe("GET /me", () => {
     it("should get user's data", async () => {
-      const res: SupertestResponse<UserDto> = await agent.get(route);
+      const res: SupertestResponse<UserMeGetResponse> = await agent.get(route);
+      const body = userMeGetResponseSchema.parse(res.body);
       expect(res.statusCode).toBe(200);
-      expect(res.body).toHaveProperty("name", "User");
-      expect(res.body).toHaveProperty("email", "test@example.com");
+      expect(body.name).toBe("User");
+      expect(body.email).toBe("test@example.com");
     });
 
     it("should return 401 if no session cookie was passed", async () => {
       const res = await request(global.app).get(route);
-      expectUnauthorizedError(res);
+      const body = unauthorizedErrorSchema.parse(res.body);
+      expect(res.statusCode).toBe(401);
+      expect(body.instance).toBe(route);
     });
 
     it("should return 404 if user not found (fake session)", async () => {
@@ -47,42 +53,54 @@ describe("/api/users/me", () => {
 
       await agent.post(`/test/session/${fakeId}`); // сессия сохранена
       const res = await agent.get("/api/user/me"); // requireAuth пропустит
-      expectNotFoundError(res);
+      const body = notFoundErrorSchema.parse(res.body);
+      expect(res.statusCode).toBe(404);
+      expect(body.instance).toBe(route);
     });
   });
 
   describe("DELETE /me", () => {
     it("should delete user", async () => {
-      const res: SupertestResponse<MessageResponse> = await agent.delete(route);
+      const res: SupertestResponse<UserMeDeleteResponse> = await agent.delete(route);
+      const body = userMeDeleteResponseSchema.parse(res.body);
       expect(res.statusCode).toBe(200);
-      expect(res.body).toHaveProperty("message", "User deleted");
+      expect(body.message).toBe("User deleted");
     });
 
     it("should return 401 and message 'Unauthorized' if no session cookie was passed", async () => {
       const res = await request(global.app).delete(route);
-      expectUnauthorizedError(res);
+      const body = unauthorizedErrorSchema.parse(res.body);
+      expect(res.statusCode).toBe(401);
+      expect(body.instance).toBe(route);
     });
   });
 
   describe("PATCH /me", () => {
     it("should update user's name field", async () => {
-      const res: SupertestResponse<UserDto> = await agent.patch(route).send({
+      const res: SupertestResponse<UserMePatchResponse> = await agent.patch(route).send({
         name: "updated-name",
       });
       expect(res.statusCode).toBe(200);
-      expect(res.body).toHaveProperty("updatedName", "Updated");
+      const body = userMePatchResponseSchema.parse(res.body);
+      expect(res.statusCode).toBe(200);
+      expect(body.name).toBe("updated-name");
     });
 
     it("should return 401 and 'Unauthorized' if no session cookie was passed", async () => {
       const res = await request(global.app).patch(route);
-      expectUnauthorizedError(res);
+      const body = unauthorizedErrorSchema.parse(res.body);
+      expect(res.statusCode).toBe(401);
+      expect(body.instance).toBe(route);
     });
 
     it("should return 422 if name wasn't passed", async () => {
       const res = await agent.patch(route).send({
         name: "",
       });
-      expectValidationError(res);
+      const body = validationErrorSchema.parse(res.body);
+      expect(res.statusCode).toBe(422);
+      expect(body.instance).toBe(route);
+      expect(Object.keys(body.errors.fieldErrors)).toContain("name");
     });
 
     it("should return 404 if user not found (fake session)", async () => {
@@ -93,7 +111,9 @@ describe("/api/users/me", () => {
       const res = await agent.patch("/api/user/me").send({
         name: "Updated",
       });
-      expectNotFoundError(res);
+      const body = notFoundErrorSchema.parse(res.body);
+      expect(res.statusCode).toBe(404);
+      expect(body.instance).toBe(route);
     });
   });
 });
