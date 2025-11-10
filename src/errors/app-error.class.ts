@@ -1,5 +1,3 @@
-// @ts-check
-//
 export type AppErrorLevel = "warn" | "error" | "info";
 
 export type AppErrorOptions = {
