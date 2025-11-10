@@ -1,0 +1,19 @@
+import z from "zod";
+import { Types, FlattenMaps } from "mongoose";
+
+export const emailSchema = z.email();
+export type Email = z.infer<typeof emailSchema>;
+
+export const mongoIdSchema = z
+  .string()
+  .length(24, "ObjectId length invalid")
+  .regex(/^[0-9a-fA-F]+$/, "ObjectId type invalid");
+export type MongoId = z.infer<typeof mongoIdSchema>;
+
+export const passwordPlainSchema = z.string().min(6);
+export type PasswordPlain = z.infer<typeof passwordPlainSchema>;
+
+export const isoDateStringSchema = z.iso.datetime();
+export type IsoDate = z.infer<typeof isoDateStringSchema>;
+
+export type WithId<T> = FlattenMaps<T> & { _id: Types.ObjectId };
