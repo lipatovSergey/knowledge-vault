@@ -4,4 +4,5 @@ import bcrypt from "bcrypt";
 
 const userService = createUserService({ userRepo, bcrypt });
 
+export type UserService = typeof userService;
 export default userService;
