@@ -6,31 +6,32 @@ import tokenService from "./token";
 import regenerateSession from "../../utils/regenerate-session.util";
 import type { Request, Response, NextFunction } from "express";
 import type { RequestWithValidatedBody } from "../../types/validated-request";
-import type {
-  ForgotPasswordDto,
-  LoginUserDto,
-  PasswordResetDto,
-} from "./auth.validator";
+import type { ForgotPasswordDto, PasswordResetDto } from "./auth.validator";
 import type { RequestWithValidatedResetToken } from "../../types/express";
+import type { AuthUserDomain, LoginInput } from "./auth.types";
+import type { AuthLoginRequest, AuthLoginResponse } from "../../contracts/auth/login.contract";
+import { mapDomainAuthToContract } from "./auth.mapper";
+import authService from ".";
 
 const authController = {
   async loginUser(
-    req: RequestWithValidatedBody<LoginUserDto>,
+    req: RequestWithValidatedBody<AuthLoginRequest>,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const data = {
+      const loginInput: LoginInput = {
         email: req.validatedBody.email,
         password: req.validatedBody.password,
       };
 
-      const user = await userService.findUserByEmail(data.email);
-      await userService.checkUserPassword(data.password, user.password);
+      const authUserDomain: AuthUserDomain = await authService.login(loginInput);
       // regenerate session ID for authenticated user
       await regenerateSession(req);
-      req.session.userId = user.id;
-      return res.status(200).json({ message: "Login successful" });
+      req.session.userId = authUserDomain.id;
+
+      const authUserContract: AuthLoginResponse = mapDomainAuthToContract(authUserDomain);
+      return res.status(200).json(authUserContract);
     } catch (error) {
       next(error);
     }
@@ -64,10 +65,7 @@ const authController = {
         const rawToken = await tokenService.createTokenForUser(user.id);
         // TODO: заменить на FRONTEND_URL из config/env
         const frontendBaseUrl = "localhost:2173";
-        const resetLink = `${frontendBaseUrl.replace(
-          /\/$/,
-          "",
-        )}/password-reset?token=${rawToken}`;
+        const resetLink = `${frontendBaseUrl.replace(/\/$/, "")}/password-reset?token=${rawToken}`;
         await mailService.sendPasswordReset({
           to: email,
           subject: "Reset your password",
@@ -84,8 +82,7 @@ const authController = {
   },
 
   async resetPassword(
-    req: RequestWithValidatedBody<PasswordResetDto> &
-      RequestWithValidatedResetToken,
+    req: RequestWithValidatedBody<PasswordResetDto> & RequestWithValidatedResetToken,
     res: Response,
     next: NextFunction,
   ) {

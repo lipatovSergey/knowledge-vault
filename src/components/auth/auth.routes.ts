@@ -5,6 +5,7 @@ import validateResetToken from "../../middleware/validate-reset-token.middleware
 import authSchemas from "./auth.validator";
 import requireGuest from "../../middleware/require-guest.middleware";
 import requireAuth from "../../middleware/require-auth.middleware";
+import { authLoginRequestSchema } from "../../contracts/auth/login.contract";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const router = express.Router();
 router.post(
   "/login",
   requireGuest,
-  validateBody(authSchemas.userLogin),
+  validateBody(authLoginRequestSchema),
   authController.loginUser as RequestHandler,
 );
 
