@@ -5,6 +5,7 @@ import type { AuthUserInput, UpdateUserInput, UserDomain } from "./user.types";
 import type * as bcryptType from "bcrypt";
 import type { CreateUserInput } from "./user.types";
 import { MongoServerError } from "mongodb";
+const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxXFByEVO";
 
 function createUserService({
   userRepo,
@@ -57,9 +58,7 @@ function createUserService({
     },
 
     // use-case: authenticate user
-    async authenticateUser(authUserInput: AuthUserInput): Promise<boolean> {
-      const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxXFByEVO";
-
+    async authenticateUser(authUserInput: AuthUserInput): Promise<UserDomain> {
       const hashedPassword = await userRepo.getPasswordHashByEmail(authUserInput.email);
       const passwordToCheck = hashedPassword ?? DUMMY_HASH;
 
@@ -67,7 +66,13 @@ function createUserService({
       if (!match) {
         throw new UnauthorizedError("Invalid email or password");
       }
-      return match;
+
+      const user = await userRepo.findByEmail(authUserInput.email);
+      if (!user) {
+        throw new UnauthorizedError("Invalid email or password");
+      }
+
+      return user;
     },
 
     // use-case: delete user by id
