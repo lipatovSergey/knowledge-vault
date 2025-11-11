@@ -11,6 +11,11 @@ export type UpdateUserInput = {
   name?: string;
 };
 
+export type AuthUserInput = {
+  email: Email;
+  password: PasswordPlain;
+};
+
 export type UserDomain = {
   id: MongoId;
   name: string;

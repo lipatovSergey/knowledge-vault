@@ -11,8 +11,7 @@ const userRepo = {
     return newUser.save();
   },
 
-  // find user by email for login user
-  // Warning! Use carefully returns user document with password
+  // find user by email
   async findByEmail(email: Email): Promise<UserDomain | null> {
     const user = await UserModel.findOne({ email }).lean();
     return user ? mapPersistUserToDomain(user) : null;
@@ -22,6 +21,11 @@ const userRepo = {
   async findById(id: MongoId): Promise<UserDomain | null> {
     const user = await UserModel.findById(id).lean();
     return user ? mapPersistUserToDomain(user) : null;
+  },
+
+  async getPasswordHashByEmail(email: Email): Promise<string | null> {
+    const doc = await UserModel.findOne({ email }).select({ password: 1, _id: 0 }).lean();
+    return doc?.password ?? null;
   },
 
   // delete user

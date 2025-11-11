@@ -1,7 +1,7 @@
 import { ConflictError, UnauthorizedError, NotFoundError } from "../../errors/errors.class";
 import type { MongoId, Email } from "../../types/primitives";
 import type { UserRepo } from "./user.repository.mongo";
-import type { UpdateUserInput, UserDomain } from "./user.types";
+import type { AuthUserInput, UpdateUserInput, UserDomain } from "./user.types";
 import type * as bcryptType from "bcrypt";
 import type { CreateUserInput } from "./user.types";
 import { MongoServerError } from "mongodb";
@@ -42,7 +42,7 @@ function createUserService({
     async findUserByEmail(email: Email): Promise<UserDomain> {
       const user = await userRepo.findByEmail(email);
       if (!user) {
-        throw new UnauthorizedError("Invalid email or password");
+        throw new NotFoundError("User not found");
       }
       return user;
     },
@@ -56,9 +56,14 @@ function createUserService({
       return user;
     },
 
-    // use-case: check user's password
-    async checkUserPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-      const match = await bcrypt.compare(plainPassword, hashedPassword);
+    // use-case: authenticate user
+    async authenticateUser(authUserInput: AuthUserInput): Promise<boolean> {
+      const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxXFByEVO";
+
+      const hashedPassword = await userRepo.getPasswordHashByEmail(authUserInput.email);
+      const passwordToCheck = hashedPassword ?? DUMMY_HASH;
+
+      const match = await bcrypt.compare(authUserInput.password, passwordToCheck);
       if (!match) {
         throw new UnauthorizedError("Invalid email or password");
       }
