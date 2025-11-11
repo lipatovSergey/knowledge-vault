@@ -1,28 +1,29 @@
-import express, { RequestHandler } from 'express'
-import userController from './user.controller'
+import express, { RequestHandler } from "express";
+import userController from "./user.controller";
 // middlewares
-import requireAuth from '../../middleware/require-auth.middleware'
-import validateBody from '../../middleware/validate-body.middleware'
+import requireAuth from "../../middleware/require-auth.middleware";
+import validateBody from "../../middleware/validate-body.middleware";
 // validate chemas
-import userSchemas from './user.validator'
+import { userMePatchRequestSchema } from "../../contracts/user/me.contract";
+import { userRootPostRequestSchema } from "../../contracts/user/root.contract";
 
-const router = express.Router()
+const router = express.Router();
 // create new user
 router.post(
-    '/',
-    validateBody(userSchemas.userCreate),
-    userController.createUser as RequestHandler
-)
+  "/",
+  validateBody(userRootPostRequestSchema),
+  userController.createUser as RequestHandler,
+);
 // get user's info by himself (authenticated)
-router.get('/me', requireAuth, userController.getUserInfo)
+router.get("/me", requireAuth, userController.getUserInfo);
 // delete user by himself(authenticated)
-router.delete('/me', requireAuth, userController.deleteUser)
+router.delete("/me", requireAuth, userController.deleteUser);
 // update user info
 router.patch(
-    '/me',
-    requireAuth,
-    validateBody(userSchemas.userInfoPatch),
-    userController.updateUserData as RequestHandler
-)
+  "/me",
+  requireAuth,
+  validateBody(userMePatchRequestSchema),
+  userController.updateUserData as RequestHandler,
+);
 
-export default router
+export default router;

@@ -1,5 +1,7 @@
-import { WithId } from "../../types/mongo";
+import { WithId } from "../../types/primitives";
 import { UserDocument, UserSchemaType } from "./user.model";
+import { UserProfileResponse } from "../../contracts/user/me.contract";
+import { UserDomain } from "./user.types";
 
 //type guard
 function isUserDocument(value: unknown): value is UserDocument {
@@ -11,13 +13,9 @@ function isUserDocument(value: unknown): value is UserDocument {
   );
 }
 
-export type UserDto = {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+function userToObject(rawUser: WithId<UserSchemaType> | UserDocument) {
+  return isUserDocument(rawUser) ? rawUser.toObject() : rawUser;
+}
 
 export type UserWithPasswordDto = {
   id: string;
@@ -25,28 +23,24 @@ export type UserWithPasswordDto = {
   email: string;
 };
 
-function toUserDto(rawUser: WithId<UserSchemaType> | UserDocument): UserDto {
-  const source = isUserDocument(rawUser) ? rawUser.toObject() : rawUser;
+export function mapPersistUserToDomain(rawUser: WithId<UserSchemaType> | UserDocument): UserDomain {
+  const userObject = userToObject(rawUser);
 
   return {
-    id: source._id.toString(),
-    name: source.name,
-    email: source.email,
-    createdAt: source.createdAt,
-    updatedAt: source.updatedAt,
+    id: userObject._id.toString(),
+    name: userObject.name,
+    email: userObject.email,
+    createdAt: new Date(userObject.createdAt),
+    updatedAt: new Date(userObject.updatedAt),
   };
 }
 
-function toUserWithPasswordDto(
-  rawUser: WithId<UserSchemaType> | UserDocument,
-): UserWithPasswordDto {
-  const source = isUserDocument(rawUser) ? rawUser.toObject() : rawUser;
-
+export function mapDomainUserToContract(user: UserDomain): UserProfileResponse {
   return {
-    id: source._id.toString(),
-    password: source.password,
-    email: source.email,
+    id: user.id.toString(),
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
   };
 }
-
-export { toUserDto, toUserWithPasswordDto };

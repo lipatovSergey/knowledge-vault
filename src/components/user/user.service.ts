@@ -1,18 +1,9 @@
-import {
-  ConflictError,
-  UnauthorizedError,
-  NotFoundError,
-} from "../../errors/errors.class";
-import {
-  toUserDto,
-  toUserWithPasswordDto,
-  type UserDto,
-  type UserWithPasswordDto,
-} from "./user.mapper";
-import type { MongoId } from "../../types/mongo";
+import { ConflictError, UnauthorizedError, NotFoundError } from "../../errors/errors.class";
+import type { MongoId, Email } from "../../types/primitives";
 import type { UserRepo } from "./user.repository.mongo";
-import type { CreateUserDto, UpdateUserDto, UserEmail } from "./user.validator";
+import type { UpdateUserInput, UserDomain } from "./user.types";
 import type * as bcryptType from "bcrypt";
+import type { CreateUserInput } from "./user.types";
 import { MongoServerError } from "mongodb";
 
 function createUserService({
@@ -24,18 +15,17 @@ function createUserService({
 }) {
   return {
     // use-case: create new user
-    async createUser(userData: CreateUserDto): Promise<UserDto> {
+    async createUser(createUserInput: CreateUserInput): Promise<void> {
       // hashing pass with bcrypt
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+      const hashedPassword = await bcrypt.hash(createUserInput.password, saltRounds);
 
       const userToSave = {
-        ...userData,
+        ...createUserInput,
         password: hashedPassword,
       };
       try {
-        const user = await userRepo.create(userToSave);
-        return toUserDto(user);
+        await userRepo.create(userToSave);
       } catch (error) {
         if (
           error instanceof MongoServerError &&
@@ -49,28 +39,25 @@ function createUserService({
     },
 
     // use-case: find user by email
-    async findUserByEmail(email: UserEmail): Promise<UserWithPasswordDto> {
+    async findUserByEmail(email: Email): Promise<UserDomain> {
       const user = await userRepo.findByEmail(email);
       if (!user) {
         throw new UnauthorizedError("Invalid email or password");
       }
-      return toUserWithPasswordDto(user);
+      return user;
     },
 
     // use-case: find user by ID
-    async findUserById(id: MongoId): Promise<UserDto> {
+    async findUserById(id: MongoId): Promise<UserDomain> {
       const user = await userRepo.findById(id);
       if (!user) {
         throw new NotFoundError("User not found");
       }
-      return toUserDto(user);
+      return user;
     },
 
     // use-case: check user's password
-    async checkUserPassword(
-      plainPassword: string,
-      hashedPassword: string,
-    ): Promise<boolean> {
+    async checkUserPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
       const match = await bcrypt.compare(plainPassword, hashedPassword);
       if (!match) {
         throw new UnauthorizedError("Invalid email or password");
@@ -88,12 +75,12 @@ function createUserService({
     },
 
     // use-case: update user's data
-    async updateUserData(id: MongoId, data: UpdateUserDto): Promise<UserDto> {
-      const updatedUser = await userRepo.updateUserData(id, data);
+    async updateUserData(updateUserInput: UpdateUserInput): Promise<UserDomain> {
+      const updatedUser = await userRepo.updateUserData(updateUserInput);
       if (!updatedUser) {
         throw new NotFoundError("User not found");
       }
-      return toUserDto(updatedUser);
+      return updatedUser;
     },
 
     // use-case: update user's password

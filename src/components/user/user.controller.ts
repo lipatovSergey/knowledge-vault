@@ -2,23 +2,26 @@ import userService from "./index";
 import destroySession from "../../utils/destroy-session.util";
 import type { Request, Response, NextFunction } from "express";
 import type { RequestWithValidatedBody } from "../../types/validated-request";
-import { CreateUserDto, UpdateUserDto } from "./user.validator";
-import { MongoId } from "../../types/mongo";
+import type { MongoId } from "../../types/primitives";
+import type { UserMeGetResponse, UserMePatchRequest } from "../../contracts/user/me.contract";
+import type { UserRootPostRequest } from "../../contracts/user/root.contract";
+import type { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
+import { mapDomainUserToContract } from "./user.mapper";
 
 const userController = {
   async createUser(
-    req: RequestWithValidatedBody<CreateUserDto>,
+    req: RequestWithValidatedBody<UserRootPostRequest>,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const userData = {
+      const createUserInput: CreateUserInput = {
         name: req.validatedBody.name,
         email: req.validatedBody.email,
         password: req.validatedBody.password,
       };
 
-      await userService.createUser(userData);
+      await userService.createUser(createUserInput);
       res.status(201).json({ message: "User created successfully" });
     } catch (error) {
       next(error);
@@ -28,9 +31,10 @@ const userController = {
   async getUserInfo(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.session.userId as MongoId;
-      const user = await userService.findUserById(userId);
+      const userDomain: UserDomain = await userService.findUserById(userId);
+      const userContract: UserMeGetResponse = mapDomainUserToContract(userDomain);
 
-      res.status(200).json(user);
+      res.status(200).json(userContract);
     } catch (error) {
       next(error);
     }
@@ -49,15 +53,17 @@ const userController = {
   },
 
   async updateUserData(
-    req: RequestWithValidatedBody<UpdateUserDto>,
+    req: RequestWithValidatedBody<UserMePatchRequest>,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const data = req.validatedBody;
-      const userId = req.session.userId as MongoId;
-      const updatedName = await userService.updateUserData(userId, data);
-      res.status(200).json({ updatedName: updatedName });
+      const updateUserInput: UpdateUserInput = {
+        userId: req.session.userId as MongoId,
+        ...req.validatedBody,
+      };
+      const updatedUser = await userService.updateUserData(updateUserInput);
+      res.status(200).json(updatedUser);
     } catch (error) {
       next(error);
     }
