@@ -1,17 +1,16 @@
 import userService from "../user";
-import mailService from "../../services/mail";
-import { UnauthorizedError } from "../../errors/errors.class";
 import destroySession from "../../utils/destroy-session.util";
 import tokenService from "./token";
 import regenerateSession from "../../utils/regenerate-session.util";
 import type { Request, Response, NextFunction } from "express";
 import type { RequestWithValidatedBody } from "../../types/validated-request";
-import type { ForgotPasswordDto, PasswordResetDto } from "./auth.validator";
+import type { PasswordResetDto } from "./auth.validator";
 import type { RequestWithValidatedResetToken } from "../../types/express";
-import type { AuthUserDomain, LoginInput } from "./auth.types";
+import type { AuthUserDomain, ForgotPasswordInput, LoginInput } from "./auth.types";
 import type { AuthLoginRequest, AuthLoginResponse } from "../../contracts/auth/login.contract";
 import { mapDomainAuthToContract } from "./auth.mapper";
 import authService from ".";
+import { ForgotPasswordRequest } from "../../contracts/auth/forgotPassword.contract";
 
 const authController = {
   async loginUser(
@@ -25,12 +24,12 @@ const authController = {
         password: req.validatedBody.password,
       };
 
-      const authUserDomain: AuthUserDomain = await authService.login(loginInput);
+      const authUser: AuthUserDomain = await authService.login(loginInput);
       // regenerate session ID for authenticated user
       await regenerateSession(req);
-      req.session.userId = authUserDomain.id;
+      req.session.userId = authUser.id;
 
-      const authUserContract: AuthLoginResponse = mapDomainAuthToContract(authUserDomain);
+      const authUserContract: AuthLoginResponse = mapDomainAuthToContract(authUser);
       return res.status(200).json(authUserContract);
     } catch (error) {
       next(error);
@@ -48,33 +47,13 @@ const authController = {
   },
 
   async forgotPassword(
-    req: RequestWithValidatedBody<ForgotPasswordDto>,
+    req: RequestWithValidatedBody<ForgotPasswordRequest>,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const email = req.validatedBody.email;
-      // We try to find the user. If the service throws UnauthorizedError (user not found),
-      // we catch it and treat it as a "success" from a security perspective to prevent email enumeration.
-      const user = await userService.findUserByEmail(email).catch((err) => {
-        if (err instanceof UnauthorizedError) return null;
-        throw err;
-      });
-
-      if (user) {
-        const rawToken = await tokenService.createTokenForUser(user.id);
-        // TODO: заменить на FRONTEND_URL из config/env
-        const frontendBaseUrl = "localhost:2173";
-        const resetLink = `${frontendBaseUrl.replace(/\/$/, "")}/password-reset?token=${rawToken}`;
-        await mailService.sendPasswordReset({
-          to: email,
-          subject: "Reset your password",
-          text: `To reset your password please use the following link ${resetLink}`,
-          html: `<p>Hello,</p><p>You requested a password reset. Please click the link below to set a new password:</p><p><a href="${resetLink}">Reset Password</a></p><p>If you did not request this, please ignore this email.</p>`,
-          meta: { rawToken }, // for tests
-        });
-      }
-
+      const forgotPasswordInput: ForgotPasswordInput = { email: req.validatedBody.email };
+      await authService.forgotPassword(forgotPasswordInput);
       return res.status(204).end();
     } catch (err) {
       return next(err);

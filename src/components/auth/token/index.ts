@@ -12,4 +12,5 @@ const tokenService = createResetTokenService({
   ttlMs: RESET_TOKEN_TTL_MS,
 });
 
+export type TokenService = typeof tokenService;
 export default tokenService;

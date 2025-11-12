@@ -6,4 +6,8 @@ export type LoginInput = {
   password: PasswordPlain;
 };
 
+export type ForgotPasswordInput = {
+  email: Email;
+};
+
 export type AuthUserDomain = UserDomain;
