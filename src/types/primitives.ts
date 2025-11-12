@@ -16,4 +16,9 @@ export type PasswordPlain = z.infer<typeof passwordPlainSchema>;
 export const isoDateStringSchema = z.iso.datetime();
 export type IsoDate = z.infer<typeof isoDateStringSchema>;
 
+export const passwordResetTokenSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{44}$/, "Invalid reset token");
+export type PasswordResetToken = z.infer<typeof passwordResetTokenSchema>;
+
 export type WithId<T> = FlattenMaps<T> & { _id: Types.ObjectId };
