@@ -1,5 +1,5 @@
 import { BadRequestError } from "../../../errors/errors.class";
-import type { MongoId } from "../../../types/mongo";
+import type { MongoId } from "../../../types/primitives";
 import type { ResetTokenRepositoryType } from "./password-reset-token.repository.mongo";
 import type * as bcryptType from "bcrypt";
 import type { RandomUtilType } from "../../../utils/random.util";
@@ -43,9 +43,7 @@ function createResetTokenService({
 
       // If no token is found, we compare against a dummy hash to ensure the response time is consistent.
       // The cost of a single bcrypt.hash call is negligible in this context.
-      const hashToCompare = foundToken
-        ? foundToken.validatorHash
-        : await bcrypt.hash("dummy", 10);
+      const hashToCompare = foundToken ? foundToken.validatorHash : await bcrypt.hash("dummy", 10);
 
       const isValid = await bcrypt.compare(validator, hashToCompare);
 

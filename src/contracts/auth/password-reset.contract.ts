@@ -9,9 +9,10 @@ export const passwordResetBodyRequestSchema = z
   .refine((data) => data.newPassword === data.newPasswordConfirmation, {
     message: "Passwords do not match",
   });
-export type PasswordResetBodyRequestSchema = z.infer<typeof passwordResetBodyRequestSchema>;
+export type PasswordResetBodyRequest = z.infer<typeof passwordResetBodyRequestSchema>;
 
 export const passwordResetTokenRequestSchema = z.object({
   token: passwordResetTokenSchema,
 });
-export type PasswordResetTokenRequestSchema = z.infer<typeof passwordResetTokenRequestSchema>;
+
+export const forgotPasswordResponseSchema = z.void();

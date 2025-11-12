@@ -1,16 +1,19 @@
-import userService from "../user";
 import destroySession from "../../utils/destroy-session.util";
-import tokenService from "./token";
 import regenerateSession from "../../utils/regenerate-session.util";
-import type { Request, Response, NextFunction } from "express";
-import type { RequestWithValidatedBody } from "../../types/validated-request";
-import type { PasswordResetDto } from "./auth.validator";
-import type { RequestWithValidatedResetToken } from "../../types/express";
-import type { AuthUserDomain, ForgotPasswordInput, LoginInput } from "./auth.types";
-import type { AuthLoginRequest, AuthLoginResponse } from "../../contracts/auth/login.contract";
 import { mapDomainAuthToContract } from "./auth.mapper";
 import authService from ".";
-import { ForgotPasswordRequest } from "../../contracts/auth/forgotPassword.contract";
+import type { Request, Response, NextFunction } from "express";
+import type { RequestWithValidatedBody } from "../../types/validated-request";
+import type { RequestWithValidatedResetToken } from "../../types/express";
+import type {
+  AuthUserDomain,
+  ForgotPasswordInput,
+  LoginInput,
+  ResetPasswordInput,
+} from "./auth.types";
+import type { AuthLoginRequest, AuthLoginResponse } from "../../contracts/auth/login.contract";
+import type { ForgotPasswordRequest } from "../../contracts/auth/password-forgot.contract";
+import type { PasswordResetBodyRequest } from "../../contracts/auth/password-reset.contract";
 
 const authController = {
   async loginUser(
@@ -61,16 +64,16 @@ const authController = {
   },
 
   async resetPassword(
-    req: RequestWithValidatedBody<PasswordResetDto> & RequestWithValidatedResetToken,
+    req: RequestWithValidatedBody<PasswordResetBodyRequest> & RequestWithValidatedResetToken,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const body = req.validatedBody;
-      const token = req.validatedResetToken;
-      const userId = await tokenService.verifyAndConsume(token);
-      await userService.updateUserPassword(userId, body.newPassword);
-      await tokenService.removeAllTokensForUser(userId);
+      const resetPasswordInput: ResetPasswordInput = {
+        password: req.validatedBody.newPassword,
+        token: req.validatedResetToken,
+      };
+      await authService.resetPassword(resetPasswordInput);
       await destroySession(req);
       return res.status(204).end();
     } catch (err) {

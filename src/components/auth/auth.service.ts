@@ -1,16 +1,24 @@
-import mailService from "../../services/mail";
 import { UnauthorizedError } from "../../errors/errors.class";
 import type { UserService } from "../user";
-import type { AuthUserDomain, ForgotPasswordInput, LoginInput } from "./auth.types";
+import type {
+  AuthUserDomain,
+  ForgotPasswordInput,
+  LoginInput,
+  ResetPasswordInput,
+} from "./auth.types";
 import type { TokenService } from "./token";
+import type { MongoId } from "../../types/primitives";
 import { FRONTEND_URL } from "../../config/env";
+import { MailService } from "../../services/mail";
 
 function createAuthService({
   userService,
   tokenService,
+  mailService,
 }: {
   userService: UserService;
   tokenService: TokenService;
+  mailService: MailService;
 }) {
   return {
     async login(loginInput: LoginInput): Promise<AuthUserDomain> {
@@ -37,6 +45,13 @@ function createAuthService({
           meta: { rawToken }, // for tests
         });
       }
+    },
+
+    async resetPassword(input: ResetPasswordInput): Promise<void> {
+      const { token, password } = input;
+      const userId: MongoId = await tokenService.verifyAndConsume(token);
+      await userService.updateUserPassword(userId, password);
+      await tokenService.removeAllTokensForUser(userId);
     },
   };
 }
