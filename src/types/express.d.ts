@@ -1,5 +1,5 @@
 import "express-session";
-import { PasswordResetToken } from "./primitives";
+import { PasswordResetTokenContract } from "./primitives";
 declare module "express-session" {
   interface SessionData {
     userId?: string;
@@ -19,7 +19,7 @@ export type RequestWithValidatedBody<Body> = import("express").Request & {
 };
 
 export type RequestWithValidatedResetToken = import("express").Request & {
-  validatedResetToken: PasswordResetToken;
+  validatedResetToken: PasswordResetTokenContract;
 };
 
 export type RequestWithValidatedParams<Params extends ParamsDictionary = ParamsDictionary> =

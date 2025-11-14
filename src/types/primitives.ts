@@ -28,9 +28,15 @@ export const passwordResetValidatorSchema = z
   .regex(/^[A-Za-z0-9_-]+$/, "Invalid validator");
 export type PasswordResetValidator = z.infer<typeof passwordResetValidatorSchema>;
 
-export const passwordResetTokenSchema = z
+export const passwordResetTokenDomainSchema = z.object({
+  selector: passwordResetSelectorSchema,
+  validator: passwordResetValidatorSchema,
+});
+export type PasswordResetTokenContractDomain = z.infer<typeof passwordResetTokenDomainSchema>;
+
+export const passwordResetTokenContractSchema = z
   .string()
   .regex(/^[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{44}$/, "Invalid reset token");
-export type PasswordResetToken = z.infer<typeof passwordResetTokenSchema>;
+export type PasswordResetTokenContract = z.infer<typeof passwordResetTokenContractSchema>;
 
 export type WithId<T> = FlattenMaps<T> & { _id: Types.ObjectId };
