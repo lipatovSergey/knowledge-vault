@@ -32,7 +32,7 @@ export const passwordResetTokenDomainSchema = z.object({
   selector: passwordResetSelectorSchema,
   validator: passwordResetValidatorSchema,
 });
-export type PasswordResetTokenContractDomain = z.infer<typeof passwordResetTokenDomainSchema>;
+export type PasswordResetTokenDomain = z.infer<typeof passwordResetTokenDomainSchema>;
 
 export const passwordResetTokenContractSchema = z
   .string()

@@ -1,6 +1,6 @@
 import destroySession from "../../utils/destroy-session.util";
 import regenerateSession from "../../utils/regenerate-session.util";
-import { mapDomainAuthToContract } from "./auth.mapper";
+import { mapContractTokenToDomain, mapDomainAuthToContract } from "./auth.mapper";
 import authService from ".";
 import type { Request, Response, NextFunction } from "express";
 import type { RequestWithValidatedBody } from "../../types/validated-request";
@@ -69,9 +69,10 @@ const authController = {
     next: NextFunction,
   ) {
     try {
+      const token = mapContractTokenToDomain(req.validatedResetToken);
       const resetPasswordInput: ResetPasswordInput = {
         password: req.validatedBody.newPassword,
-        token: req.validatedResetToken,
+        token,
       };
       await authService.resetPassword(resetPasswordInput);
       await destroySession(req);
