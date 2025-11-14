@@ -1,5 +1,5 @@
 import { BadRequestError } from "../../../errors/errors.class";
-import type { MongoId } from "../../../types/primitives";
+import type { MongoId, PasswordResetTokenDomain } from "../../../types/primitives";
 import type { ResetTokenRepositoryType } from "./password-reset-token.repository.mongo";
 import type * as bcryptType from "bcrypt";
 import type { RandomUtilType } from "../../../utils/random.util";
@@ -30,15 +30,8 @@ function createResetTokenService({
       return `${selector}.${validator}`;
     },
 
-    async verifyAndConsume(tokenPair: string): Promise<MongoId> {
-      if (!tokenPair || typeof tokenPair !== "string") {
-        throw new BadRequestError("Invalid or expired token");
-      }
-      const [selector, validator] = tokenPair.split(".", 2);
-      if (!selector || !validator) {
-        throw new BadRequestError("Invalid or expired token");
-      }
-
+    async verifyAndConsume(token: PasswordResetTokenDomain): Promise<MongoId> {
+      const { selector, validator } = token;
       const foundToken = await resetTokenRepo.findActiveBySelector(selector);
 
       // If no token is found, we compare against a dummy hash to ensure the response time is consistent.
