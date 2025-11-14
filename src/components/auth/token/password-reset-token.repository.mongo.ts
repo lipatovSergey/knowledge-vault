@@ -1,13 +1,9 @@
-import { Types } from "mongoose";
 import { ResetTokenModel } from "./password-reset-token.model";
 import type { ResetTokenSchemaType } from "./password-reset-token.model";
-import type { MongoId } from "../../../types/mongo";
-
-type LeanActiveToken = {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId;
-  validatorHash: string;
-};
+import type { MongoId, PasswordResetSelector } from "../../../types/primitives";
+import type { ResetTokenDomain } from "./password-reset-token.types";
+import type { ResetTokenPersist } from "./password-reset-token.types";
+import { mapPersistTokentoDomain } from "./password-reset-token.mapper";
 
 export type CreateTokenData = Pick<
   ResetTokenSchemaType,
@@ -22,12 +18,12 @@ const resetTokenRepo = {
     await new ResetTokenModel(resetTokenData).save();
   },
 
-  async findActiveBySelector(selector: string): Promise<LeanActiveToken | null> {
-    return ResetTokenModel.findOne({ selector })
+  async findActiveBySelector(selector: PasswordResetSelector): Promise<ResetTokenDomain | null> {
+    const token = await ResetTokenModel.findOne({ selector })
       .active()
-      .select("_id userId +validatorHash")
-      .lean<LeanActiveToken>()
-      .exec();
+      .select({ userId: 1, validatorHash: 1 })
+      .lean<ResetTokenPersist>();
+    return token ? mapPersistTokentoDomain(token) : null;
   },
 
   async consumeBySelector(selector: string): Promise<boolean> {
