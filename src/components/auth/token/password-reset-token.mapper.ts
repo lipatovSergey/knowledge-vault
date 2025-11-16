@@ -1,6 +1,6 @@
-import { ResetTokenDomain, ResetTokenPersist } from "./password-reset-token.types";
+import { ResetRequestRecord, ResetTokenPersist } from "./password-reset-token.types";
 
-export function mapPersistTokentoDomain(rawToken: ResetTokenPersist): ResetTokenDomain {
+export function mapPersistRecordToDomain(rawToken: ResetTokenPersist): ResetRequestRecord {
   return {
     userId: rawToken.userId.toString(),
     validatorHash: rawToken.validatorHash,
