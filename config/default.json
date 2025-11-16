@@ -1,7 +1,8 @@
 {
   "port": 3000,
   "auth": {
-    "reset_token_ttl_ms": 900000
+    "reset_token_ttl_ms": 900000,
+    "salt_rounds": 10
   },
   "db": {
     "name": "knowledge-vault-dev"
