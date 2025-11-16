@@ -9,6 +9,7 @@ import type { ResetTokenRepositoryType } from "./password-reset-token.repository
 import type * as bcryptType from "bcrypt";
 import type { RandomUtilType } from "../../../utils/random.util";
 import { mapDomainTokenToContract } from "../auth.mapper";
+import { BCRYPT_SALT_ROUNDS } from "../../../config/env";
 const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxWMXyEVO";
 
 function createResetTokenService({
@@ -26,8 +27,7 @@ function createResetTokenService({
     async createTokenForUser(userId: MongoId): Promise<string> {
       const selector: PasswordResetSelector = (await random(16)).toString("base64url");
       const validator: PasswordResetValidator = (await random(32)).toString("base64url");
-      const saltRounds = 10;
-      const validatorHash = await bcrypt.hash(validator, saltRounds);
+      const validatorHash = await bcrypt.hash(validator, BCRYPT_SALT_ROUNDS);
       await resetTokenRepo.create({
         selector,
         validatorHash,

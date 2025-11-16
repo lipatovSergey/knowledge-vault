@@ -5,6 +5,7 @@ import type { AuthUserInput, UpdateUserInput, UserDomain } from "./user.types";
 import type * as bcryptType from "bcrypt";
 import type { CreateUserInput } from "./user.types";
 import { MongoServerError } from "mongodb";
+import { BCRYPT_SALT_ROUNDS } from "../../config/env";
 const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxXFByEVO";
 
 function createUserService({
@@ -18,8 +19,7 @@ function createUserService({
     // use-case: create new user
     async createUser(createUserInput: CreateUserInput): Promise<void> {
       // hashing pass with bcrypt
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(createUserInput.password, saltRounds);
+      const hashedPassword = await bcrypt.hash(createUserInput.password, BCRYPT_SALT_ROUNDS);
 
       const userToSave = {
         ...createUserInput,
@@ -95,8 +95,7 @@ function createUserService({
 
     // use-case: update user's password
     async updateUserPassword(id: MongoId, password: string): Promise<boolean> {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
       const result = await userRepo.updatePassword(id, hashedPassword);
       if (!result) {
         throw new NotFoundError("User not found");
