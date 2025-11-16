@@ -1,5 +1,5 @@
 import z from "zod";
-import { passwordResetTokenSchema } from "../../types/primitives";
+import { passwordResetTokenStringSchema } from "../../types/primitives";
 
 export const passwordResetBodyRequestSchema = z
   .object({
@@ -12,7 +12,7 @@ export const passwordResetBodyRequestSchema = z
 export type PasswordResetBodyRequest = z.infer<typeof passwordResetBodyRequestSchema>;
 
 export const passwordResetTokenRequestSchema = z.object({
-  token: passwordResetTokenSchema,
+  token: passwordResetTokenStringSchema,
 });
 
 export const forgotPasswordResponseSchema = z.void();

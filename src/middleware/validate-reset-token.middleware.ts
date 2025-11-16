@@ -1,9 +1,9 @@
 import { BadRequestError } from "../errors/errors.class";
 import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
-import { PasswordResetTokenContract } from "../types/primitives";
+import { PasswordResetTokenString } from "../types/primitives";
 
-function validateResetToken(schema: ZodType<{ token: PasswordResetTokenContract }>): RequestHandler {
+function validateResetToken(schema: ZodType<{ token: PasswordResetTokenString }>): RequestHandler {
   return (req, _res, next) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
