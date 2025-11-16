@@ -19,6 +19,8 @@ export const validationErrorSchema = problemSchema.extend({
   }),
 });
 
+export type ValidationError = z.infer<typeof validationErrorSchema>;
+
 export const conflictErrorSchema = problemSchema.extend({
   title: z.literal("Conflict"),
   status: z.literal(409),

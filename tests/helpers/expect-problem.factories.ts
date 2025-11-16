@@ -1,9 +1,10 @@
 import type { Response } from "supertest";
+import { ValidationError } from "../../src/contracts/error/error.contract";
 
 type ErrorExpectation = (res: Response) => void;
 
 type ValidationErrorExpectation = (
-  res: Response,
+  error: ValidationError,
   expectedFields?: string[],
   formErrorsLength?: number,
   source?: string,
@@ -11,25 +12,19 @@ type ValidationErrorExpectation = (
 
 export function createExpectValidationError(instance: string): ValidationErrorExpectation {
   return function expectValidationError(
-    res: Response,
+    error,
     expectedFields = [],
     formErrorsLength = 0,
     source = "body",
   ) {
-    expect(res.statusCode).toBe(422);
-    expect(res.body).toMatchObject({
-      title: "Validation failed",
-      status: 422,
-      type: "urn:problem:validation-error",
-      instance: instance,
-      errors: { source: source },
-    });
-    expect(res.body.errors.fieldErrors).toEqual(
+    expect(error.instance).toBe(instance);
+    expect(error.errors.source).toBe(source);
+    expect(error.errors.fieldErrors).toEqual(
       expect.objectContaining(
         Object.fromEntries(expectedFields.map((key) => [key, expect.any(Array)])),
       ),
     );
-    expect(res.body.errors.formErrors).toHaveLength(formErrorsLength);
+    expect(error.errors.formErrors).toHaveLength(formErrorsLength);
   };
 }
 
