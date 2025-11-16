@@ -4,6 +4,8 @@ import {
   createExpectConflictError,
 } from "../../../../tests/helpers/expect-problem.factories";
 import type { SupertestResponse, MessageResponse } from "../../../../tests/test.types";
+import { userRootPostResponseSchema } from "../../../contracts/user/root.contract";
+import { validationErrorSchema } from "../../../contracts/error/error.contract";
 
 describe("User registration", () => {
   const route = "/api/user";
@@ -16,8 +18,8 @@ describe("User registration", () => {
       email: "test@example.com",
       password: "pass123",
     });
+    userRootPostResponseSchema.parse(res.body);
     expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty("message", "User created successfully");
   });
 
   it("should return 422 and errors for invalid types of fields", async () => {
@@ -26,7 +28,10 @@ describe("User registration", () => {
       email: 123,
       password: 123,
     });
-    expectValidationError(res, ["name", "email", "password"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expect(body.instance).toBe(route);
+    expectValidationError(body, ["name", "email", "password"]);
   });
 
   it("should return 422 if name was not passed", async () => {
