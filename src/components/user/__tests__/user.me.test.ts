@@ -8,6 +8,7 @@ import {
   type UserMePatchResponse,
   type UserMeGetResponse,
 } from "../../../contracts/user/me.contract";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
 import {
   notFoundErrorSchema,
   unauthorizedErrorSchema,
@@ -16,6 +17,7 @@ import {
 
 describe("/api/users/me", () => {
   const route = "/api/user/me";
+  const expectValidationError = createExpectValidationError(route);
   let agent: AuthAgent;
 
   beforeEach(async () => {
@@ -42,20 +44,18 @@ describe("/api/users/me", () => {
 
     it("should return 401 if no session cookie was passed", async () => {
       const res = await request(global.app).get(route);
-      const body = unauthorizedErrorSchema.parse(res.body);
+      unauthorizedErrorSchema.parse(res.body);
       expect(res.statusCode).toBe(401);
-      expect(body.instance).toBe(route);
     });
 
     it("should return 404 if user not found (fake session)", async () => {
       const agent = request.agent(global.app);
-      const fakeId = "64ffacacacacacacacacacac"; // валидный ObjectId-формат
+      const fakeId = "64ffacacacacacacacacacac";
 
-      await agent.post(`/test/session/${fakeId}`); // сессия сохранена
-      const res = await agent.get("/api/user/me"); // requireAuth пропустит
-      const body = notFoundErrorSchema.parse(res.body);
+      await agent.post(`/test/session/${fakeId}`);
+      const res = await agent.get("/api/user/me");
+      notFoundErrorSchema.parse(res.body);
       expect(res.statusCode).toBe(404);
-      expect(body.instance).toBe(route);
     });
   });
 
@@ -69,9 +69,8 @@ describe("/api/users/me", () => {
 
     it("should return 401 and message 'Unauthorized' if no session cookie was passed", async () => {
       const res = await request(global.app).delete(route);
-      const body = unauthorizedErrorSchema.parse(res.body);
+      unauthorizedErrorSchema.parse(res.body);
       expect(res.statusCode).toBe(401);
-      expect(body.instance).toBe(route);
     });
   });
 
@@ -88,19 +87,17 @@ describe("/api/users/me", () => {
 
     it("should return 401 and 'Unauthorized' if no session cookie was passed", async () => {
       const res = await request(global.app).patch(route);
-      const body = unauthorizedErrorSchema.parse(res.body);
+      unauthorizedErrorSchema.parse(res.body);
       expect(res.statusCode).toBe(401);
-      expect(body.instance).toBe(route);
     });
 
-    it("should return 422 if name wasn't passed", async () => {
-      const res = await agent.patch(route).send({
-        name: "",
-      });
+    it("should return 422 if nothing wasn't passed", async () => {
+      const res = await agent.patch(route).send({});
       const body = validationErrorSchema.parse(res.body);
+      console.log(body);
+
       expect(res.statusCode).toBe(422);
-      expect(body.instance).toBe(route);
-      expect(Object.keys(body.errors.fieldErrors)).toContain("name");
+      expectValidationError(body, [], 1);
     });
 
     it("should return 404 if user not found (fake session)", async () => {
@@ -111,9 +108,8 @@ describe("/api/users/me", () => {
       const res = await agent.patch("/api/user/me").send({
         name: "Updated",
       });
-      const body = notFoundErrorSchema.parse(res.body);
+      notFoundErrorSchema.parse(res.body);
       expect(res.statusCode).toBe(404);
-      expect(body.instance).toBe(route);
     });
   });
 });

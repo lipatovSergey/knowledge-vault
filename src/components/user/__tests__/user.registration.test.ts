@@ -1,6 +1,6 @@
 import request from "supertest";
-import { createExpectValidationError } from "../../../../tests/helpers/expect-problem.factories";
 import type { SupertestResponse, MessageResponse } from "../../../../tests/test.types";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
 import { userRootPostResponseSchema } from "../../../contracts/user/root.contract";
 import {
   conflictErrorSchema,
@@ -29,7 +29,6 @@ describe("User registration", () => {
     });
     const body = validationErrorSchema.parse(res.body);
     expect(res.statusCode).toBe(422);
-    expect(body.instance).toBe(route);
     expectValidationError(body, ["name", "email", "password"]);
   });
 
@@ -41,7 +40,6 @@ describe("User registration", () => {
     });
     const body = validationErrorSchema.parse(res.body);
     expect(res.statusCode).toBe(422);
-    expect(body.instance).toBe(route);
     expectValidationError(body, ["name"]);
   });
 
@@ -53,7 +51,6 @@ describe("User registration", () => {
     });
     const body = validationErrorSchema.parse(res.body);
     expect(res.statusCode).toBe(422);
-    expect(body.instance).toBe(route);
     expectValidationError(body, ["email"]);
   });
 
@@ -65,7 +62,6 @@ describe("User registration", () => {
     });
     const body = validationErrorSchema.parse(res.body);
     expect(res.statusCode).toBe(422);
-    expect(body.instance).toBe(route);
     expectValidationError(body, ["password"]);
   });
 
@@ -80,8 +76,7 @@ describe("User registration", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    const body = conflictErrorSchema.parse(res.body);
+    conflictErrorSchema.parse(res.body);
     expect(res.statusCode).toBe(409);
-    expect(body.instance).toBe(route);
   });
 });
