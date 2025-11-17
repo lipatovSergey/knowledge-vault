@@ -1,16 +1,15 @@
 import request from "supertest";
-import {
-  createExpectValidationError,
-  createExpectConflictError,
-} from "../../../../tests/helpers/expect-problem.factories";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-problem.factories";
 import type { SupertestResponse, MessageResponse } from "../../../../tests/test.types";
 import { userRootPostResponseSchema } from "../../../contracts/user/root.contract";
-import { validationErrorSchema } from "../../../contracts/error/error.contract";
+import {
+  conflictErrorSchema,
+  validationErrorSchema,
+} from "../../../contracts/error/error.contract";
 
 describe("User registration", () => {
   const route = "/api/user";
   const expectValidationError = createExpectValidationError(route);
-  const expectConflictError = createExpectConflictError(route);
 
   it("should register a new user", async () => {
     const res: SupertestResponse<MessageResponse> = await request(global.app).post(route).send({
@@ -40,7 +39,10 @@ describe("User registration", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    expectValidationError(res, ["name"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expect(body.instance).toBe(route);
+    expectValidationError(body, ["name"]);
   });
 
   it("should return code 422  if email is invalid or empty string", async () => {
@@ -49,7 +51,10 @@ describe("User registration", () => {
       email: "test",
       password: "pass123",
     });
-    expectValidationError(res, ["email"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expect(body.instance).toBe(route);
+    expectValidationError(body, ["email"]);
   });
 
   it("should return code 422 if password is invalid or empty string", async () => {
@@ -58,7 +63,10 @@ describe("User registration", () => {
       email: "test@test.com",
       password: "",
     });
-    expectValidationError(res, ["password"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expect(body.instance).toBe(route);
+    expectValidationError(body, ["password"]);
   });
 
   it("should return 409 if user with used email exists", async () => {
@@ -72,6 +80,8 @@ describe("User registration", () => {
       email: "test@example.com",
       password: "pass123",
     });
-    expectConflictError(res);
+    const body = conflictErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(409);
+    expect(body.instance).toBe(route);
   });
 });
