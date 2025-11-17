@@ -1,15 +1,15 @@
-const request = require("supertest");
-const {
-  createExpectUnauthorizedError,
-  createExpectValidationError,
-  createExpectConflictError,
-} = require("../../../../tests/helpers/expect-problem.factories.js");
+import request from "supertest";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
+import { authLoginResponseSchema } from "../../../contracts/auth/login.contract";
+import {
+  conflictErrorSchema,
+  unauthorizedErrorSchema,
+  validationErrorSchema,
+} from "../../../contracts/error/error.contract";
 
 describe("User login", () => {
   const route = "/api/auth/login";
-  const expectUnauthorizedError = createExpectUnauthorizedError(route);
   const expectValidationError = createExpectValidationError(route);
-  const expectConflictError = createExpectConflictError(route);
 
   beforeEach(async () => {
     await request(global.app).post("/api/user").send({
@@ -24,8 +24,8 @@ describe("User login", () => {
       email: "test@example.com",
       password: "pass123",
     });
+    authLoginResponseSchema.parse(res.body);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("message", "Login successful");
   });
 
   it("should set session cookie after successful login", async () => {
@@ -56,8 +56,14 @@ describe("User login", () => {
     expect(cookieAfter).toMatch(/connect\.sid=/);
 
     // compare sessions ids
-    const sidBefore = cookieBefore.match(/connect\.sid=([^;]+)/)[1];
-    const sidAfter = cookieAfter.match(/connect\.sid=([^;]+)/)[1];
+    const matchBefore = cookieBefore.match(/connect\.sid=([^;]+)/);
+    const matchAfter = cookieAfter.match(/connect\.sid=([^;]+)/);
+
+    expect(matchBefore).not.toBeNull();
+    expect(matchAfter).not.toBeNull();
+
+    const sidBefore = matchBefore![1];
+    const sidAfter = matchAfter![1];
     expect(sidBefore).not.toBe(sidAfter);
   });
 
@@ -66,7 +72,8 @@ describe("User login", () => {
       email: "wrong@example.com",
       password: "pass123",
     });
-    expectUnauthorizedError(res);
+    unauthorizedErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(401);
   });
 
   it("should return 401 if password is incorrect", async () => {
@@ -74,7 +81,8 @@ describe("User login", () => {
       email: "test@example.com",
       password: "pass124",
     });
-    expectUnauthorizedError(res);
+    unauthorizedErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(401);
   });
 
   it("should return 422 if email is an empty string", async () => {
@@ -82,7 +90,9 @@ describe("User login", () => {
       email: "",
       password: "pass123",
     });
-    expectValidationError(res, ["email"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expectValidationError(body, ["email"]);
   });
 
   it("should return 422 if password is an empty string", async () => {
@@ -90,7 +100,9 @@ describe("User login", () => {
       email: "test@example.com",
       password: "",
     });
-    expectValidationError(res, ["password"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expectValidationError(body, ["password"]);
   });
 
   it("should return 409 if user is already logged in", async () => {
@@ -101,13 +113,11 @@ describe("User login", () => {
 
     const cookie = firstRes.headers["set-cookie"];
 
-    const res = await request(global.app)
-      .post(route)
-      .set("Cookie", cookie)
-      .send({
-        email: "test@example.com",
-        password: "pass123",
-      });
-    expectConflictError(res);
+    const res = await request(global.app).post(route).set("Cookie", cookie).send({
+      email: "test@example.com",
+      password: "pass123",
+    });
+    conflictErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(409);
   });
 });
