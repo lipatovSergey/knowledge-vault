@@ -14,6 +14,6 @@ export function mapContractTokenToDomain(token: PasswordResetTokenString) {
 }
 
 export function mapDomainTokenToContract(token: PasswordResetTokenDomain) {
-  const tokenString = `${token.selector}.${token.validator}`;
+  const tokenString: PasswordResetTokenString = `${token.selector}.${token.validator}`;
   return passwordResetTokenStringSchema.parse(tokenString);
 }

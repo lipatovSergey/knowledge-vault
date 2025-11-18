@@ -36,7 +36,7 @@ export type PasswordResetTokenDomain = z.infer<typeof passwordResetTokenDomainSc
 
 export const passwordResetTokenStringSchema = z
   .string()
-  .regex(/^[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{44}$/, "Invalid reset token");
+  .regex(/^[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}$/, "Invalid reset token");
 export type PasswordResetTokenString = z.infer<typeof passwordResetTokenStringSchema>;
 
 export type WithId<T> = FlattenMaps<T> & { _id: Types.ObjectId };
