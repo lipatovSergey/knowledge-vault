@@ -1,4 +1,4 @@
-import { UnauthorizedError } from "../../errors/errors.class";
+import { NotFoundError } from "../../errors/errors.class";
 import type { UserService } from "../user";
 import type {
   AuthUserDomain,
@@ -30,7 +30,7 @@ function createAuthService({
       // we catch it and treat it as a "success" from a security perspective to prevent email enumeration.
       const { email } = input;
       const user = await userService.findUserByEmail(email).catch((err) => {
-        if (err instanceof UnauthorizedError) return null;
+        if (err instanceof NotFoundError) return null;
         throw err;
       });
       if (user) {
