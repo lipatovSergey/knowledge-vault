@@ -18,13 +18,13 @@ export type IsoDate = z.infer<typeof isoDateStringSchema>;
 
 export const passwordResetSelectorSchema = z
   .string()
-  .length(24)
+  .length(22)
   .regex(/^[A-Za-z0-9_-]+$/, "Invalid selector");
 export type PasswordResetSelector = z.infer<typeof passwordResetSelectorSchema>;
 
 export const passwordResetValidatorSchema = z
   .string()
-  .length(24)
+  .length(43)
   .regex(/^[A-Za-z0-9_-]+$/, "Invalid validator");
 export type PasswordResetValidator = z.infer<typeof passwordResetValidatorSchema>;
 

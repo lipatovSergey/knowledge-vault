@@ -14,5 +14,3 @@ export type PasswordResetBodyRequest = z.infer<typeof passwordResetBodyRequestSc
 export const passwordResetTokenRequestSchema = z.object({
   token: passwordResetTokenStringSchema,
 });
-
-export const forgotPasswordResponseSchema = z.void();
