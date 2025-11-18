@@ -1,14 +1,14 @@
-const request = require("supertest");
-const mailbox = require("../../../../tests/mailbox.helper.js");
-const {
-  createExpectValidationError,
-} = require("../../../../tests/helpers/expect-problem.factories.js");
+import request from "supertest";
+import * as mailbox from "../../../../tests/mailbox.helper";
+import type { AuthAgent } from "../../../../tests/test.types";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
+import { validationErrorSchema } from "../../../contracts/error/error.contract";
 
 describe("POST /api/auth/password/forgot", () => {
   const route = "/api/auth/password/forgot";
   const email = "test@example.com";
   const expectValidationError = createExpectValidationError(route);
-  let agent;
+  let agent: AuthAgent;
 
   beforeEach(async () => {
     mailbox.clear();
@@ -22,15 +22,17 @@ describe("POST /api/auth/password/forgot", () => {
 
   it("drops a reset email into the mailbox for existing user", async () => {
     const res = await agent.post(route).send({ email });
+    expect(res.body).toEqual({});
     expect(res.statusCode).toBe(204);
 
     const msg = mailbox.lastTo(email);
     expect(msg).toBeDefined();
-    expect(msg.type).toBe("password-reset");
+    expect(msg!.type).toBe("password-reset");
   });
 
   it("returns 204", async () => {
     const res = await agent.post(route).send({ email });
+    expect(res.body).toEqual({});
     expect(res.statusCode).toBe(204);
   });
 
@@ -38,24 +40,26 @@ describe("POST /api/auth/password/forgot", () => {
     await agent.post(route).send({ email: email });
     const msg = mailbox.lastTo(email);
     expect(msg).toBeDefined();
-    expect(msg.meta?.rawToken).toBeDefined();
+    expect(msg!.meta!.rawToken).toBeDefined();
   });
 
   it("returns 204 even if there no user with passed email in DB", async () => {
     const res = await agent.post(route).send({ email: "notdbemail@gmail.com" });
+    expect(res.body).toEqual({});
     expect(res.statusCode).toBe(204);
   });
 
   it("if user sends request twice new token replace the old one", async () => {
     await agent.post(route).send({ email });
-    const oldToken = mailbox.lastTo(email).meta.rawToken;
+    const oldToken = mailbox.lastTo(email)!.meta!.rawToken;
     await agent.post(route).send({ email });
-    const newToken = mailbox.lastTo(email).meta.rawToken;
+    const newToken = mailbox.lastTo(email)!.meta!.rawToken;
     expect(oldToken).not.toEqual(newToken);
   });
 
   it("returns 422 on invalid email format", async () => {
     const res = await agent.post(route).send({ email: "invalid" });
-    expectValidationError(res, ["email"]);
+    const body = validationErrorSchema.parse(res.body);
+    expectValidationError(body, ["email"]);
   });
 });
