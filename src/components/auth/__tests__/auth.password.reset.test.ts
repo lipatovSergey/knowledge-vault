@@ -1,21 +1,21 @@
-const request = require("supertest");
-const mailbox = require("../../../../tests/mailbox.helper.js");
-const bcrypt = require("bcrypt");
-const {
-  createExpiredResetToken,
-} = require("../../../../tests/helpers/password-reset-token.factory.js");
-const {
-  createExpectBadRequestError,
-  createExpectValidationError,
-} = require("../../../../tests/helpers/expect-problem.factories.js");
+import request from "supertest";
+import * as mailbox from "../../../../tests/mailbox.helper";
+import bcrypt from "bcrypt";
+import { createExpiredResetToken } from "../../../../tests/helpers/password-reset-token.factory";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
+import type { AuthAgent } from "../../../../tests/test.types";
+import { PasswordResetTokenString } from "../../../types/primitives";
+import {
+  badRequestErrorSchema,
+  validationErrorSchema,
+} from "../../../contracts/error/error.contract";
 
 describe("POST /api/auth/password/reset", () => {
   const route = "/api/auth/password/reset";
   const email = "test@example.com";
-  const expectBadRequestError = createExpectBadRequestError(route);
   const expectValidationError = createExpectValidationError(route);
-  let agent;
-  let emailToken;
+  let agent: AuthAgent;
+  let emailToken: PasswordResetTokenString;
 
   beforeEach(async () => {
     mailbox.clear();
@@ -27,7 +27,10 @@ describe("POST /api/auth/password/reset", () => {
     });
     await agent.post("/api/auth/password/forgot").send({ email: email });
     const message = mailbox.lastTo(email);
-    emailToken = message.meta.rawToken;
+    expect(message).toBeDefined();
+    expect(message?.meta).toBeDefined();
+    expect(typeof message?.meta?.rawToken).toBe("string");
+    emailToken = message!.meta!.rawToken as string;
   });
 
   it("get 204 if all required fields included in request body", async () => {
@@ -37,6 +40,7 @@ describe("POST /api/auth/password/reset", () => {
       newPasswordConfirmation: "pass456",
     });
     expect(res.statusCode).toBe(204);
+    expect(res.body).toEqual({});
   });
 
   it("get 204, updates password, old fails, new works", async () => {
@@ -46,6 +50,7 @@ describe("POST /api/auth/password/reset", () => {
       newPasswordConfirmation: "pass456",
     });
     expect(res.statusCode).toBe(204);
+    expect(res.body).toEqual({});
 
     const oldPasswordRes = await agent.post("/api/auth/login").send({
       email: email,
@@ -83,7 +88,8 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expectBadRequestError(res);
+    badRequestErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(400);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -99,7 +105,8 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expectBadRequestError(res);
+    badRequestErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(400);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -114,7 +121,8 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expectBadRequestError(res);
+    badRequestErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(400);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -124,7 +132,8 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "pass456",
     });
-    expectBadRequestError(res);
+    badRequestErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(400);
     expect(res.body.errors).toBeUndefined();
   });
 
@@ -134,7 +143,9 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass456",
       newPasswordConfirmation: "123qwer",
     });
-    expectValidationError(res, [], 1);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expectValidationError(body, [], 1);
   });
 
   it("returns 422 if new password shorter then 6 symbols", async () => {
@@ -143,6 +154,8 @@ describe("POST /api/auth/password/reset", () => {
       newPassword: "pass",
       newPasswordConfirmation: "pass",
     });
-    expectValidationError(res, ["newPassword", "newPasswordConfirmation"]);
+    const body = validationErrorSchema.parse(res.body);
+    expect(res.statusCode).toBe(422);
+    expectValidationError(body, ["newPassword", "newPasswordConfirmation"]);
   });
 });
