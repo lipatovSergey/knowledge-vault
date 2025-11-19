@@ -11,6 +11,7 @@ import type { RandomUtilType } from "../../../utils/random.util";
 import { mapDomainTokenToContract } from "../auth.mapper";
 import { BCRYPT_SALT_ROUNDS } from "../../../config/env";
 const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxWMXyEVO";
+export type BcryptAdapter = Pick<typeof bcryptType, "hash" | "compare">;
 
 function createResetTokenService({
   resetTokenRepo,
@@ -19,7 +20,7 @@ function createResetTokenService({
   ttlMs,
 }: {
   resetTokenRepo: ResetTokenRepositoryType;
-  bcrypt: typeof bcryptType;
+  bcrypt: BcryptAdapter;
   random: RandomUtilType;
   ttlMs: number;
 }) {
@@ -45,7 +46,6 @@ function createResetTokenService({
       // If no token is found, we compare against a dummy hash to ensure the response time is consistent.
       // The cost of a single bcrypt.hash call is negligible in this context.
       const hashToCompare = foundToken ? foundToken.validatorHash : DUMMY_HASH;
-
       const isValid = await bcrypt.compare(validator, hashToCompare);
 
       // Now we can safely check both conditions without leaking timing information.
