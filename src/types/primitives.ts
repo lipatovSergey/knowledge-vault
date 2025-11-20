@@ -40,3 +40,15 @@ export const passwordResetTokenStringSchema = z
 export type PasswordResetTokenString = z.infer<typeof passwordResetTokenStringSchema>;
 
 export type WithId<T> = FlattenMaps<T> & { _id: Types.ObjectId };
+
+export const noteTitleSchema = z
+  .string()
+  .min(1, "Title is required")
+  .max(120, "Title max length 120 symbols");
+export type NoteTitle = z.infer<typeof noteTitleSchema>;
+
+export const noteContentSchema = z
+  .string()
+  .min(1, "Content is required")
+  .max(2000, "Content max length 2000 symbols");
+export type NoteContent = z.infer<typeof noteContentSchema>;
