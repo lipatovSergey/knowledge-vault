@@ -39,7 +39,7 @@ const noteController = {
     }
   },
 
-  // returns note mapped info, only for note's owner
+  // should return note mapped info, only for note's owner
   async getNote(
     req: RequestWithValidatedParams<NoteIdInParams>,
     res: Response,

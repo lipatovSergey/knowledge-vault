@@ -45,7 +45,7 @@ describe("/api/note/:id", () => {
   });
 
   describe("GET", () => {
-    it("return 200 status code and plain note object with id, title, content, createdAt, updatedAt fields", async () => {
+    it("should return 200 status code and plain note object with id, title, content, createdAt, updatedAt fields", async () => {
       const res = await agent.get(route);
       expect(res.statusCode).toBe(200);
       const body = noteIdGetResponseSchema.parse(res.body);
@@ -57,7 +57,7 @@ describe("/api/note/:id", () => {
       );
     });
 
-    it("returns 400 status code if passed note id invalid", async () => {
+    it("should return 400 status code if passed note id invalid", async () => {
       const route = "/api/note/12345678";
       const res = await agent.get(route);
       expect(res.statusCode).toBe(400);
@@ -65,7 +65,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code if note wasn't found in DB", async () => {
+    it("should return 404 status code if note wasn't found in DB", async () => {
       const missingId = new Types.ObjectId().toString();
       const route = `/api/note/${missingId}`;
       const res = await agent.get(route);
@@ -74,7 +74,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code if request send not by note's owner", async () => {
+    it("should return 404 status code if request send not by note's owner", async () => {
       // create new user with separate agent
       const intrudetAgent = request.agent(global.app);
       await intrudetAgent.post("/api/user").send({
@@ -93,14 +93,14 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 401 status code if request was send by not authorized user", async () => {
+    it("should return 401 status code if request was send by not authorized user", async () => {
       const res = await request(global.app).get(route);
       expect(res.statusCode).toBe(401);
       const body = unauthorizedErrorSchema.parse(res.body);
       expect(body.instance).toBe(route);
     });
 
-    it("returns 401 status code if user logged out before request send", async () => {
+    it("should return 401 status code if user logged out before request send", async () => {
       await agent.post("/api/auth/logout");
       const res = await agent.get(route);
       expect(res.statusCode).toBe(401);
@@ -110,14 +110,14 @@ describe("/api/note/:id", () => {
   });
 
   describe("DELETE", () => {
-    it("Deletes note from DB returns 200 status code", async () => {
+    it("should delete note from DB should return 200 status code", async () => {
       const res = await agent.delete(route);
       expect(res.statusCode).toBe(200);
       const body = noteIdDeleteResponseSchema.parse(res.body);
       expect(body).toHaveProperty("message", "Note deleted");
     });
 
-    it("returns 400 status code if passed note id invalid", async () => {
+    it("should return 400 status code if passed note id invalid", async () => {
       const route = "/api/note/12345678";
       const res = await agent.delete(route);
       expect(res.statusCode).toBe(400);
@@ -126,7 +126,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code if delete request was send twice", async () => {
+    it("should return 404 status code if delete request was send twice", async () => {
       await agent.delete(route);
       const res = await agent.delete(route);
       expect(res.statusCode).toBe(404);
@@ -134,7 +134,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code to get /api/note/:id after successful note delete", async () => {
+    it("should return 404 status code to get /api/note/:id after successful note delete", async () => {
       await agent.delete(route);
       const res = await agent.get(route);
       expect(res.statusCode).toBe(404);
@@ -142,7 +142,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code if note wasn't found in DB", async () => {
+    it("should return 404 status code if note wasn't found in DB", async () => {
       const missingId = new Types.ObjectId().toString();
       const route = `/api/note/${missingId}`;
       const res = await agent.delete(route);
@@ -151,7 +151,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code if request send not by note's owner", async () => {
+    it("should return 404 status code if request send not by note's owner", async () => {
       // create new user with separate agent
       const intrudetAgent = request.agent(global.app);
       await intrudetAgent.post("/api/user").send({
@@ -170,14 +170,14 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 401 status code if request was send by not authorized user", async () => {
+    it("should return 401 status code if request was send by not authorized user", async () => {
       const res = await request(global.app).delete(route);
       expect(res.statusCode).toBe(401);
       const body = unauthorizedErrorSchema.parse(res.body);
       expect(body.instance).toBe(route);
     });
 
-    it("returns 401 status code if user logged out before request send", async () => {
+    it("should return 401 status code if user logged out before request send", async () => {
       await agent.post("/api/auth/logout");
       const res = await agent.delete(route);
       expect(res.statusCode).toBe(401);
@@ -186,7 +186,7 @@ describe("/api/note/:id", () => {
     });
   });
   describe("PATCH", () => {
-    it("should update note's title in DB, returns 200 and updated note", async () => {
+    it("should update note's title in DB, should return 200 and updated note", async () => {
       const changedTitle = "changed-valid-title";
       const res = await agent.patch(route).send({
         title: changedTitle,
@@ -200,7 +200,7 @@ describe("/api/note/:id", () => {
       );
     });
 
-    it("should update note's content in DB, returns 200 and updated note", async () => {
+    it("should update note's content in DB, should return 200 and updated note", async () => {
       const changedContent = "changed-valid-content";
       const res = await agent.patch(route).send({
         content: changedContent,
@@ -214,7 +214,7 @@ describe("/api/note/:id", () => {
       );
     });
 
-    it("should update note's title and content in DB, returns 200 and updated note", async () => {
+    it("should update note's title and content in DB, should return 200 and updated note", async () => {
       const changedTitle = "changed-valid-title";
       const changedContent = "changed-valid-content";
       const res = await agent.patch(route).send({
@@ -231,7 +231,7 @@ describe("/api/note/:id", () => {
       );
     });
 
-    it("returns 400 status code if passed note id invalid", async () => {
+    it("should return 400 status code if passed note id invalid", async () => {
       const fakeRoute = "/api/note/12345678";
       const res = await agent.patch(fakeRoute);
       expect(res.statusCode).toBe(400);
@@ -239,7 +239,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(fakeRoute);
     });
 
-    it("return 422 if passed title empty string", async () => {
+    it("should return 422 if passed title empty string", async () => {
       const res = await agent.patch(route).send({
         title: "",
       });
@@ -248,7 +248,7 @@ describe("/api/note/:id", () => {
       expectValidationError(body, ["title"], 1);
     });
 
-    it("return 422 if passed content empty string", async () => {
+    it("should return 422 if passed content empty string", async () => {
       const res = await agent.patch(route).send({
         content: "",
       });
@@ -257,7 +257,7 @@ describe("/api/note/:id", () => {
       expectValidationError(body, ["content"], 1);
     });
 
-    it("returns 422 error if title longer then 120 symbols", async () => {
+    it("should return 422 error if title longer then 120 symbols", async () => {
       const noteData = { title: "a".repeat(121) };
       const res = await agent.patch(route).send(noteData);
       expect(res.statusCode).toBe(422);
@@ -265,7 +265,7 @@ describe("/api/note/:id", () => {
       expectValidationError(body, ["title"], 1);
     });
 
-    it("returns 422 error if content longer then 2000 symbols", async () => {
+    it("should return 422 error if content longer then 2000 symbols", async () => {
       const noteData = { content: "a".repeat(2001) };
       const res = await agent.patch(route).send(noteData);
       expect(res.statusCode).toBe(422);
@@ -273,14 +273,14 @@ describe("/api/note/:id", () => {
       expectValidationError(body, ["content"], 1);
     });
 
-    it("returns 422 status code if passed empty body", async () => {
+    it("should return 422 status code if passed empty body", async () => {
       const res = await agent.patch(route).send({});
       expect(res.statusCode).toBe(422);
       const body = validationErrorSchema.parse(res.body);
       expectValidationError(body, [], 1);
     });
 
-    it("returns 404 status code if note wasn't found in DB", async () => {
+    it("should return 404 status code if note wasn't found in DB", async () => {
       const missingId = new Types.ObjectId().toString();
       const route = `/api/note/${missingId}`;
       const res = await agent.patch(route).send({
@@ -291,7 +291,7 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 404 status code if request send not by note's owner", async () => {
+    it("should return 404 status code if request send not by note's owner", async () => {
       // create new user with separate agent
       const intrudetAgent = request.agent(global.app);
       await intrudetAgent.post("/api/user").send({
@@ -312,14 +312,14 @@ describe("/api/note/:id", () => {
       expect(body.instance).toBe(route);
     });
 
-    it("returns 401 status code if request was send by not authorized user", async () => {
+    it("should return 401 status code if request was send by not authorized user", async () => {
       const res = await request(global.app).patch(route);
       expect(res.statusCode).toBe(401);
       const body = unauthorizedErrorSchema.parse(res.body);
       expect(body.instance).toBe(route);
     });
 
-    it("returns 401 status code if user logged out before request send", async () => {
+    it("should return 401 status code if user logged out before request send", async () => {
       await agent.post("/api/auth/logout");
       const res = await agent.patch(route);
       expect(res.statusCode).toBe(401);

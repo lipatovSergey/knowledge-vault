@@ -110,7 +110,7 @@ describe("POST /api/auth/password/reset", () => {
     expect(res.body.errors).toBeUndefined();
   });
 
-  it("returns 400 if token expired", async () => {
+  it("should return 400 if token expired", async () => {
     const selector = "some-selector-for-expired-token";
     const validator = "some-validator-for-expired-token";
     const validatorHash = await bcrypt.hash(validator, 10);
@@ -126,7 +126,7 @@ describe("POST /api/auth/password/reset", () => {
     expect(res.body.errors).toBeUndefined();
   });
 
-  it("returns 400 if token validation fails", async () => {
+  it("should return 400 if token validation fails", async () => {
     const res = await agent.post(route).send({
       token: "invalid-token-format.with/slash",
       newPassword: "pass456",
@@ -137,7 +137,7 @@ describe("POST /api/auth/password/reset", () => {
     expect(res.body.errors).toBeUndefined();
   });
 
-  it("returns 422 if password and password confirmation doesn't match", async () => {
+  it("should return 422 if password and password confirmation doesn't match", async () => {
     const res = await agent.post(route).send({
       token: emailToken,
       newPassword: "pass456",
@@ -148,7 +148,7 @@ describe("POST /api/auth/password/reset", () => {
     expectValidationError(body, [], 1);
   });
 
-  it("returns 422 if new password shorter then 6 symbols", async () => {
+  it("should return 422 if new password shorter then 6 symbols", async () => {
     const res = await agent.post(route).send({
       token: emailToken,
       newPassword: "pass",

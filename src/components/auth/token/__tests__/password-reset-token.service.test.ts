@@ -88,7 +88,7 @@ describe("PasswordResetTokenService", () => {
       expect(resultUserId).toBe(mockUserId);
     });
 
-    it("should throw BadRequestError and perform dummy hash to prevent timing attacks", async () => {
+    it("should return BadRequestError and perform dummy hash to prevent timing attacks", async () => {
       const tokenPair = { selector, validator };
       const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxWMXyEVO";
 
@@ -98,7 +98,7 @@ describe("PasswordResetTokenService", () => {
       expect(mockBcrypt.compare).toHaveBeenCalledWith(validator, DUMMY_HASH);
     });
 
-    it("should throw BadRequestError if passed validator is invalid", async () => {
+    it("should return BadRequestError if passed validator is invalid", async () => {
       const validator = "invalid-validator";
       const tokenPair = { selector, validator };
       const mockTokenFromDB = {

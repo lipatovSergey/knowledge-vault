@@ -38,7 +38,7 @@ describe("User login", () => {
     expect(res.headers["set-cookie"][0]).toMatch(/connect\.sid=/);
   });
 
-  it("regenerates session ID on successful login", async () => {
+  it("should regenerate session ID on successful login", async () => {
     const agent = request.agent(global.app);
     // create guest session
     const touchRes = await agent.get("/test/touch");

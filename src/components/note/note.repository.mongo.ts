@@ -18,7 +18,7 @@ const noteRepo = {
     return mapPersistNoteToDomain(savedNote);
   },
 
-  // finds and returns note info from DB. Only for owner
+  // finds and should return note info from DB. Only for owner
   async getNote(input: GetNoteInput): Promise<NoteDomain | null> {
     const { noteId, userId } = input;
     const note = await NoteModel.findOne({ _id: noteId, userId }).lean();

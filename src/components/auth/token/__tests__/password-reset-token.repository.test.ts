@@ -22,7 +22,7 @@ describe("password-reset-token repository", () => {
   });
 
   describe("token create", () => {
-    it("saves the token correctly", async () => {
+    it("should save the token correctly", async () => {
       await resetTokenRepo.create(createTokenInput);
 
       // there should be only one document in DB
@@ -30,7 +30,7 @@ describe("password-reset-token repository", () => {
       expect(count).toBe(1);
     });
 
-    it("expired token not active", async () => {
+    it("should make expired token not active", async () => {
       createTokenInput.expiresAt = new Date(Date.now() - 1);
       await resetTokenRepo.create(createTokenInput);
 
@@ -43,7 +43,7 @@ describe("password-reset-token repository", () => {
     beforeEach(async () => {
       await resetTokenRepo.create(createTokenInput);
     });
-    it("find and return active token", async () => {
+    it("should find and return active token", async () => {
       const foundToken = await resetTokenRepo.findActiveBySelector(selector);
 
       expect(foundToken).not.toBeNull();
@@ -57,7 +57,7 @@ describe("password-reset-token repository", () => {
       expect(Object.keys(foundToken!).sort()).toEqual(["userId", "validatorHash"].sort());
     });
 
-    it("consumeBySelector method sets the usedAt field", async () => {
+    it("should set the usedAt field by consumeBySelector method", async () => {
       const methodResponse = await resetTokenRepo.consumeBySelector(selector);
       expect(methodResponse).toBe(true);
 

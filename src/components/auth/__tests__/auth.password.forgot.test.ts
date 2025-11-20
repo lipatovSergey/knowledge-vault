@@ -20,7 +20,7 @@ describe("POST /api/auth/password/forgot", () => {
     });
   });
 
-  it("drops a reset email into the mailbox for existing user", async () => {
+  it("should drop a reset email into the mailbox for existing user", async () => {
     const res = await agent.post(route).send({ email });
     expect(res.body).toEqual({});
     expect(res.statusCode).toBe(204);
@@ -30,26 +30,26 @@ describe("POST /api/auth/password/forgot", () => {
     expect(msg!.type).toBe("password-reset");
   });
 
-  it("returns 204", async () => {
+  it("should return 204", async () => {
     const res = await agent.post(route).send({ email });
     expect(res.body).toEqual({});
     expect(res.statusCode).toBe(204);
   });
 
-  it("includes a raw token in the reset email meta", async () => {
+  it("should send raw token in the reset email meta", async () => {
     await agent.post(route).send({ email: email });
     const msg = mailbox.lastTo(email);
     expect(msg).toBeDefined();
     expect(msg!.meta!.rawToken).toBeDefined();
   });
 
-  it("returns 204 even if there no user with passed email in DB", async () => {
+  it("should return 204 even if there no user with passed email in DB", async () => {
     const res = await agent.post(route).send({ email: "notdbemail@gmail.com" });
     expect(res.body).toEqual({});
     expect(res.statusCode).toBe(204);
   });
 
-  it("if user sends request twice new token replace the old one", async () => {
+  it("should replace old token by new one if user sends request twice", async () => {
     await agent.post(route).send({ email });
     const oldToken = mailbox.lastTo(email)!.meta!.rawToken;
     await agent.post(route).send({ email });
@@ -57,7 +57,7 @@ describe("POST /api/auth/password/forgot", () => {
     expect(oldToken).not.toEqual(newToken);
   });
 
-  it("returns 422 on invalid email format", async () => {
+  it("should return 422 on invalid email format", async () => {
     const res = await agent.post(route).send({ email: "invalid" });
     const body = validationErrorSchema.parse(res.body);
     expectValidationError(body, ["email"]);

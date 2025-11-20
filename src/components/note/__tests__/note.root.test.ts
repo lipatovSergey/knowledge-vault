@@ -54,7 +54,7 @@ describe("/api/note/", () => {
       ["title", { title: "", content: "valid-content" }, ["title"]],
       ["content", { title: "valid-title", content: "" }, ["content"]],
     ])(
-      "should throw 422 error if empty %s was passed in note data",
+      "should return 422 error if empty %s was passed in note data",
       async (_, invalidData, expectedFields) => {
         const res = await agent.post(route).send(invalidData);
         expect(res.statusCode).toBe(422);
@@ -67,7 +67,7 @@ describe("/api/note/", () => {
       ["title", { content: "valid-content" }, ["title"]],
       ["content", { title: "valid-title" }, ["content"]],
     ])(
-      "should throw 422 error if %s was not passed in note data",
+      "should return 422 error if %s was not passed in note data",
       async (_, invalidData, expectedFields) => {
         const res = await agent.post(route).send(invalidData);
         expect(res.statusCode).toBe(422);
@@ -76,7 +76,7 @@ describe("/api/note/", () => {
       },
     );
 
-    it("throws 422 error if title longer then 120 symbols", async () => {
+    it("should return 422 error if title longer then 120 symbols", async () => {
       const noteData = { title: "a".repeat(121), content: "valid-content" };
       const res = await agent.post(route).send(noteData);
       expect(res.statusCode).toBe(422);
@@ -84,7 +84,7 @@ describe("/api/note/", () => {
       expectValidationError(body, ["title"]);
     });
 
-    it("throws 422 error if content longer then 2000 symbols", async () => {
+    it("should return 422 error if content longer then 2000 symbols", async () => {
       const noteData = { title: "valid-title", content: "a".repeat(2001) };
       const res = await agent.post(route).send(noteData);
       expect(res.statusCode).toBe(422);
@@ -92,7 +92,7 @@ describe("/api/note/", () => {
       expectValidationError(body, ["content"]);
     });
 
-    it("throws 401 error if user not authorized", async () => {
+    it("should return 401 error if user not authorized", async () => {
       const noteData = { title: "valid-title", content: "valid-content" };
       const res = await request(global.app).post(route).send(noteData);
       expect(res.statusCode).toBe(401);
@@ -126,7 +126,7 @@ describe("/api/note/", () => {
         ),
       );
     });
-    it("Get 200 status and array of all user's notes", async () => {
+    it("should return 200 status and array of all user's notes", async () => {
       const res = await agent.get(route);
       expect(res.statusCode).toBe(200);
       noteRootGetResponseSchema.parse(res.body);
@@ -139,7 +139,7 @@ describe("/api/note/", () => {
       );
     });
 
-    it("returns 401 if request was send by unauthorized user", async () => {
+    it("should return 401 if request was send by unauthorized user", async () => {
       const res = await request(global.app).get(route);
       expect(res.statusCode).toBe(401);
       const body = unauthorizedErrorSchema.parse(res.body);
