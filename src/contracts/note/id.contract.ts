@@ -7,6 +7,9 @@ export const noteIdInParamsSchema = z.object({
 });
 export type NoteIdInParams = z.infer<typeof noteIdInParamsSchema>;
 
+export const noteIdGetResponseSchema = noteResponseSchema;
+export type NoteIdGetResponse = z.infer<typeof noteIdGetResponseSchema>;
+
 export const noteIdPatchRequestSchema = z
   .object({
     title: noteTitleSchema.trim().optional(),

@@ -6,7 +6,7 @@ export type Email = z.infer<typeof emailSchema>;
 
 export const mongoIdSchema = z
   .string()
-  .length(24, "ObjectId length invalid")
+  .length(24, "Invalid ObjectId")
   .regex(/^[0-9a-fA-F]+$/, "ObjectId type invalid");
 export type MongoId = z.infer<typeof mongoIdSchema>;
 

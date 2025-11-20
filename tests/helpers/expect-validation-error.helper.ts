@@ -1,6 +1,6 @@
 import type { ValidationError } from "../../src/contracts/error/error.contract";
 
-type ValidationErrorExpectation = (
+export type ValidationErrorExpectation = (
   error: ValidationError,
   expectedFields?: string[],
   formErrorsLength?: number,

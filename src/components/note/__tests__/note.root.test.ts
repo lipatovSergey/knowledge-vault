@@ -1,7 +1,10 @@
 import request from "supertest";
 import type { AuthAgent } from "../../../../tests/test.types";
 import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
-import { noteRootPostResponseSchema } from "../../../contracts/note/root.contract";
+import {
+  noteRootGetResponseSchema,
+  noteRootPostResponseSchema,
+} from "../../../contracts/note/root.contract";
 import {
   unauthorizedErrorSchema,
   validationErrorSchema,
@@ -24,6 +27,7 @@ describe("/api/note/", () => {
       password: "pass123",
     });
   });
+
   describe("POST", () => {
     it("should create new note for user and return mapped object", async () => {
       const note = {
@@ -92,9 +96,54 @@ describe("/api/note/", () => {
       const noteData = { title: "valid-title", content: "valid-content" };
       const res = await request(global.app).post(route).send(noteData);
       expect(res.statusCode).toBe(401);
-      unauthorizedErrorSchema.parse(res.body);
+      const body = unauthorizedErrorSchema.parse(res.body);
+      expect(body.instance).toBe(route);
     });
   });
 
-  describe("GET", () => {});
+  describe("GET", () => {
+    const validNotesList = [
+      {
+        title: "valid-title",
+        content: "valid-content",
+      },
+      {
+        title: "valid-title-1",
+        content: "valid-content-1",
+      },
+      {
+        title: "valid-title-2",
+        content: "valid-content-2",
+      },
+    ];
+    beforeEach(async () => {
+      await Promise.all(
+        validNotesList.map((note) =>
+          agent.post("/api/note").send({
+            title: note.title,
+            content: note.content,
+          }),
+        ),
+      );
+    });
+    it("Get 200 status and array of all user's notes", async () => {
+      const res = await agent.get(route);
+      expect(res.statusCode).toBe(200);
+      noteRootGetResponseSchema.parse(res.body);
+      expect(res.body).toEqual(
+        expect.arrayContaining(
+          validNotesList.map((note) =>
+            expect.objectContaining({ title: note.title, content: note.content }),
+          ),
+        ),
+      );
+    });
+
+    it("returns 401 if request was send by unauthorized user", async () => {
+      const res = await request(global.app).get(route);
+      expect(res.statusCode).toBe(401);
+      const body = unauthorizedErrorSchema.parse(res.body);
+      expect(body.instance).toBe(route);
+    });
+  });
 });
