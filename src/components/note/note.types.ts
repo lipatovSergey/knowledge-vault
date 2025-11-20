@@ -1,12 +1,34 @@
-import type { CreateNoteDto } from "./note.validator";
-import type { MongoId } from "../../types/mongo";
+import type { MongoId, NoteContent, NoteTitle } from "../../types/primitives";
 
-export type NoteDto = {
-  id: string;
-  title: string;
-  content: string;
+export type CreateNoteInput = {
+  userId: MongoId;
+  title: NoteTitle;
+  content: NoteContent;
+};
+
+export type GetNoteInput = {
+  noteId: MongoId;
+  userId: MongoId;
+};
+
+export type DeleteNoteInput = {
+  noteId: MongoId;
+  userId: MongoId;
+};
+
+export type PatchNoteInput = {
+  noteId: MongoId;
+  userId: MongoId;
+  data: {
+    title?: NoteTitle;
+    content?: NoteContent;
+  };
+};
+
+export type NoteDomain = {
+  id: MongoId;
+  title: NoteTitle;
+  content: NoteContent;
   createdAt: Date;
   updatedAt: Date;
 };
-
-export type CreateNotePayload = CreateNoteDto & { userId: MongoId };

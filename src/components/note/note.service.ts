@@ -1,30 +1,34 @@
 import { NotFoundError } from "../../errors/errors.class";
-import toNoteDto from "./note.mapper";
-import type { MongoId } from "../../types/mongo";
-import type { CreateNotePayload, NoteDto } from "./note.types";
+import type { MongoId } from "../../types/primitives";
 import type { NoteRepository } from "./note.repository.mongo";
-import type { UpdateNoteDto } from "./note.validator";
+import type {
+  CreateNoteInput,
+  DeleteNoteInput,
+  GetNoteInput,
+  NoteDomain,
+  PatchNoteInput,
+} from "./note.types";
 
 function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
   return {
     // Use-case: create new note
-    async createNote(noteData: CreateNotePayload): Promise<NoteDto> {
-      const newNote = await noteRepo.create(noteData);
-      return toNoteDto(newNote);
+    async createNote(input: CreateNoteInput): Promise<NoteDomain> {
+      const note = await noteRepo.create(input);
+      return note;
     },
 
     // use-case: get single note info only for note's owner
-    async getNote(noteId: MongoId, userId: MongoId): Promise<NoteDto> {
-      const noteInfo = await noteRepo.getNote(noteId, userId);
-      if (!noteInfo) {
+    async getNote(input: GetNoteInput): Promise<NoteDomain> {
+      const note = await noteRepo.getNote(input);
+      if (!note) {
         throw new NotFoundError("Note not found");
       }
-      return toNoteDto(noteInfo);
+      return note;
     },
 
     // use-case: delete single note info only for note's owner
-    async deleteNote(noteId: MongoId, userId: MongoId): Promise<boolean> {
-      const deletedNote = await noteRepo.deleteNote(noteId, userId);
+    async deleteNote(input: DeleteNoteInput): Promise<boolean> {
+      const deletedNote = await noteRepo.deleteNote(input);
       if (!deletedNote) {
         throw new NotFoundError("Note not found");
       }
@@ -32,23 +36,18 @@ function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
     },
 
     // use-case: update single note title or content or both
-    async updateNote(
-      noteId: MongoId,
-      userId: MongoId,
-      data: UpdateNoteDto,
-    ): Promise<NoteDto> {
-      const updatedNote = await noteRepo.updateNote(noteId, userId, data);
-      if (!updatedNote) {
+    async updateNote(input: PatchNoteInput): Promise<NoteDomain> {
+      const note = await noteRepo.updateNote(input);
+      if (!note) {
         throw new NotFoundError("Note not found");
       }
-
-      return toNoteDto(updatedNote);
+      return note;
     },
 
     // use-case: get all user's notes by user's id
-    async getNotesList(userId: MongoId): Promise<NoteDto[]> {
+    async getNotesList(userId: MongoId): Promise<NoteDomain[]> {
       const notesList = await noteRepo.getNotesList(userId);
-      return notesList.map((note) => toNoteDto(note));
+      return notesList;
     },
   };
 }

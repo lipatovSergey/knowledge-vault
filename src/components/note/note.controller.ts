@@ -1,19 +1,24 @@
 import noteService from "./index";
+import { mapDomainNoteToContract } from "./note.mapper";
 import type { Request, Response, NextFunction } from "express";
-import type {
-  CreateNoteDto,
-  NoteIdInParams,
-  UpdateNoteDto,
-} from "./note.validator";
-import type { MongoId } from "../../types/mongo";
+import type { NoteIdInParams, NoteIdPatchRequest } from "../../contracts/note/id.contract";
+import type { MongoId } from "../../types/primitives";
 import type {
   RequestWithValidatedBody,
   RequestWithValidatedParams,
 } from "../../types/validated-request";
+import type { NoteRootPostRequest } from "../../contracts/note/root.contract";
+import type {
+  CreateNoteInput,
+  DeleteNoteInput,
+  GetNoteInput,
+  NoteDomain,
+  PatchNoteInput,
+} from "./note.types";
 
 const noteController = {
   async createNote(
-    req: RequestWithValidatedBody<CreateNoteDto>,
+    req: RequestWithValidatedBody<NoteRootPostRequest>,
     res: Response,
     next: NextFunction,
   ) {
@@ -21,14 +26,14 @@ const noteController = {
       const body = req.validatedBody;
       const userId = req.session.userId as MongoId;
 
-      const noteData = {
+      const createNoteInput: CreateNoteInput = {
         title: body.title,
         content: body.content,
         userId: userId,
       };
 
-      const newNote = await noteService.createNote(noteData);
-      res.status(201).json(newNote);
+      const note: NoteDomain = await noteService.createNote(createNoteInput);
+      res.status(201).json(mapDomainNoteToContract(note));
     } catch (error) {
       next(error);
     }
@@ -42,10 +47,14 @@ const noteController = {
   ) {
     try {
       const params = req.validatedParams;
-      const noteId = params.id;
+      const noteId: MongoId = params.id;
       const userId = req.session.userId as MongoId;
-      const noteInfo = await noteService.getNote(noteId, userId);
-      res.status(200).json(noteInfo);
+      const getNoteInput: GetNoteInput = {
+        noteId,
+        userId,
+      };
+      const note: NoteDomain = await noteService.getNote(getNoteInput);
+      res.status(200).json(mapDomainNoteToContract(note));
     } catch (error) {
       next(error);
     }
@@ -61,7 +70,11 @@ const noteController = {
       const params = req.validatedParams;
       const noteId = params.id;
       const userId = req.session.userId as MongoId;
-      await noteService.deleteNote(noteId, userId);
+      const deleteNoteInput: DeleteNoteInput = {
+        noteId,
+        userId,
+      };
+      await noteService.deleteNote(deleteNoteInput);
       res.status(200).json({ message: "Note deleted" });
     } catch (error) {
       next(error);
@@ -70,8 +83,7 @@ const noteController = {
 
   // updates note's title or content or both
   async patchNote(
-    req: RequestWithValidatedBody<UpdateNoteDto> &
-      RequestWithValidatedParams<NoteIdInParams>,
+    req: RequestWithValidatedBody<NoteIdPatchRequest> & RequestWithValidatedParams<NoteIdInParams>,
     res: Response,
     next: NextFunction,
   ) {
@@ -80,9 +92,14 @@ const noteController = {
       const noteId = params.id;
       const userId = req.session.userId as MongoId;
       const data = req.validatedBody;
-      const updatedNote = await noteService.updateNote(noteId, userId, data);
+      const patchNoteInput: PatchNoteInput = {
+        noteId,
+        userId,
+        data,
+      };
+      const note: NoteDomain = await noteService.updateNote(patchNoteInput);
 
-      res.status(200).json(updatedNote);
+      res.status(200).json(mapDomainNoteToContract(note));
     } catch (error) {
       next(error);
     }
@@ -94,7 +111,7 @@ const noteController = {
       const userId = req.session.userId as MongoId;
       const notesList = await noteService.getNotesList(userId);
 
-      res.status(200).json(notesList);
+      res.status(200).json(notesList.map(mapDomainNoteToContract));
     } catch (error) {
       next(error);
     }

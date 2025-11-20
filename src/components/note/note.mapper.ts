@@ -1,6 +1,7 @@
-import type { WithId } from "../../types/mongo";
+import type { NoteRootPostResponse } from "../../contracts/note/root.contract";
+import type { WithId } from "../../types/primitives";
 import type { NoteSchemaType, NoteDocument } from "./note.model";
-import type { NoteDto } from "./note.types";
+import type { NoteDomain } from "./note.types";
 
 // type guard
 function isNoteDocument(value: unknown): value is NoteDocument {
@@ -12,18 +13,28 @@ function isNoteDocument(value: unknown): value is NoteDocument {
   );
 }
 
-function toNoteDto(rawNote: WithId<NoteSchemaType> | NoteDocument): NoteDto {
-  // if we got note as plain object use it as it is
-  // if note mongoose document use build in toObject method to create plain object
-  const source = isNoteDocument(rawNote) ? rawNote.toObject() : rawNote;
+function noteToObject(rawNote: WithId<NoteSchemaType> | NoteDocument) {
+  return isNoteDocument(rawNote) ? rawNote.toObject() : rawNote;
+}
+
+export function mapPersistNoteToDomain(rawNote: WithId<NoteSchemaType> | NoteDocument): NoteDomain {
+  const noteObject = noteToObject(rawNote);
 
   return {
-    id: source._id.toString(),
-    title: source.title,
-    content: source.content,
-    createdAt: source.createdAt,
-    updatedAt: source.updatedAt,
+    id: noteObject._id.toString(),
+    title: noteObject.title,
+    content: noteObject.content,
+    createdAt: new Date(noteObject.createdAt),
+    updatedAt: new Date(noteObject.updatedAt),
   };
 }
 
-export default toNoteDto;
+export function mapDomainNoteToContract(domainNote: NoteDomain): NoteRootPostResponse {
+  return {
+    id: domainNote.id.toString(),
+    title: domainNote.title,
+    content: domainNote.content,
+    createdAt: domainNote.createdAt.toISOString(),
+    updatedAt: domainNote.updatedAt.toISOString(),
+  };
+}

@@ -1,17 +1,17 @@
 import requireAuth from "../../middleware/require-auth.middleware";
 import validateBody from "../../middleware/validate-body.middleware";
 import validateParams from "../../middleware/validate-params.middleware";
-import noteSchemas from "./note.validator";
-
 import noteController from "./note.controller";
 import express, { RequestHandler } from "express";
+import { noteRootPostRequestSchema } from "../../contracts/note/root.contract";
+import { noteIdInParamsSchema, noteIdPatchRequestSchema } from "../../contracts/note/id.contract";
 const router = express.Router();
 
 // create new note
 router.post(
   "/",
   requireAuth,
-  validateBody(noteSchemas.createNote),
+  validateBody(noteRootPostRequestSchema),
   noteController.createNote as RequestHandler,
 );
 
@@ -21,22 +21,22 @@ router.get("/", requireAuth, noteController.getNotesList);
 router.get(
   "/:id",
   requireAuth,
-  validateParams(noteSchemas.noteIdInParams),
+  validateParams(noteIdInParamsSchema),
   noteController.getNote as RequestHandler,
 );
 
 router.delete(
   "/:id",
   requireAuth,
-  validateParams(noteSchemas.noteIdInParams),
+  validateParams(noteIdInParamsSchema),
   noteController.deleteNote as RequestHandler,
 );
 
 router.patch(
   "/:id",
   requireAuth,
-  validateParams(noteSchemas.noteIdInParams),
-  validateBody(noteSchemas.patchNote),
+  validateParams(noteIdInParamsSchema),
+  validateBody(noteIdPatchRequestSchema),
   noteController.patchNote as RequestHandler,
 );
 
