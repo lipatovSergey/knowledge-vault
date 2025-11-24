@@ -94,7 +94,6 @@ describe("/api/users/me", () => {
     it("should return 422 if nothing wasn't passed", async () => {
       const res = await agent.patch(route).send({});
       const body = validationErrorSchema.parse(res.body);
-      console.log(body);
 
       expect(res.statusCode).toBe(422);
       expectValidationError(body, [], 1);
