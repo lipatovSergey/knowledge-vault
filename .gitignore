@@ -3,5 +3,7 @@ node_modules/
 dist/
 dist-ci/
 logs/
+dist/
+dist-ci/
 AGENTS.md
 Commit_Rules.md
