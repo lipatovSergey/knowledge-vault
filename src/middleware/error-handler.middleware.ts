@@ -18,14 +18,7 @@ const normalizeUnknownError = (err: unknown): Error => {
   return new Error(serialized || "Unexpected Error");
 };
 
-// TODO: Вернуть логирование через Winsonon и sanitize body
-
-function errorHandler(
-  err: unknown,
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
   // If headers were send (exm. error happened when response was send partly) - give a control to build in Express error handler
   if (res.headersSent) return next(err);
 
@@ -36,9 +29,7 @@ function errorHandler(
       status: err.statusCode,
       type: err.type || "about:blank",
       instance: req.originalUrl,
-      ...(err.details && typeof err.details === "object"
-        ? { errors: err.details }
-        : {}), // exm. zod.flatten() + { source }
+      ...(err.details && typeof err.details === "object" ? { errors: err.details } : {}), // exm. zod.flatten() + { source }
     };
 
     res.type("application/problem+json");
@@ -49,10 +40,7 @@ function errorHandler(
 
   const problem = {
     title: normalizedError.name,
-    detail:
-      NODE_ENV !== "production"
-        ? normalizedError.message
-        : "Internal Server Error",
+    detail: NODE_ENV !== "production" ? normalizedError.message : "Internal Server Error",
     status: 500,
     type: "about:blank",
     instance: req.originalUrl,

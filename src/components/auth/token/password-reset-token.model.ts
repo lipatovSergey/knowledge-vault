@@ -13,7 +13,6 @@ interface ResetTokenQueryHelpers {
 
 const resetTokenSchema = new Schema(
   {
-    // TODO: add format for selector
     selector: {
       type: String,
       unique: true,
@@ -63,9 +62,7 @@ const resetTokenSchema = new Schema(
 );
 
 // query helpers
-(
-  resetTokenSchema.query as Query<any, any> & { active(): Query<any, any> }
-).active = function () {
+(resetTokenSchema.query as Query<any, any> & { active(): Query<any, any> }).active = function () {
   return this.where({
     usedAt: null,
     expiresAt: { $gt: new Date() },
