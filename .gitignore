@@ -1,5 +1,7 @@
 .env
 node_modules/
+dist/
+dist-ci/
 logs/
 AGENTS.md
 Commit_Rules.md
