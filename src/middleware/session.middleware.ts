@@ -5,8 +5,6 @@ import mongoose from "mongoose";
 import { SESSION_SECRET } from "../config/env";
 import { getMongoUri } from "../utils/get-mongo-uri.helper";
 
-// TODO: Добавить расширения типов сессии
-
 let store: session.Store;
 const MONGO_URI = getMongoUri();
 if (process.env.NODE_ENV === "test") {

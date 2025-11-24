@@ -5,13 +5,11 @@ import connectDB from "./config/db";
 // Global errors catchers
 // Catch and any promise rejections that were never awaited/caugh
 process.on("unhandledRejection", (reason) => {
-  // TODO: Winston logger
   console.error("Unhandled promise rejection", reason);
 });
 
 // Log unexpected synchronous errors and rethrow so the process terminates instead of ignoring the failure.
 process.on("uncaughtException", (err) => {
-  // TODO: Winston logger
   console.error("uncaught synchronous error", err);
 });
 
