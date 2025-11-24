@@ -7,3 +7,4 @@ dist/
 dist-ci/
 AGENTS.md
 Commit_Rules.md
+password-reset-token.service.test.ts
