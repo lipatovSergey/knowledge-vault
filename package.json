@@ -10,7 +10,9 @@
   "scripts": {
     "start": "NODE_ENV=production node dist/server.js",
     "build": "tsc --project tsconfig.build.json",
+    "build:ci": "tsc --project tsconfig.ci.json",
     "test": "NODE_ENV=test jest --runInBand",
+    "test:ci": "NODE_ENV=test jest --config jest.ci.config.js --runInBand",
     "dev": "NODE_ENV=development tsx watch src/server.ts",
     "lint": "eslint ."
   },

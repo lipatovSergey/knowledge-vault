@@ -7,11 +7,10 @@ jest.setTimeout(60_000); // first start need to download binary
 process.env.NODE_ENV = "test";
 
 beforeAll(async () => {
-  const { default: connectDB } = await import("../src/config/db");
-  await connectDB();
   // start in-memory Mongo and change process.env.MONGO_URI
   await startMemoryMongo();
 
+  const { default: connectDB } = await import("../src/config/db");
   await connectDB();
 
   const { default: app } = await import("../src/app");
