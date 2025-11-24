@@ -1,7 +1,4 @@
 {
   "port": "PORT",
-  "db": {
-    "uri": "MONGO_URI"
-  },
   "session_secret": "SESSION_SECRET"
 }

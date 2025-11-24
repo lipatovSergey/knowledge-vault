@@ -5,6 +5,7 @@ const jsdoc = require("eslint-plugin-jsdoc");
 const globals = require("globals");
 // eslint.config.js
 module.exports = [
+  { ignores: ["dist/**", "dist-ci/**"] },
   eslintConfig.configs.recommended,
   nodePlugin.configs["flat/recommended-script"],
   jsdoc.configs["flat/recommended"],

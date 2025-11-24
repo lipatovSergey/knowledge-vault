@@ -2,21 +2,20 @@
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
-import { SESSION_SECRET, MONGO_URI } from "../config/env";
+import { SESSION_SECRET } from "../config/env";
+import { getMongoUri } from "../utils/get-mongo-uri.helper";
 
 // TODO: Добавить расширения типов сессии
 
 let store: session.Store;
+const MONGO_URI = getMongoUri();
 if (process.env.NODE_ENV === "test") {
   // MemoryStore for tests, no clients
   store = new session.MemoryStore();
 } else {
   // DEV/PROD mode
   // Check if mongoose client already exists
-  const client =
-    mongoose.connection?.readyState === 1
-      ? mongoose.connection.getClient()
-      : null;
+  const client = mongoose.connection?.readyState === 1 ? mongoose.connection.getClient() : null;
 
   const baseOptions = { collectionName: "sessions", ttl: 60 * 60 * 24 }; // 1 day
   if (client) {
