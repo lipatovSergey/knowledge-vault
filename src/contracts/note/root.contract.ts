@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { number, ZodError } from "zod";
 import { noteContentSchema, noteTitleSchema } from "../../types/primitives";
 import { noteResponseSchema } from "./shared.contract";
 
@@ -16,18 +16,25 @@ function normalizeFields<Allowed extends readonly string[]>(
   raw: string | string[] | undefined,
   allowedFields: Allowed,
 ): Allowed[number][] | undefined {
+  // in case if fields wasn't passed at all
   if (raw === undefined) return undefined;
   const values = Array.isArray(raw) ? raw : raw.split(",");
-  const normalized = values
-    .map((v) => v.trim())
-    .filter((v): v is Allowed[number] => allowedFields.includes(v as Allowed[number]));
-  return Array.from(new Set(normalized));
+  const allowedSet = new Set(allowedFields);
+  const isAllowed = (v: string): v is (typeof allowedFields)[number] =>
+    allowedSet.has(v as (typeof allowedFields)[number]);
+  const normalized = Array.from(new Set(values.map((v) => v.trim()).filter(isAllowed)));
+  return normalized;
 }
 export const noteRootGetRequestQuerySchema = z.object({
   fields: z
     .union([z.string(), z.array(z.string())])
     .optional()
-    .transform((raw) => normalizeFields(raw, allowedFields)),
+    .transform((raw) => normalizeFields(raw, allowedFields))
+    // in case that no allowed fields were passed into fields
+    .refine((v) => v === undefined || v.length > 0, {
+      message: "Invalid fields",
+      path: ["fields"],
+    }),
 });
 
 export const noteRootGetResponseSchema = z.array(noteResponseSchema);
