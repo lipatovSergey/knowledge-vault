@@ -13,4 +13,15 @@ export const noteResponseSchema = z.object({
   createdAt: isoDateStringSchema,
   updatedAt: isoDateStringSchema,
 });
+export type NoteContract = z.infer<typeof noteResponseSchema>;
+
+export const noteListItemResponseSchema = z.object({
+  id: mongoIdSchema,
+  title: noteTitleSchema,
+  content: noteContentSchema.optional(),
+  createdAt: isoDateStringSchema,
+  updatedAt: isoDateStringSchema,
+});
+export type NoteListItemContract = z.infer<typeof noteListItemResponseSchema>;
+
 export type NoteResponse = z.infer<typeof noteResponseSchema>;

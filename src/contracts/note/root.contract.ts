@@ -1,6 +1,7 @@
-import z, { number, ZodError } from "zod";
+import z from "zod";
 import { noteContentSchema, noteTitleSchema } from "../../types/primitives";
-import { noteResponseSchema } from "./shared.contract";
+import { noteListItemResponseSchema, noteResponseSchema } from "./shared.contract";
+import { normalizeFields } from "../../utils/query.util";
 
 export const noteRootPostRequestSchema = z.object({
   title: noteTitleSchema.trim(),
@@ -11,20 +12,8 @@ export type NoteRootPostRequest = z.infer<typeof noteRootPostRequestSchema>;
 export const noteRootPostResponseSchema = noteResponseSchema;
 export type NoteRootPostResponse = z.infer<typeof noteRootPostResponseSchema>;
 
-const allowedFields = ["title", "content", "updatedAt"] as const;
-function normalizeFields<Allowed extends readonly string[]>(
-  raw: string | string[] | undefined,
-  allowedFields: Allowed,
-): Allowed[number][] | undefined {
-  // in case if fields wasn't passed at all
-  if (raw === undefined) return undefined;
-  const values = Array.isArray(raw) ? raw : raw.split(",");
-  const allowedSet = new Set(allowedFields);
-  const isAllowed = (v: string): v is (typeof allowedFields)[number] =>
-    allowedSet.has(v as (typeof allowedFields)[number]);
-  const normalized = Array.from(new Set(values.map((v) => v.trim()).filter(isAllowed)));
-  return normalized;
-}
+const allowedFields = ["title", "content"] as const;
+export type AllowedNoteFields = (typeof allowedFields)[number];
 export const noteRootGetRequestQuerySchema = z.object({
   fields: z
     .union([z.string(), z.array(z.string())])
@@ -36,6 +25,7 @@ export const noteRootGetRequestQuerySchema = z.object({
       path: ["fields"],
     }),
 });
+export type NoteRootGetRequestQuery = z.infer<typeof noteRootGetRequestQuerySchema>;
 
-export const noteRootGetResponseSchema = z.array(noteResponseSchema);
+export const noteRootGetResponseSchema = z.array(noteListItemResponseSchema);
 export type NoteRootGetResponse = z.infer<typeof noteRootGetResponseSchema>;
