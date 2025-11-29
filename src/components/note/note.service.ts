@@ -1,10 +1,11 @@
 import { NotFoundError } from "../../errors/errors.class";
-import type { MongoId } from "../../types/primitives";
 import type { NoteRepository } from "./note.repository.mongo";
 import type {
   CreateNoteInput,
   DeleteNoteInput,
   GetNoteInput,
+  GetNoteListInput,
+  ListItemDomain,
   NoteDomain,
   PatchNoteInput,
 } from "./note.types";
@@ -45,8 +46,8 @@ function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
     },
 
     // use-case: get all user's notes by user's id
-    async getNotesList(userId: MongoId): Promise<NoteDomain[]> {
-      const notesList = await noteRepo.getNotesList(userId);
+    async getNotesList(input: GetNoteListInput): Promise<ListItemDomain[]> {
+      const notesList = await noteRepo.getNotesList(input);
       return notesList;
     },
   };

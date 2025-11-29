@@ -1,13 +1,17 @@
 import noteService from "./index";
-import { mapDomainNoteToContract } from "./note.mapper";
+import { mapDomainNoteToContract, mapDomainListItemToContract } from "./note.mapper";
 import type { Request, Response, NextFunction } from "express";
 import type { NoteIdInParams, NoteIdPatchRequest } from "../../contracts/note/id.contract";
 import type { MongoId } from "../../types/primitives";
 import type {
   RequestWithValidatedBody,
   RequestWithValidatedParams,
+  RequestWithValidatedQuery,
 } from "../../types/validated-request";
-import type { NoteRootPostRequest } from "../../contracts/note/root.contract";
+import type {
+  NoteRootGetRequestQuery,
+  NoteRootPostRequest,
+} from "../../contracts/note/root.contract";
 import type {
   CreateNoteInput,
   DeleteNoteInput,
@@ -106,12 +110,17 @@ const noteController = {
   },
 
   // gets array of all user's notes
-  async getNotesList(req: Request, res: Response, next: NextFunction) {
+  async getNotesList(
+    req: RequestWithValidatedQuery<NoteRootGetRequestQuery>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const userId = req.session.userId as MongoId;
-      const notesList = await noteService.getNotesList(userId);
+      const { fields } = req.validatedQuery;
+      const notesList = await noteService.getNotesList({ userId, fields });
 
-      res.status(200).json(notesList.map(mapDomainNoteToContract));
+      res.status(200).json(notesList.map((item) => mapDomainListItemToContract(item, fields)));
     } catch (error) {
       next(error);
     }

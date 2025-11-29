@@ -1,3 +1,4 @@
+import { AllowedNoteFields } from "../../contracts/note/root.contract";
 import type { MongoId, NoteContent, NoteTitle } from "../../types/primitives";
 
 export type CreateNoteInput = {
@@ -25,10 +26,23 @@ export type PatchNoteInput = {
   };
 };
 
+export type GetNoteListInput = {
+  userId: MongoId;
+  fields?: ReadonlyArray<AllowedNoteFields>;
+};
+
 export type NoteDomain = {
   id: MongoId;
   title: NoteTitle;
   content: NoteContent;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ListItemDomain = {
+  id: MongoId;
+  title: NoteTitle;
+  content?: NoteContent;
   createdAt: Date;
   updatedAt: Date;
 };

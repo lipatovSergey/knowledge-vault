@@ -3,8 +3,12 @@ import validateBody from "../../middleware/validate-body.middleware";
 import validateParams from "../../middleware/validate-params.middleware";
 import noteController from "./note.controller";
 import express, { RequestHandler } from "express";
-import { noteRootPostRequestSchema } from "../../contracts/note/root.contract";
+import {
+  noteRootGetRequestQuerySchema,
+  noteRootPostRequestSchema,
+} from "../../contracts/note/root.contract";
 import { noteIdInParamsSchema, noteIdPatchRequestSchema } from "../../contracts/note/id.contract";
+import validateQuery from "../../middleware/validate-query.middleware";
 const router = express.Router();
 
 // create new note
@@ -16,7 +20,12 @@ router.post(
 );
 
 // get list of all user's notes
-router.get("/", requireAuth, noteController.getNotesList);
+router.get(
+  "/",
+  requireAuth,
+  validateQuery(noteRootGetRequestQuerySchema),
+  noteController.getNotesList,
+);
 
 router.get(
   "/:id",

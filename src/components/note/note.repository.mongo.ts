@@ -1,10 +1,11 @@
 import { NoteModel } from "./note.model";
-import { mapPersistNoteToDomain } from "./note.mapper";
-import type { MongoId } from "../../types/primitives";
+import { mapPersistNoteToDomain, mapPersistNoteToDomainListItem } from "./note.mapper";
 import type {
   CreateNoteInput,
   DeleteNoteInput,
   GetNoteInput,
+  GetNoteListInput,
+  ListItemDomain,
   NoteDomain,
   PatchNoteInput,
 } from "./note.types";
@@ -44,9 +45,23 @@ const noteRepo = {
   },
 
   // gets all user's notes sorted from newest to oldest
-  async getNotesList(userId: MongoId): Promise<NoteDomain[]> {
-    const result = await NoteModel.find({ userId }).sort({ updatedAt: -1 }).lean();
-    return result.map(mapPersistNoteToDomain);
+  async getNotesList(input: GetNoteListInput): Promise<ListItemDomain[]> {
+    const { userId, fields } = input;
+    const baseProjection: Record<string, 1> = { _id: 1, createdAt: 1, updatedAt: 1, title: 1 };
+    const projection = fields
+      ? fields.reduce<Record<string, 1>>(
+          (acc, f) => {
+            acc[f] = 1;
+            return acc;
+          },
+          { ...baseProjection },
+        )
+      : { ...baseProjection };
+    const result = await NoteModel.find({ userId })
+      .select(projection)
+      .sort({ updatedAt: -1 })
+      .lean();
+    return result.map((doc) => mapPersistNoteToDomainListItem(doc, fields));
   },
 };
 

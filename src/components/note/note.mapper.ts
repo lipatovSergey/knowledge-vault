@@ -1,7 +1,8 @@
-import type { NoteRootPostResponse } from "../../contracts/note/root.contract";
+import type { AllowedNoteFields } from "../../contracts/note/root.contract";
 import type { WithId } from "../../types/primitives";
 import type { NoteSchemaType, NoteDocument } from "./note.model";
-import type { NoteDomain } from "./note.types";
+import type { ListItemDomain, NoteDomain } from "./note.types";
+import { NoteContract, NoteListItemContract } from "../../contracts/note/shared.contract";
 
 // type guard
 function isNoteDocument(value: unknown): value is NoteDocument {
@@ -29,7 +30,48 @@ export function mapPersistNoteToDomain(rawNote: WithId<NoteSchemaType> | NoteDoc
   };
 }
 
-export function mapDomainNoteToContract(domainNote: NoteDomain): NoteRootPostResponse {
+export function mapPersistNoteToDomainListItem(
+  rawNote: WithId<NoteSchemaType> | NoteDocument,
+  fields: ReadonlyArray<AllowedNoteFields> | undefined,
+): ListItemDomain {
+  const noteObject = noteToObject(rawNote);
+  const out: ListItemDomain = {
+    id: noteObject._id.toString(),
+    title: noteObject.title,
+    createdAt: new Date(noteObject.createdAt),
+    updatedAt: new Date(noteObject.updatedAt),
+  };
+  if (fields) {
+    for (const f of fields) {
+      if (f in noteObject) {
+        out[f] = noteObject[f];
+      }
+    }
+  }
+  return out;
+}
+
+export function mapDomainListItemToContract(
+  domainListItem: ListItemDomain,
+  fields: ReadonlyArray<AllowedNoteFields> | undefined,
+) {
+  const out: NoteListItemContract = {
+    id: domainListItem.id.toString(),
+    title: domainListItem.title,
+    createdAt: domainListItem.createdAt.toISOString(),
+    updatedAt: domainListItem.updatedAt.toISOString(),
+  };
+  if (fields) {
+    for (const f of fields) {
+      if (f in domainListItem && domainListItem[f]) {
+        out[f] = domainListItem[f];
+      }
+    }
+  }
+  return out;
+}
+
+export function mapDomainNoteToContract(domainNote: NoteDomain): NoteContract {
   return {
     id: domainNote.id.toString(),
     title: domainNote.title,
