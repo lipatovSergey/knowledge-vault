@@ -6,6 +6,7 @@ import {
   noteRootPostResponseSchema,
 } from "../../../contracts/note/root.contract";
 import {
+  badRequestErrorSchema,
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
@@ -126,17 +127,54 @@ describe("/api/note/", () => {
         ),
       );
     });
-    it("should return 200 status and array of all user's notes", async () => {
+
+    it("should return 200 status and array of all user's default version notes", async () => {
       const res = await agent.get(route);
       expect(res.statusCode).toBe(200);
-      noteRootGetResponseSchema.parse(res.body);
-      expect(res.body).toEqual(
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body).toEqual(
         expect.arrayContaining(
           validNotesList.map((note) =>
-            expect.objectContaining({ title: note.title, content: note.content }),
+            expect.objectContaining({
+              title: note.title,
+            }),
           ),
         ),
       );
+      const expectedKeys = ["title", "id", "updatedAt", "createdAt"];
+      body.forEach((item) => {
+        expect(item).toMatchObject({
+          id: expect.any(String),
+          updatedAt: expect.any(String),
+          createdAt: expect.any(String),
+        });
+        expect(Object.keys(item).sort()).toEqual(expectedKeys.sort());
+      });
+    });
+
+    it("should return 200 status and array of all user's notes with content field", async () => {
+      const res = await agent.get(route).query({ fields: "content" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body).toEqual(
+        expect.arrayContaining(
+          validNotesList.map((note) =>
+            expect.objectContaining({
+              title: note.title,
+              content: note.content,
+              id: expect.any(String),
+              updatedAt: expect.any(String),
+              createdAt: expect.any(String),
+            }),
+          ),
+        ),
+      );
+    });
+
+    it("should return 400 BadRequest error, if invalid value set in fields query", async () => {
+      const res = await agent.get(route).query({ fields: "invalid-value" });
+      expect(res.statusCode).toBe(400);
+      badRequestErrorSchema.parse(res.body);
     });
 
     it("should return 401 if request was send by unauthorized user", async () => {
