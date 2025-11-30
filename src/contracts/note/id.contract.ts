@@ -1,6 +1,6 @@
 import z from "zod";
 import { mongoIdSchema, noteContentSchema, noteTitleSchema } from "../../types/primitives";
-import { noteResponseSchema } from "./shared.contract";
+import { noteResponseSchema, noteTagsArraySchema } from "./shared.contract";
 
 export const noteIdInParamsSchema = z.object({
   id: mongoIdSchema,
@@ -14,6 +14,7 @@ export const noteIdPatchRequestSchema = z
   .object({
     title: noteTitleSchema.trim().optional(),
     content: noteContentSchema.trim().optional(),
+    tags: noteTagsArraySchema.optional(),
   })
   .refine((data) => data.title !== undefined || data.content !== undefined, {
     message: "Title or content required",
