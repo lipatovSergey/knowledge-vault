@@ -1,9 +1,4 @@
-import {
-  Schema,
-  model,
-  type InferSchemaType,
-  type HydratedDocument,
-} from "mongoose";
+import { Schema, model, type InferSchemaType, type HydratedDocument } from "mongoose";
 
 const noteSchema = new Schema(
   {
@@ -14,6 +9,10 @@ const noteSchema = new Schema(
     content: {
       type: String,
       required: true,
+    },
+    tags: {
+      type: [String],
+      default: [],
     },
     userId: {
       type: Schema.Types.ObjectId,

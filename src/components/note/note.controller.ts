@@ -1,6 +1,6 @@
 import noteService from "./index";
 import { mapDomainNoteToContract, mapDomainListItemToContract } from "./note.mapper";
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import type { NoteIdInParams, NoteIdPatchRequest } from "../../contracts/note/id.contract";
 import type { MongoId } from "../../types/primitives";
 import type {
@@ -31,9 +31,8 @@ const noteController = {
       const userId = req.session.userId as MongoId;
 
       const createNoteInput: CreateNoteInput = {
-        title: body.title,
-        content: body.content,
         userId: userId,
+        ...body,
       };
 
       const note: NoteDomain = await noteService.createNote(createNoteInput);

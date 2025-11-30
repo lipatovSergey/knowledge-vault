@@ -25,6 +25,7 @@ export function mapPersistNoteToDomain(rawNote: WithId<NoteSchemaType> | NoteDoc
     id: noteObject._id.toString(),
     title: noteObject.title,
     content: noteObject.content,
+    tags: noteObject.tags,
     createdAt: new Date(noteObject.createdAt),
     updatedAt: new Date(noteObject.updatedAt),
   };
@@ -43,8 +44,10 @@ export function mapPersistNoteToDomainListItem(
   };
   if (fields) {
     for (const f of fields) {
-      if (f in noteObject) {
-        out[f] = noteObject[f];
+      if (f === "content" && noteObject.content) {
+        out.content = noteObject.content;
+      } else if (f === "tags" && noteObject.tags) {
+        out.tags = noteObject.tags;
       }
     }
   }
@@ -64,7 +67,11 @@ export function mapDomainListItemToContract(
   if (fields) {
     for (const f of fields) {
       if (f in domainListItem && domainListItem[f]) {
-        out[f] = domainListItem[f];
+        if (f === "content" && domainListItem.content) {
+          out.content = domainListItem.content;
+        } else if (f === "tags" && domainListItem.tags) {
+          out.tags = domainListItem.tags;
+        }
       }
     }
   }
@@ -76,6 +83,7 @@ export function mapDomainNoteToContract(domainNote: NoteDomain): NoteContract {
     id: domainNote.id.toString(),
     title: domainNote.title,
     content: domainNote.content,
+    tags: domainNote.tags,
     createdAt: domainNote.createdAt.toISOString(),
     updatedAt: domainNote.updatedAt.toISOString(),
   };

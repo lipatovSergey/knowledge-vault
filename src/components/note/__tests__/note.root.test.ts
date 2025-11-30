@@ -171,6 +171,8 @@ describe("/api/note/", () => {
       );
     });
 
+    //TODO: add tests for fields passed as an array (?fields=content&fields=title), and for fields=title,content
+
     it("should return 400 BadRequest error, if invalid value set in fields query", async () => {
       const res = await agent.get(route).query({ fields: "invalid-value" });
       expect(res.statusCode).toBe(400);

@@ -17,7 +17,7 @@ export type NoteRootPostRequest = z.infer<typeof noteRootPostRequestSchema>;
 export const noteRootPostResponseSchema = noteResponseSchema;
 export type NoteRootPostResponse = z.infer<typeof noteRootPostResponseSchema>;
 
-const allowedFields = ["title", "content", "tags"] as const;
+const allowedFields = ["content", "tags"] as const;
 export type AllowedNoteFields = (typeof allowedFields)[number];
 export const noteRootGetRequestQuerySchema = z.object({
   fields: z
