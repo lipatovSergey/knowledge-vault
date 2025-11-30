@@ -8,13 +8,15 @@ export const userMePatchRequestSchema = z
   .refine((data) => Object.values(data).some((value) => value !== undefined));
 export type UserMePatchRequest = z.infer<typeof userMePatchRequestSchema>;
 
-export const userProfileResponseSchema = z.object({
-  id: mongoIdSchema,
-  name: z.string().min(1),
-  email: emailSchema,
-  createdAt: isoDateStringSchema,
-  updatedAt: isoDateStringSchema,
-});
+export const userProfileResponseSchema = z
+  .object({
+    id: mongoIdSchema,
+    name: z.string().min(1),
+    email: emailSchema,
+    createdAt: isoDateStringSchema,
+    updatedAt: isoDateStringSchema,
+  })
+  .strict();
 export type UserProfileResponse = z.infer<typeof userProfileResponseSchema>;
 
 export const userMeGetResponseSchema = userProfileResponseSchema;
