@@ -52,3 +52,11 @@ export const noteContentSchema = z
   .min(1, "Content is required")
   .max(2000, "Content max length 2000 symbols");
 export type NoteContent = z.infer<typeof noteContentSchema>;
+
+export const tagSchema = z
+  .string()
+  .trim()
+  .min(1, "Tag is too short")
+  .max(32, "Max tag length is 32 characters")
+  .regex(/^[a-z0-9_-]+$/, "Tag can contain only english lowerase letters, numbers, '-' and '_'");
+export type Tag = z.infer<typeof tagSchema>;
