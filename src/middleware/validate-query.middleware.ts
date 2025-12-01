@@ -1,10 +1,9 @@
 import { BadRequestError } from "../errors/errors.class";
 import type { RequestHandler } from "express";
-import type { ParsedQs } from "qs";
 import type { ZodType } from "zod";
 import type { RequestWithValidatedQuery } from "../types/validated-request";
 
-function validateQuery<Query extends ParsedQs = ParsedQs>(schema: ZodType<Query>): RequestHandler {
+function validateQuery<Query>(schema: ZodType<Query>): RequestHandler {
   return (req, _res, next) => {
     const result = schema.safeParse(req.query);
     if (!result.success) {

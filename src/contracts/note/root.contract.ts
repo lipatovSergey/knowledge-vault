@@ -17,15 +17,15 @@ export type NoteRootPostRequest = z.infer<typeof noteRootPostRequestSchema>;
 export const noteRootPostResponseSchema = noteResponseSchema;
 export type NoteRootPostResponse = z.infer<typeof noteRootPostResponseSchema>;
 
-const allowedFields = ["content", "tags"] as const;
+const allowedFields = ["content", "tags", "title", "updatedAt", "createdAt"] as const;
 export type AllowedNoteFields = (typeof allowedFields)[number];
 export const noteRootGetRequestQuerySchema = z.object({
   fields: z
     .union([z.string(), z.array(z.string())])
-    .optional()
+    .default(["title", "updatedAt"])
     .transform((raw) => normalizeFields(raw, allowedFields))
     // in case that no allowed fields were passed into fields
-    .refine((v) => v === undefined || v.length > 0, {
+    .refine((v) => v.length > 0, {
       message: "Invalid fields",
       path: ["fields"],
     }),
@@ -36,7 +36,7 @@ export const noteRootGetRequestQuerySchema = z.object({
     .positive()
     .min(1, "Minimum value for limit is 1")
     .max(100, "Maximum value for limit is 100")
-    .default(10),
+    .default(20),
 });
 export type NoteRootGetRequestQuery = z.infer<typeof noteRootGetRequestQuerySchema>;
 

@@ -117,7 +117,8 @@ const noteController = {
     try {
       const userId = req.session.userId as MongoId;
       const { fields } = req.validatedQuery;
-      const notesList = await noteService.getNotesList({ userId, fields });
+      const { page, limit } = req.validatedQuery;
+      const notesList = await noteService.getNotesList({ userId, fields, page, limit });
 
       res.status(200).json(notesList.map((item) => mapDomainListItemToContract(item, fields)));
     } catch (error) {

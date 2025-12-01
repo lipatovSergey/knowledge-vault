@@ -31,7 +31,16 @@ export type PatchNoteInput = {
 
 export type GetNoteListInput = {
   userId: MongoId;
-  fields?: ReadonlyArray<AllowedNoteFields>;
+  fields: ReadonlyArray<AllowedNoteFields>;
+  page: number;
+  limit: number;
+};
+
+export type GetNoteListRepoInput = {
+  userId: MongoId;
+  fields: ReadonlyArray<AllowedNoteFields>;
+  page: number;
+  limit: number;
 };
 
 export type NoteDomain = {
@@ -45,9 +54,9 @@ export type NoteDomain = {
 
 export type ListItemDomain = {
   id: MongoId;
-  title: NoteTitle;
+  title?: NoteTitle;
   content?: NoteContent;
   tags?: NoteTagsArray;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };

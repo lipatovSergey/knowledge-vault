@@ -38,16 +38,19 @@ export function mapPersistNoteToDomainListItem(
   const noteObject = noteToObject(rawNote);
   const out: ListItemDomain = {
     id: noteObject._id.toString(),
-    title: noteObject.title,
-    createdAt: new Date(noteObject.createdAt),
-    updatedAt: new Date(noteObject.updatedAt),
   };
   if (fields) {
     for (const f of fields) {
-      if (f === "content" && noteObject.content) {
+      if (f === "title" && noteObject.title) {
+        out.title = noteObject.title;
+      } else if (f === "content" && noteObject.content) {
         out.content = noteObject.content;
       } else if (f === "tags") {
         out.tags = noteObject.tags ?? [];
+      } else if (f === "createdAt" && noteObject.createdAt) {
+        out.createdAt = new Date(noteObject.createdAt);
+      } else if (f === "updatedAt" && noteObject.updatedAt) {
+        out.updatedAt = new Date(noteObject.updatedAt);
       }
     }
   }
@@ -56,22 +59,23 @@ export function mapPersistNoteToDomainListItem(
 
 export function mapDomainListItemToContract(
   domainListItem: ListItemDomain,
-  fields: ReadonlyArray<AllowedNoteFields> | undefined,
-) {
+  fields: ReadonlyArray<AllowedNoteFields>,
+): NoteListItemContract {
   const out: NoteListItemContract = {
     id: domainListItem.id.toString(),
-    title: domainListItem.title,
-    createdAt: domainListItem.createdAt.toISOString(),
-    updatedAt: domainListItem.updatedAt.toISOString(),
   };
-  if (fields) {
-    for (const f of fields) {
-      if (f in domainListItem && domainListItem[f]) {
-        if (f === "content" && domainListItem.content) {
-          out.content = domainListItem.content;
-        } else if (f === "tags") {
-          out.tags = domainListItem.tags ?? [];
-        }
+  for (const f of fields) {
+    if (f in domainListItem && domainListItem[f]) {
+      if (f === "title" && domainListItem.title) {
+        out.title = domainListItem.title;
+      } else if (f === "content" && domainListItem.content) {
+        out.content = domainListItem.content;
+      } else if (f === "tags") {
+        out.tags = domainListItem.tags ?? [];
+      } else if (f === "createdAt" && domainListItem.createdAt) {
+        out.createdAt = domainListItem.createdAt.toISOString();
+      } else if (f === "updatedAt" && domainListItem.updatedAt) {
+        out.updatedAt = domainListItem.updatedAt.toISOString();
       }
     }
   }

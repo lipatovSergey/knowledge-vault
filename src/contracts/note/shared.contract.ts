@@ -28,11 +28,11 @@ export type NoteContract = z.infer<typeof noteResponseSchema>;
 export const noteListItemResponseSchema = z
   .object({
     id: mongoIdSchema,
-    title: noteTitleSchema,
+    title: noteTitleSchema.optional(),
     content: noteContentSchema.optional(),
     tags: noteTagsArraySchema.optional(),
-    createdAt: isoDateStringSchema,
-    updatedAt: isoDateStringSchema,
+    createdAt: isoDateStringSchema.optional(),
+    updatedAt: isoDateStringSchema.optional(),
   })
   .strict();
 export type NoteListItemContract = z.infer<typeof noteListItemResponseSchema>;

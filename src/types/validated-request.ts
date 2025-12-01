@@ -9,7 +9,7 @@ export type RequestWithValidatedParams<Params extends ParamsDictionary> = Reques
   validatedParams: Params;
 };
 
-export type RequestWithValidatedQuery<Query> = Request<ParamsDictionary, any, any, Query> & {
+export type RequestWithValidatedQuery<Query> = Request & {
   validatedQuery: Query;
 };
 

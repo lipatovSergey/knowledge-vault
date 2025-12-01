@@ -1,9 +1,8 @@
 export function normalizeFields<Allowed extends readonly string[]>(
-  raw: string | string[] | undefined,
+  raw: string | string[],
   allowedFields: Allowed,
-): Allowed[number][] | undefined {
+): Allowed[number][] {
   // in case if fields wasn't passed at all
-  if (raw === undefined) return undefined;
   const values = Array.isArray(raw) ? raw : raw.split(",");
   const allowedSet = new Set(allowedFields);
   const isAllowed = (v: string): v is Allowed[number] => allowedSet.has(v as Allowed[number]);

@@ -162,12 +162,11 @@ describe("/api/note/", () => {
           ),
         ),
       );
-      const expectedKeys = ["title", "id", "updatedAt", "createdAt"];
+      const expectedKeys = ["title", "id", "updatedAt"];
       body.forEach((item) => {
         expect(item).toMatchObject({
           id: expect.any(String),
           updatedAt: expect.any(String),
-          createdAt: expect.any(String),
         });
         expect(Object.keys(item).sort()).toEqual(expectedKeys.sort());
       });
@@ -176,16 +175,14 @@ describe("/api/note/", () => {
     it("should return 200 status and array of all user's notes with content field", async () => {
       const res = await agent.get(route).query({ fields: "content" });
       expect(res.statusCode).toBe(200);
+      console.log(res.body);
       const body = noteRootGetResponseSchema.parse(res.body);
       expect(body).toEqual(
         expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
-              title: note.title,
               content: note.content,
               id: expect.any(String),
-              updatedAt: expect.any(String),
-              createdAt: expect.any(String),
             }),
           ),
         ),
@@ -200,11 +197,8 @@ describe("/api/note/", () => {
         expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
-              title: note.title,
               tags: note.tags,
               id: expect.any(String),
-              createdAt: expect.any(String),
-              updatedAt: expect.any(String),
             }),
           ),
         ),
@@ -219,12 +213,9 @@ describe("/api/note/", () => {
         expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
-              title: note.title,
               content: note.content,
               tags: note.tags,
               id: expect.any(String),
-              createdAt: expect.any(String),
-              updatedAt: expect.any(String),
             }),
           ),
         ),
@@ -239,12 +230,9 @@ describe("/api/note/", () => {
         expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
-              title: note.title,
               content: note.content,
               tags: note.tags,
               id: expect.any(String),
-              createdAt: expect.any(String),
-              updatedAt: expect.any(String),
             }),
           ),
         ),

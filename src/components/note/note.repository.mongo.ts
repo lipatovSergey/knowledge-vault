@@ -47,16 +47,10 @@ const noteRepo = {
   // gets all user's notes sorted from newest to oldest
   async getNotesList(input: GetNoteListInput): Promise<ListItemDomain[]> {
     const { userId, fields } = input;
-    const baseProjection: Record<string, 1> = { _id: 1, createdAt: 1, updatedAt: 1, title: 1 };
-    const projection = fields
-      ? fields.reduce<Record<string, 1>>(
-          (acc, f) => {
-            acc[f] = 1;
-            return acc;
-          },
-          { ...baseProjection },
-        )
-      : { ...baseProjection };
+    const projection = fields.reduce<Record<string, 1>>((acc, f) => {
+      acc[f] = 1;
+      return acc;
+    }, {});
     const result = await NoteModel.find({ userId })
       .select(projection)
       .sort({ updatedAt: -1 })
