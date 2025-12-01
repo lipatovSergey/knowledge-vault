@@ -46,8 +46,8 @@ export function mapPersistNoteToDomainListItem(
     for (const f of fields) {
       if (f === "content" && noteObject.content) {
         out.content = noteObject.content;
-      } else if (f === "tags" && noteObject.tags) {
-        out.tags = noteObject.tags;
+      } else if (f === "tags") {
+        out.tags = noteObject.tags ?? [];
       }
     }
   }
@@ -69,8 +69,8 @@ export function mapDomainListItemToContract(
       if (f in domainListItem && domainListItem[f]) {
         if (f === "content" && domainListItem.content) {
           out.content = domainListItem.content;
-        } else if (f === "tags" && domainListItem.tags) {
-          out.tags = domainListItem.tags;
+        } else if (f === "tags") {
+          out.tags = domainListItem.tags ?? [];
         }
       }
     }

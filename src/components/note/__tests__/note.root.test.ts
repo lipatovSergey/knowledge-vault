@@ -30,11 +30,11 @@ describe("/api/note/", () => {
   });
 
   describe("POST", () => {
+    const note = {
+      title: "some-test-title",
+      content: "some-test-content",
+    };
     it("should create new note for user and return mapped object", async () => {
-      const note = {
-        title: "some-test-title",
-        content: "some-test-content",
-      };
       const res = await agent.post(route).send({ title: note.title, content: note.content });
       expect(res.statusCode).toBe(201);
       noteRootPostResponseSchema.parse(res.body);
@@ -45,8 +45,25 @@ describe("/api/note/", () => {
           id: res.body.id,
           title: note.title,
           content: note.content,
+          tags: [],
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
+        }),
+      );
+    });
+
+    it("should create new note with array of tags if tags, were passed", async () => {
+      const tags = ["tag1", "tag2"];
+      const res = await agent
+        .post(route)
+        .send({ title: note.title, content: note.content, tags: tags });
+      expect(res.statusCode).toBe(201);
+      noteRootPostResponseSchema.parse(res.body);
+
+      const getRes = await agent.get(`${route}/${res.body.id}`);
+      expect(getRes.body).toEqual(
+        expect.objectContaining({
+          tags: tags,
         }),
       );
     });
@@ -107,14 +124,17 @@ describe("/api/note/", () => {
       {
         title: "valid-title",
         content: "valid-content",
+        tags: ["tag1", "tag2"],
       },
       {
         title: "valid-title-1",
         content: "valid-content-1",
+        tags: ["tag1", "tag2"],
       },
       {
         title: "valid-title-2",
         content: "valid-content-2",
+        tags: ["tag1", "tag2"],
       },
     ];
     beforeEach(async () => {
@@ -123,6 +143,7 @@ describe("/api/note/", () => {
           agent.post("/api/note").send({
             title: note.title,
             content: note.content,
+            tags: note.tags,
           }),
         ),
       );
@@ -171,7 +192,64 @@ describe("/api/note/", () => {
       );
     });
 
-    //TODO: add tests for fields passed as an array (?fields=content&fields=title), and for fields=title,content
+    it("should return 200 status and array of all user's notes with tags field", async () => {
+      const res = await agent.get(route).query({ fields: "tags" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body).toEqual(
+        expect.arrayContaining(
+          validNotesList.map((note) =>
+            expect.objectContaining({
+              title: note.title,
+              tags: note.tags,
+              id: expect.any(String),
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            }),
+          ),
+        ),
+      );
+    });
+
+    it("should return notes with tags and content when fields are passed as repeated params", async () => {
+      const res = await agent.get(route).query({ fields: ["tags", "content"] });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body).toEqual(
+        expect.arrayContaining(
+          validNotesList.map((note) =>
+            expect.objectContaining({
+              title: note.title,
+              content: note.content,
+              tags: note.tags,
+              id: expect.any(String),
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            }),
+          ),
+        ),
+      );
+    });
+
+    it("should return notes with tags and content when fields are passed as comma-separated params", async () => {
+      const res = await agent.get(route).query({ fields: "tags,content" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body).toEqual(
+        expect.arrayContaining(
+          validNotesList.map((note) =>
+            expect.objectContaining({
+              title: note.title,
+              content: note.content,
+              tags: note.tags,
+              id: expect.any(String),
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+            }),
+          ),
+        ),
+      );
+    });
 
     it("should return 400 BadRequest error, if invalid value set in fields query", async () => {
       const res = await agent.get(route).query({ fields: "invalid-value" });
