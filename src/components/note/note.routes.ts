@@ -24,7 +24,7 @@ router.get(
   "/",
   requireAuth,
   validateQuery(noteRootGetRequestQuerySchema),
-  noteController.getNotesList,
+  noteController.getNotesList as RequestHandler,
 );
 
 router.get(
