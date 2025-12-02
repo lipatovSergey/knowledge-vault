@@ -29,16 +29,21 @@ export const noteRootGetRequestQuerySchema = z.object({
       message: "Invalid fields",
       path: ["fields"],
     }),
-  page: z.coerce.number().int().positive().min(1, "Minimum value for page is 1").default(1),
+  page: z.coerce.number().int().min(1, "Minimum value for page is 1").default(1),
   limit: z.coerce
     .number()
     .int()
-    .positive()
     .min(1, "Minimum value for limit is 1")
     .max(100, "Maximum value for limit is 100")
     .default(20),
 });
 export type NoteRootGetRequestQuery = z.infer<typeof noteRootGetRequestQuerySchema>;
 
-export const noteRootGetResponseSchema = z.array(noteListItemResponseSchema);
+export const noteRootGetResponseSchema = z.object({
+  data: z.array(noteListItemResponseSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().min(1),
+  limit: z.number().int().min(1),
+});
+
 export type NoteRootGetResponse = z.infer<typeof noteRootGetResponseSchema>;
