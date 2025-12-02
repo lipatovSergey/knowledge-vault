@@ -39,7 +39,7 @@ export type GetNoteListInput = {
 export type GetNoteListRepoInput = {
   userId: MongoId;
   fields: ReadonlyArray<AllowedNoteFields>;
-  page: number;
+  skip: number;
   limit: number;
 };
 
@@ -59,4 +59,16 @@ export type ListItemDomain = {
   tags?: NoteTagsArray;
   createdAt?: Date;
   updatedAt?: Date;
+};
+
+export type NoteListRepoResult = {
+  data: ListItemDomain[];
+  total: number;
+};
+
+export type NoteListResult = {
+  data: ListItemDomain[];
+  total: number;
+  page: number;
+  limit: number;
 };

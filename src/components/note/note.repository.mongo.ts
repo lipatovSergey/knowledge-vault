@@ -4,9 +4,9 @@ import type {
   CreateNoteInput,
   DeleteNoteInput,
   GetNoteInput,
-  GetNoteListInput,
-  ListItemDomain,
+  GetNoteListRepoInput,
   NoteDomain,
+  NoteListRepoResult,
   PatchNoteInput,
 } from "./note.types";
 
@@ -45,17 +45,21 @@ const noteRepo = {
   },
 
   // gets all user's notes sorted from newest to oldest
-  async getNotesList(input: GetNoteListInput): Promise<ListItemDomain[]> {
-    const { userId, fields } = input;
+  async getNotesList(input: GetNoteListRepoInput): Promise<NoteListRepoResult> {
+    const { userId, fields, limit, skip } = input;
     const projection = fields.reduce<Record<string, 1>>((acc, f) => {
       acc[f] = 1;
       return acc;
     }, {});
     const result = await NoteModel.find({ userId })
       .select(projection)
+      .skip(skip)
+      .limit(limit)
       .sort({ updatedAt: -1 })
       .lean();
-    return result.map((doc) => mapPersistNoteToDomainListItem(doc, fields));
+    const total = await NoteModel.countDocuments({ userId }).sort({ updatedAt: -1 });
+    const data = result.map((doc) => mapPersistNoteToDomainListItem(doc, fields));
+    return { data, total };
   },
 };
 

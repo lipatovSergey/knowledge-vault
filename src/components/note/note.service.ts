@@ -5,8 +5,8 @@ import type {
   DeleteNoteInput,
   GetNoteInput,
   GetNoteListInput,
-  ListItemDomain,
   NoteDomain,
+  NoteListResult,
   PatchNoteInput,
 } from "./note.types";
 
@@ -46,11 +46,11 @@ function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
     },
 
     // use-case: get all user's notes by user's id
-    async getNotesList(input: GetNoteListInput): Promise<ListItemDomain[]> {
-      const { page, limit } = input;
+    async getNotesList(input: GetNoteListInput): Promise<NoteListResult> {
+      const { page, limit, userId, fields } = input;
       const skip = (page - 1) * limit;
-      const notesList = await noteRepo.getNotesList(input);
-      return notesList;
+      const repoResult = await noteRepo.getNotesList({ userId, fields, skip, limit });
+      return { ...repoResult, page, limit };
     },
   };
 }
