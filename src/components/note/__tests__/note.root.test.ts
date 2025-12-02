@@ -10,23 +10,28 @@ import {
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
+import { insertNotesDirectly } from "../../../../tests/helpers/insert-notes.helper";
+import { MongoId } from "../../../types/primitives";
+import { NoteDocument } from "../note.model";
 
 describe("/api/note/", () => {
   const route = "/api/note";
   let agent: AuthAgent;
+  let userId: MongoId;
   const expectValidationError = createExpectValidationError(route);
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     agent = request.agent(global.app);
     await agent.post("/api/user").send({
       name: "User",
       email: "test@example.com",
       password: "pass123",
     });
-    await agent.post("/api/auth/login").send({
+    const res = await agent.post("/api/auth/login").send({
       email: "test@example.com",
       password: "pass123",
     });
+    userId = res.body.id;
   });
 
   describe("POST", () => {
@@ -120,50 +125,29 @@ describe("/api/note/", () => {
   });
 
   describe("GET", () => {
-    const validNotesList = [
-      {
-        title: "valid-title",
-        content: "valid-content",
-        tags: ["tag1", "tag2"],
-      },
-      {
-        title: "valid-title-1",
-        content: "valid-content-1",
-        tags: ["tag1", "tag2"],
-      },
-      {
-        title: "valid-title-2",
-        content: "valid-content-2",
-        tags: ["tag1", "tag2"],
-      },
-    ];
+    let validNotesList: NoteDocument[];
     beforeEach(async () => {
-      await Promise.all(
-        validNotesList.map((note) =>
-          agent.post("/api/note").send({
-            title: note.title,
-            content: note.content,
-            tags: note.tags,
-          }),
-        ),
-      );
+      validNotesList = await insertNotesDirectly(userId, 3);
     });
 
     it("should return 200 status and array of all user's default version notes", async () => {
       const res = await agent.get(route);
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
-      expect(body).toEqual(
-        expect.arrayContaining(
+      expect(body).toMatchObject({
+        data: expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
               title: note.title,
             }),
           ),
         ),
-      );
+        total: validNotesList.length,
+        page: 1,
+        limit: 20,
+      });
       const expectedKeys = ["title", "id", "updatedAt"];
-      body.forEach((item) => {
+      body.data.forEach((item) => {
         expect(item).toMatchObject({
           id: expect.any(String),
           updatedAt: expect.any(String),
@@ -175,10 +159,9 @@ describe("/api/note/", () => {
     it("should return 200 status and array of all user's notes with content field", async () => {
       const res = await agent.get(route).query({ fields: "content" });
       expect(res.statusCode).toBe(200);
-      console.log(res.body);
       const body = noteRootGetResponseSchema.parse(res.body);
-      expect(body).toEqual(
-        expect.arrayContaining(
+      expect(body).toMatchObject({
+        data: expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
               content: note.content,
@@ -186,15 +169,18 @@ describe("/api/note/", () => {
             }),
           ),
         ),
-      );
+        total: validNotesList.length,
+        page: 1,
+        limit: 20,
+      });
     });
 
     it("should return 200 status and array of all user's notes with tags field", async () => {
       const res = await agent.get(route).query({ fields: "tags" });
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
-      expect(body).toEqual(
-        expect.arrayContaining(
+      expect(body).toMatchObject({
+        data: expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
               tags: note.tags,
@@ -202,15 +188,18 @@ describe("/api/note/", () => {
             }),
           ),
         ),
-      );
+        total: validNotesList.length,
+        page: 1,
+        limit: 20,
+      });
     });
 
     it("should return notes with tags and content when fields are passed as repeated params", async () => {
       const res = await agent.get(route).query({ fields: ["tags", "content"] });
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
-      expect(body).toEqual(
-        expect.arrayContaining(
+      expect(body).toMatchObject({
+        data: expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
               content: note.content,
@@ -219,15 +208,18 @@ describe("/api/note/", () => {
             }),
           ),
         ),
-      );
+        total: validNotesList.length,
+        page: 1,
+        limit: 20,
+      });
     });
 
     it("should return notes with tags and content when fields are passed as comma-separated params", async () => {
       const res = await agent.get(route).query({ fields: "tags,content" });
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
-      expect(body).toEqual(
-        expect.arrayContaining(
+      expect(body).toMatchObject({
+        data: expect.arrayContaining(
           validNotesList.map((note) =>
             expect.objectContaining({
               content: note.content,
@@ -236,7 +228,10 @@ describe("/api/note/", () => {
             }),
           ),
         ),
-      );
+        total: validNotesList.length,
+        page: 1,
+        limit: 20,
+      });
     });
 
     it("should return 400 BadRequest error, if invalid value set in fields query", async () => {
@@ -250,6 +245,41 @@ describe("/api/note/", () => {
       expect(res.statusCode).toBe(401);
       const body = unauthorizedErrorSchema.parse(res.body);
       expect(body.instance).toBe(route);
+    });
+  });
+
+  describe.only("GET pagingation tests", () => {
+    let validNotesList: NoteDocument[];
+    const noteTotalAmount = 25;
+    beforeEach(async () => {
+      validNotesList = await insertNotesDirectly(userId, noteTotalAmount);
+    });
+
+    it("should return 200 with default page/limit when no pagingation params are provided", async () => {
+      const res = await agent.get(route);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.page).toBe(1);
+      expect(body.limit).toBe(20);
+      expect(body.data.length).toBe(body.limit);
+      expect(body.total).toBe(noteTotalAmount);
+    });
+
+    it("should return 200 with limit that provided in pagingation params", async () => {
+      const res = await agent.get(route).query({ limit: 5 });
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.page).toBe(1);
+      expect(body.limit).toBe(5);
+      expect(body.data.length).toBe(body.limit);
+      expect(body.total).toBe(noteTotalAmount);
+    });
+
+    it("should return 200 with empty array in data when the requested page is beyond the available notes", async () => {
+      const res = await agent.get(route).query({ page: 5, limit: 10 });
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(0);
+      expect(body.page).toBe(5);
+      expect(body.limit).toBe(10);
+      expect(body.total).toBe(noteTotalAmount);
     });
   });
 });
