@@ -248,7 +248,7 @@ describe("/api/note/", () => {
     });
   });
 
-  describe.only("GET pagingation tests", () => {
+  describe("GET pagingation tests", () => {
     let validNotesList: NoteDocument[];
     const noteTotalAmount = 25;
     beforeEach(async () => {
@@ -280,6 +280,26 @@ describe("/api/note/", () => {
       expect(body.page).toBe(5);
       expect(body.limit).toBe(10);
       expect(body.total).toBe(noteTotalAmount);
+    });
+
+    it("should return 200 with correct slice of notes that requested by pagingation params", async () => {
+      const res = await agent.get(route).query({ page: 2, limit: 10 });
+      const body = noteRootGetResponseSchema.parse(res.body);
+      const titles = body.data.map((n) => n.title);
+      const expected = validNotesList.slice(10, 20).map((n) => n.title);
+      expect(titles).toEqual(expected);
+    });
+
+    it("should return 400 BadRequest error if invalid value pathed to page param", async () => {
+      const res = await agent.get(route).query({ page: 0 });
+      expect(res.statusCode).toBe(400);
+      badRequestErrorSchema.parse(res.body);
+    });
+
+    it("should return 400 BadRequest error if invalid value pathed to limit param", async () => {
+      const res = await agent.get(route).query({ limit: 101 });
+      expect(res.statusCode).toBe(400);
+      badRequestErrorSchema.parse(res.body);
     });
   });
 });
