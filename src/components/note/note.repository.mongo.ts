@@ -9,6 +9,7 @@ import type {
   NoteListRepoResult,
   PatchNoteInput,
 } from "./note.types";
+import { normalizeSearchString } from "../../utils/search-string-normalize.util";
 
 // methods of note
 const noteRepo = {
@@ -46,18 +47,22 @@ const noteRepo = {
 
   // gets all user's notes sorted from newest to oldest
   async getNotesList(input: GetNoteListRepoInput): Promise<NoteListRepoResult> {
-    const { userId, fields, limit, skip } = input;
+    const { userId, fields, limit, skip, search } = input;
     const projection = fields.reduce<Record<string, 1>>((acc, f) => {
       acc[f] = 1;
       return acc;
     }, {});
-    const result = await NoteModel.find({ userId })
+    const filter = {
+      userId,
+      ...(search ? { title: { $regex: normalizeSearchString(search), $options: "i" } } : {}),
+    };
+    const result = await NoteModel.find(filter)
       .select(projection)
       .skip(skip)
       .limit(limit)
       .sort({ updatedAt: -1 })
       .lean();
-    const total = await NoteModel.countDocuments({ userId }).sort({ updatedAt: -1 });
+    const total = await NoteModel.countDocuments(filter).sort({ updatedAt: -1 });
     const data = result.map((doc) => mapPersistNoteToDomainListItem(doc, fields));
     return { data, total };
   },

@@ -29,13 +29,19 @@ export const noteRootGetRequestQuerySchema = z.object({
       message: "Invalid fields",
       path: ["fields"],
     }),
-  page: z.coerce.number().int().min(1, "Minimum value for page is 1").default(1),
+  page: z.coerce.number().int().min(1, "Page value must be at least 1 symbol").default(1),
   limit: z.coerce
     .number()
     .int()
-    .min(1, "Minimum value for limit is 1")
-    .max(100, "Maximum value for limit is 100")
+    .min(1, "Limit value must be at least 1 symbol")
+    .max(100, "Limit value must be at most 100 symbols")
     .default(20),
+  search: z
+    .string()
+    .trim()
+    .max(120, "Search string must be at most 120 symbols")
+    .optional()
+    .transform((s) => (s && s.length > 0 ? s.toLowerCase() : undefined)),
 });
 export type NoteRootGetRequestQuery = z.infer<typeof noteRootGetRequestQuerySchema>;
 

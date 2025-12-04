@@ -34,6 +34,7 @@ export type GetNoteListInput = {
   fields: ReadonlyArray<AllowedNoteFields>;
   page: number;
   limit: number;
+  search: string | undefined;
 };
 
 export type GetNoteListRepoInput = {
@@ -41,6 +42,7 @@ export type GetNoteListRepoInput = {
   fields: ReadonlyArray<AllowedNoteFields>;
   skip: number;
   limit: number;
+  search: string | undefined;
 };
 
 export type NoteDomain = {
