@@ -10,7 +10,7 @@ import {
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
-import { insertNotesDirectly } from "../../../../tests/helpers/insert-notes.helper";
+import { InsertNotes, insertNotesDirectly } from "../../../../tests/helpers/insert-notes.helper";
 import { MongoId } from "../../../types/primitives";
 import { NoteDocument } from "../note.model";
 
@@ -126,8 +126,16 @@ describe("/api/note/", () => {
 
   describe("GET", () => {
     let validNotesList: NoteDocument[];
+    const notes = [] as InsertNotes;
+    for (let i = 3; i > 0; i--) {
+      notes.push({
+        title: `title-${i}`,
+        content: `content-${i}`,
+        tags: ["tag1", "tag2"],
+      });
+    }
     beforeEach(async () => {
-      validNotesList = await insertNotesDirectly(userId, 3);
+      validNotesList = await insertNotesDirectly(userId, notes);
     });
 
     it("should return 200 status and array of all user's default version notes", async () => {
@@ -250,9 +258,20 @@ describe("/api/note/", () => {
 
   describe("GET pagingation tests", () => {
     let validNotesList: NoteDocument[];
+    const now = Date.now();
+    const notes = [] as InsertNotes;
     const noteTotalAmount = 25;
+    for (let i = noteTotalAmount; i > 0; i--) {
+      notes.push({
+        title: `title-${i}`,
+        content: `content-${i}`,
+        tags: ["tag1", "tag2"],
+        updatedAt: new Date(now + i),
+        createdAt: new Date(now + i),
+      });
+    }
     beforeEach(async () => {
-      validNotesList = await insertNotesDirectly(userId, noteTotalAmount);
+      validNotesList = await insertNotesDirectly(userId, notes);
     });
 
     it("should return 200 with default page/limit when no pagingation params are provided", async () => {
@@ -300,6 +319,121 @@ describe("/api/note/", () => {
       const res = await agent.get(route).query({ limit: 101 });
       expect(res.statusCode).toBe(400);
       badRequestErrorSchema.parse(res.body);
+    });
+  });
+
+  describe("GET search by title", () => {
+    let validNotesList: NoteDocument[];
+    const notes = [
+      {
+        title: "title-1",
+        content: "content-1",
+      },
+      {
+        title: "title-1",
+        content: "content-1",
+      },
+      {
+        title: "No.De/^$",
+        content: "content-No.De",
+      },
+      {
+        title: "NoDe",
+        content: "content-NoDe",
+      },
+    ] as InsertNotes;
+
+    beforeEach(async () => {
+      validNotesList = await insertNotesDirectly(userId, notes);
+    });
+
+    it("should return 200 and notes whose titles contain the search term", async () => {
+      const res = await agent.get(route).query({ search: "1" });
+      expect(res.statusCode).toBe(200);
+      const expected = notes.flatMap((n) => (n.title === "title-1" ? n.title : []));
+      const body = noteRootGetResponseSchema.parse(res.body);
+      const returnedTitles = body.data.map((n) => n.title);
+      expect(returnedTitles).toEqual(expected);
+    });
+
+    it("should return 200 and matches titles case-insensitively ('node' finds 'NoDe')", async () => {
+      const res = await agent.get(route).query({ search: "node" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data[0].title).toBe("NoDe");
+    });
+
+    it("should return 200 and empty string when to titles match", async () => {
+      const res = await agent.get(route).query({ search: "title-not-from-db" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(0);
+    });
+
+    it("should return 200 and treats empty search as no filter", async () => {
+      const res = await agent.get(route).query({ search: "" });
+      expect(res.status).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data.length).toEqual(notes.length);
+    });
+
+    it("should return 200 and notes list limites by pagingation", async () => {
+      const res = await agent.get(route).query({ search: "1", limit: 1 });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(1);
+      expect(body.total).toBe(2);
+    });
+
+    it("should return 200 and notes only with requested fields", async () => {
+      const res = await agent.get(route).query({ fields: "content", search: "node" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      const expectedKeys = ["id", "content"];
+      body.data.forEach((item) => {
+        expect(item).toMatchObject({
+          id: expect.any(String),
+          content: expect.any(String),
+        });
+        expect(Object.keys(item).sort()).toEqual(expectedKeys.sort());
+      });
+    });
+
+    it("should return 200 and treats regex metacharacters as literals", async () => {
+      const res = await agent.get(route).query({ search: "No.De/^$" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      body.data.forEach((n) => expect(n.title).toEqual("No.De/^$"));
+    });
+
+    it("should return 400 BadRequest when the search string exceeds the max length", async () => {
+      const res = await agent.get(route).query({ search: "a".repeat(121) });
+      expect(res.statusCode).toBe(400);
+      badRequestErrorSchema.parse(res.body);
+    });
+
+    it("isolates search results per-user, each user sees only their own matching notes", async () => {
+      const intrudetAgent = request.agent(global.app);
+      await intrudetAgent.post("/api/user").send({
+        name: "User2",
+        email: "test2@example.com",
+        password: "pass1234",
+      });
+      await intrudetAgent.post("/api/auth/login").send({
+        email: "test2@example.com",
+        password: "pass1234",
+      });
+      const equalNote = { title: "title-equal", content: "content-equal" };
+      await intrudetAgent.post(route).send(equalNote);
+      await agent.post(route).send(equalNote);
+      const res = await agent.get(route).query({ search: equalNote.title });
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data[0].title).toEqual(equalNote.title);
+      expect(body.data).toHaveLength(1);
+      const intrudetRes = await intrudetAgent.get(route).query({ search: equalNote.title });
+      const intrudetBody = noteRootGetResponseSchema.parse(intrudetRes.body);
+      expect(intrudetBody.data[0].title).toEqual(equalNote.title);
+      expect(intrudetBody.data).toHaveLength(1);
     });
   });
 });
