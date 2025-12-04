@@ -1,5 +1,5 @@
 import z from "zod";
-import { noteContentSchema, noteTitleSchema } from "../../types/primitives";
+import { noteContentSchema, noteTitleSchema, tagSchema } from "../../types/primitives";
 import {
   noteListItemResponseSchema,
   noteResponseSchema,
@@ -42,6 +42,16 @@ export const noteRootGetRequestQuerySchema = z.object({
     .max(120, "Search string must be at most 120 symbols")
     .optional()
     .transform((s) => (s && s.length > 0 ? s.toLowerCase() : undefined)),
+  tags: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((raw) => {
+      // field tags not passed at all
+      if (!raw) return undefined;
+      const values = Array.isArray(raw) ? raw : raw.split(",");
+      const parsed = values.map((v) => tagSchema.parse(v.trim().toLowerCase()));
+      return Array.from(new Set(parsed));
+    }),
 });
 export type NoteRootGetRequestQuery = z.infer<typeof noteRootGetRequestQuerySchema>;
 
