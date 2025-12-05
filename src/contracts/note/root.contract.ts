@@ -42,16 +42,21 @@ export const noteRootGetRequestQuerySchema = z.object({
     .max(120, "Search string must be at most 120 symbols")
     .optional()
     .transform((s) => (s && s.length > 0 ? s.toLowerCase() : undefined)),
-  tags: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform((raw) => {
-      // field tags not passed at all
-      if (!raw) return undefined;
-      const values = Array.isArray(raw) ? raw : raw.split(",");
-      const parsed = values.map((v) => tagSchema.parse(v.trim().toLowerCase()));
-      return Array.from(new Set(parsed));
-    }),
+  tags: z.preprocess(
+    (raw) => {
+      if (raw === undefined) return undefined;
+      const values = Array.isArray(raw) ? raw : String(raw).split(",");
+      const normalized = values.map((v) => v.trim().toLowerCase());
+      return Array.from(new Set(normalized));
+    },
+    z
+      .array(tagSchema)
+      .optional()
+      .refine((v) => !v || v.length <= 100, {
+        message: "Tags must be at most 100",
+        path: ["tags"],
+      }),
+  ),
 });
 export type NoteRootGetRequestQuery = z.infer<typeof noteRootGetRequestQuerySchema>;
 
