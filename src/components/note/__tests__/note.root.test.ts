@@ -436,4 +436,130 @@ describe("/api/note/", () => {
       expect(intrudetBody.data).toHaveLength(1);
     });
   });
+  describe.only("GET tags filter", () => {
+    let validNotesList: NoteDocument[];
+    const notes = [
+      {
+        title: "title-1",
+        content: "content-1",
+        tags: ["tag-1", "tag-2"],
+      },
+      {
+        title: "title-2",
+        content: "content-1",
+        tags: ["tag-2"],
+      },
+      {
+        title: "title-3",
+        content: "content-1",
+        tags: ["tag-2", "tag-1"],
+      },
+    ];
+    beforeEach(async () => {
+      validNotesList = await insertNotesDirectly(userId, notes);
+    });
+
+    it("should return 200 and only the notes that contain requested tags ", async () => {
+      const tag = "tag-1";
+      const res = await agent.get(route).query({ tags: tag });
+      expect(res.statusCode).toBe(200);
+      const expected = validNotesList
+        .filter((n) => n.tags.includes(tag))
+        .map((n) => n._id.toString());
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(expected.length);
+      body.data.forEach((n) => {
+        expect(expected).toContain(n.id);
+      });
+    });
+
+    it("should return 200 and works fluent with multiple tags", async () => {
+      const tags = ["tag-1", "tag-2"];
+      const res = await agent.get(route).query({ tags: tags });
+      expect(res.statusCode).toBe(200);
+      const expected = validNotesList
+        .filter((n) => tags.every((t) => n.tags.includes(t)))
+        .map((n) => n._id.toString());
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(expected.length);
+      body.data.forEach((n) => {
+        expect(expected).toContain(n.id);
+      });
+    });
+
+    it("should return 200 and return empty array when no tags match", async () => {
+      const res = await agent.get(route).query({ tags: "tag-not-from-db" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(0);
+    });
+
+    it("should return 400 BadRequest if more then 100 tags passed", async () => {
+      const arr = Array.from({ length: 101 }, (_, i) => `tag-${i}`);
+      const res = await agent.get(route).query({ tags: arr });
+      expect(res.statusCode).toBe(400);
+      badRequestErrorSchema.parse(res.body);
+    });
+
+    it("should return 400 BadRequest even if one tag invalid", async () => {
+      const res = await agent.get(route).query({ tags: "inv@lid-t@g" });
+      expect(res.statusCode).toBe(400);
+      badRequestErrorSchema.parse(res.body);
+    });
+
+    it("should accept comma-separated tags and repeated params", async () => {
+      const commaRes = await agent.get(route).query({ tags: "tag-1,tag-2" });
+      expect(commaRes.statusCode).toBe(200);
+      const commaBody = noteRootGetResponseSchema.parse(commaRes.body);
+      const arrayRes = await agent.get(route).query({ tags: ["tag-1", "tag-2"] });
+      expect(arrayRes.statusCode).toBe(200);
+      const arrayBody = noteRootGetResponseSchema.parse(arrayRes.body);
+      expect(commaBody).toEqual(arrayBody);
+    });
+
+    it("returns 200 with correct pagination when filtering by tags (limit=1, page=2 yields one item and total 2)", async () => {
+      const res = await agent.get(route).query({ tags: "tag-1", limit: 1, page: 2 });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(1);
+      expect(body.total).toBe(2);
+    });
+
+    it("returns 200 and respects fields projection when filtering by tags (content is included)", async () => {
+      const res = await agent.get(route).query({ tags: "tag-1", fields: "content" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      body.data.forEach((n) => expect(n).toHaveProperty("content"));
+    });
+
+    it("returns 200 and applies both title search and tag filter (only notes with the searched title remain)", async () => {
+      const titleToSearch = "title-3";
+      const res = await agent.get(route).query({ search: titleToSearch, tags: "tag-1" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      body.data.forEach((n) => expect(n.title).toEqual(titleToSearch));
+    });
+
+    it("isolates tags filter results per-user, each user sees only their own matching notes", async () => {
+      const intrudetAgent = request.agent(global.app);
+      await intrudetAgent.post("/api/user").send({
+        name: "User2",
+        email: "test2@example.com",
+        password: "pass1234",
+      });
+      await intrudetAgent.post("/api/auth/login").send({
+        email: "test2@example.com",
+        password: "pass1234",
+      });
+      const equalNote = { title: "title-equal", content: "content-equal", tags: ["equal-tag"] };
+      await intrudetAgent.post(route).send(equalNote);
+      await agent.post(route).send(equalNote);
+      const res = await agent.get(route).query({ tags: equalNote.tags });
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.data).toHaveLength(1);
+      const intrudetRes = await intrudetAgent.get(route).query({ tags: equalNote.tags });
+      const intrudetBody = noteRootGetResponseSchema.parse(intrudetRes.body);
+      expect(intrudetBody.data).toHaveLength(1);
+    });
+  });
 });
