@@ -23,6 +23,7 @@ const noteSchema = new Schema(
   { timestamps: true },
 );
 
+noteSchema.index({ userId: 1, tags: 1, updatedAt: -1 });
 export type NoteSchemaType = InferSchemaType<typeof noteSchema>;
 export type NoteDocument = HydratedDocument<NoteSchemaType>;
 export const NoteModel = model<NoteSchemaType>("Note", noteSchema);

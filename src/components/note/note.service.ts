@@ -47,9 +47,9 @@ function createNoteService({ noteRepo }: { noteRepo: NoteRepository }) {
 
     // use-case: get all user's notes by user's id
     async getNotesList(input: GetNoteListInput): Promise<NoteListResult> {
-      const { page, limit, userId, fields, search } = input;
+      const { page, limit, userId, fields, search, tags } = input;
       const skip = (page - 1) * limit;
-      const repoResult = await noteRepo.getNotesList({ userId, fields, skip, limit, search });
+      const repoResult = await noteRepo.getNotesList({ userId, fields, skip, limit, search, tags });
       return { ...repoResult, page, limit };
     },
   };

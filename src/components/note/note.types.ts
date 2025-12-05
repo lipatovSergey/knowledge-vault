@@ -1,6 +1,6 @@
 import type { AllowedNoteFields } from "../../contracts/note/root.contract";
 import type { NoteTagsArray } from "../../contracts/note/shared.contract";
-import type { MongoId, NoteContent, NoteTitle } from "../../types/primitives";
+import type { MongoId, NoteContent, NoteTitle, Tag } from "../../types/primitives";
 
 export type CreateNoteInput = {
   userId: MongoId;
@@ -35,6 +35,7 @@ export type GetNoteListInput = {
   page: number;
   limit: number;
   search: string | undefined;
+  tags: Tag[] | undefined;
 };
 
 export type GetNoteListRepoInput = {
@@ -43,6 +44,7 @@ export type GetNoteListRepoInput = {
   skip: number;
   limit: number;
   search: string | undefined;
+  tags: Tag[] | undefined;
 };
 
 export type NoteDomain = {
