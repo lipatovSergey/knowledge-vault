@@ -322,24 +322,30 @@ describe("/api/note/", () => {
     });
   });
 
-  describe("GET search by title", () => {
+  describe("GET search by title and content", () => {
     let validNotesList: NoteDocument[];
+    const searchString = "some-value";
     const notes = [
       {
-        title: "title-1",
+        title: searchString,
         content: "content-1",
       },
       {
         title: "title-1",
-        content: "content-1",
+        content: searchString,
       },
       {
         title: "No.De/^$",
         content: "content-No.De",
       },
       {
+        title: searchString,
+        content: "content-3",
+        tags: ["tag-1"],
+      },
+      {
         title: "NoDe",
-        content: "content-NoDe",
+        content: "content-4",
       },
     ] as InsertNotes;
 
@@ -347,24 +353,27 @@ describe("/api/note/", () => {
       validNotesList = await insertNotesDirectly(userId, notes);
     });
 
-    it("should return 200 and notes whose titles contain the search term", async () => {
-      const res = await agent.get(route).query({ search: "1" });
+    it("should return 200 and notes whose titles or contents contain the search term", async () => {
+      const res = await agent.get(route).query({ search: searchString });
       expect(res.statusCode).toBe(200);
-      const expected = notes.flatMap((n) => (n.title === "title-1" ? n.title : []));
+      const expected = validNotesList.flatMap((n) =>
+        n.title === searchString || n.content === searchString ? n._id.toString() : [],
+      );
       const body = noteRootGetResponseSchema.parse(res.body);
-      const returnedTitles = body.data.map((n) => n.title);
-      expect(returnedTitles).toEqual(expected);
+      const returnedIds = body.data.map((n) => n.id);
+      expect(returnedIds.sort()).toEqual(expected.sort());
     });
 
     it("should return 200 and matches titles case-insensitively ('node' finds 'NoDe')", async () => {
       const res = await agent.get(route).query({ search: "node" });
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.total).toBe(1);
       expect(body.data[0].title).toBe("NoDe");
     });
 
-    it("should return 200 and empty string when to titles match", async () => {
-      const res = await agent.get(route).query({ search: "title-not-from-db" });
+    it("should return 200 and empty array when no match", async () => {
+      const res = await agent.get(route).query({ search: "value-not-from-db" });
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
       expect(body.data).toHaveLength(0);
@@ -378,11 +387,11 @@ describe("/api/note/", () => {
     });
 
     it("should return 200 and notes list limites by pagingation", async () => {
-      const res = await agent.get(route).query({ search: "1", limit: 1 });
+      const res = await agent.get(route).query({ search: searchString, limit: 1 });
       expect(res.statusCode).toBe(200);
       const body = noteRootGetResponseSchema.parse(res.body);
       expect(body.data).toHaveLength(1);
-      expect(body.total).toBe(2);
+      expect(body.total).toBe(3);
     });
 
     it("should return 200 and notes only with requested fields", async () => {
@@ -397,6 +406,16 @@ describe("/api/note/", () => {
         });
         expect(Object.keys(item).sort()).toEqual(expectedKeys.sort());
       });
+    });
+
+    it("should return 200 and notes only with requested search and tags", async () => {
+      const res = await agent
+        .get(route)
+        .query({ search: searchString, tags: "tag-1", fields: "tags" });
+      expect(res.statusCode).toBe(200);
+      const body = noteRootGetResponseSchema.parse(res.body);
+      expect(body.total).toBe(1);
+      body.data.forEach((n) => expect(n.tags).toContain("tag-1"));
     });
 
     it("should return 200 and treats regex metacharacters as literals", async () => {
@@ -436,7 +455,8 @@ describe("/api/note/", () => {
       expect(intrudetBody.data).toHaveLength(1);
     });
   });
-  describe.only("GET tags filter", () => {
+
+  describe("GET tags filter", () => {
     let validNotesList: NoteDocument[];
     const notes = [
       {
