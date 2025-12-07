@@ -10,6 +10,7 @@ import type {
   PatchNoteInput,
 } from "./note.types";
 import { normalizeSearchString } from "../../utils/search-string-normalize.util";
+import { title } from "node:process";
 
 // methods of note
 const noteRepo = {
@@ -54,7 +55,15 @@ const noteRepo = {
     }, {});
     const filter = {
       userId,
-      ...(search ? { title: { $regex: normalizeSearchString(search), $options: "i" } } : {}),
+      ...(search
+        ? (() => {
+            const normalized = normalizeSearchString(search);
+            const regex = new RegExp(normalized, "i");
+            return {
+              $or: [{ title: regex }, { content: regex }],
+            };
+          })()
+        : {}),
       ...(tags ? { tags: { $all: tags } } : {}),
     };
     const result = await NoteModel.find(filter)
