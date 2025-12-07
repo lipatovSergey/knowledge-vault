@@ -214,12 +214,27 @@ describe("/api/note/:id", () => {
       );
     });
 
-    it("should update note's title and content in DB, should return 200 and updated note", async () => {
+    it("should return 200 and update note's tags", async () => {
+      const changedTags = ["tag-1", "tag-2"];
+      const res = await agent.patch(route).send({
+        tags: changedTags,
+      });
+      const body = noteIdPatchResponseSchema.parse(res.body);
+      expect(body).toEqual(
+        expect.objectContaining({
+          tags: changedTags,
+        }),
+      );
+    });
+
+    it("should update note's title, content and tags in DB, should return 200 and updated note", async () => {
       const changedTitle = "changed-valid-title";
       const changedContent = "changed-valid-content";
+      const changedTags = ["tag-1", "tag-2"];
       const res = await agent.patch(route).send({
         title: changedTitle,
         content: changedContent,
+        tags: changedTags,
       });
       expect(res.statusCode).toBe(200);
       const body = noteIdPatchResponseSchema.parse(res.body);
@@ -227,6 +242,7 @@ describe("/api/note/:id", () => {
         expect.objectContaining({
           title: changedTitle,
           content: changedContent,
+          tags: changedTags,
         }),
       );
     });

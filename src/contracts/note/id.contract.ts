@@ -16,9 +16,12 @@ export const noteIdPatchRequestSchema = z
     content: noteContentSchema.trim().optional(),
     tags: noteTagsArraySchema.optional(),
   })
-  .refine((data) => data.title !== undefined || data.content !== undefined, {
-    message: "Title or content required",
-  });
+  .refine(
+    (data) => data.title !== undefined || data.content !== undefined || data.tags !== undefined,
+    {
+      message: "Title or content required",
+    },
+  );
 export type NoteIdPatchRequest = z.infer<typeof noteIdPatchRequestSchema>;
 
 export const noteIdPatchResponseSchema = noteResponseSchema;
