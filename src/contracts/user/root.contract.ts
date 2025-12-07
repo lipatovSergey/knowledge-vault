@@ -11,4 +11,4 @@ export type UserRootPostRequest = z.infer<typeof userRootPostRequestSchema>;
 export const userRootPostResponseSchema = z.object({
   message: z.string().min(1),
 });
-export type UserRootPostResponse = z.infer<typeof userRootPostRequestSchema>;
+export type UserRootPostResponse = z.infer<typeof userRootPostResponseSchema>;

@@ -1,4 +1,5 @@
 {
   "port": "PORT",
-  "session_secret": "SESSION_SECRET"
+  "session_secret": "SESSION_SECRET",
+  "frontend_url": "FRONTEND_URL"
 }

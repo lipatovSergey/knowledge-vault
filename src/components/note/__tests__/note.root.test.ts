@@ -10,9 +10,12 @@ import {
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
-import { InsertNotes, insertNotesDirectly } from "../../../../tests/helpers/insert-notes.helper";
-import { MongoId } from "../../../types/primitives";
-import { NoteDocument } from "../note.model";
+import {
+  type InsertNotes,
+  insertNotesDirectly,
+} from "../../../../tests/helpers/insert-notes.helper";
+import type { MongoId } from "../../../types/primitives";
+import type { NoteDocument } from "../note.model";
 
 describe("/api/note/", () => {
   const route = "/api/note";
@@ -202,6 +205,14 @@ describe("/api/note/", () => {
       });
     });
 
+    it("should return 200 status and empty tags array if note doesn't contain any tags", async () => {
+      const postRes = await agent.post(route).send({ title: "empty-tags", content: "empty-tags" });
+      const res = await agent.get(route).query({ fields: "tags, title" });
+      const body = noteRootGetResponseSchema.parse(res.body);
+      const emptyTagsNote = body.data.find((n) => n.id === postRes.body.id);
+      expect(emptyTagsNote?.tags).toHaveLength(0);
+    });
+
     it("should return notes with tags and content when fields are passed as repeated params", async () => {
       const res = await agent.get(route).query({ fields: ["tags", "content"] });
       expect(res.statusCode).toBe(200);
@@ -256,7 +267,7 @@ describe("/api/note/", () => {
     });
   });
 
-  describe("GET pagingation tests", () => {
+  describe("GET pagination tests", () => {
     let validNotesList: NoteDocument[];
     const now = Date.now();
     const notes = [] as InsertNotes;
@@ -432,27 +443,27 @@ describe("/api/note/", () => {
     });
 
     it("isolates search results per-user, each user sees only their own matching notes", async () => {
-      const intrudetAgent = request.agent(global.app);
-      await intrudetAgent.post("/api/user").send({
+      const secondAgent = request.agent(global.app);
+      await secondAgent.post("/api/user").send({
         name: "User2",
         email: "test2@example.com",
         password: "pass1234",
       });
-      await intrudetAgent.post("/api/auth/login").send({
+      await secondAgent.post("/api/auth/login").send({
         email: "test2@example.com",
         password: "pass1234",
       });
       const equalNote = { title: "title-equal", content: "content-equal" };
-      await intrudetAgent.post(route).send(equalNote);
+      await secondAgent.post(route).send(equalNote);
       await agent.post(route).send(equalNote);
       const res = await agent.get(route).query({ search: equalNote.title });
       const body = noteRootGetResponseSchema.parse(res.body);
       expect(body.data[0].title).toEqual(equalNote.title);
       expect(body.data).toHaveLength(1);
-      const intrudetRes = await intrudetAgent.get(route).query({ search: equalNote.title });
-      const intrudetBody = noteRootGetResponseSchema.parse(intrudetRes.body);
-      expect(intrudetBody.data[0].title).toEqual(equalNote.title);
-      expect(intrudetBody.data).toHaveLength(1);
+      const secondRes = await secondAgent.get(route).query({ search: equalNote.title });
+      const secondBody = noteRootGetResponseSchema.parse(secondRes.body);
+      expect(secondBody.data[0].title).toEqual(equalNote.title);
+      expect(secondBody.data).toHaveLength(1);
     });
   });
 
@@ -561,25 +572,25 @@ describe("/api/note/", () => {
     });
 
     it("isolates tags filter results per-user, each user sees only their own matching notes", async () => {
-      const intrudetAgent = request.agent(global.app);
-      await intrudetAgent.post("/api/user").send({
+      const secondAgent = request.agent(global.app);
+      await secondAgent.post("/api/user").send({
         name: "User2",
         email: "test2@example.com",
         password: "pass1234",
       });
-      await intrudetAgent.post("/api/auth/login").send({
+      await secondAgent.post("/api/auth/login").send({
         email: "test2@example.com",
         password: "pass1234",
       });
       const equalNote = { title: "title-equal", content: "content-equal", tags: ["equal-tag"] };
-      await intrudetAgent.post(route).send(equalNote);
+      await secondAgent.post(route).send(equalNote);
       await agent.post(route).send(equalNote);
       const res = await agent.get(route).query({ tags: equalNote.tags });
       const body = noteRootGetResponseSchema.parse(res.body);
       expect(body.data).toHaveLength(1);
-      const intrudetRes = await intrudetAgent.get(route).query({ tags: equalNote.tags });
-      const intrudetBody = noteRootGetResponseSchema.parse(intrudetRes.body);
-      expect(intrudetBody.data).toHaveLength(1);
+      const secondRes = await secondAgent.get(route).query({ tags: equalNote.tags });
+      const secondBody = noteRootGetResponseSchema.parse(secondRes.body);
+      expect(secondBody.data).toHaveLength(1);
     });
   });
 });

@@ -8,5 +8,5 @@
     "name": "knowledge-vault-dev"
   },
   "session_secret": "test-secret",
-  "fronted_url": "localhost:2173"
+  "frontend_url": "http://localhost:2173"
 }

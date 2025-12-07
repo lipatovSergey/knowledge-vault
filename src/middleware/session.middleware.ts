@@ -27,7 +27,8 @@ if (process.env.NODE_ENV === "test") {
   }
 }
 
-// secure=false so that SuperTest sees cookies without HTTPS
+const production = process.env.NODE_ENV === "production";
+// secure=false for tests so that SuperTest sees cookies without HTTPS
 export const sessionMiddleware = session({
   secret: SESSION_SECRET,
   resave: false,
@@ -35,8 +36,8 @@ export const sessionMiddleware = session({
   store,
   cookie: {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false, // TODO: true in production
+    sameSite: production ? "none" : "lax",
+    secure: production,
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   },
 });

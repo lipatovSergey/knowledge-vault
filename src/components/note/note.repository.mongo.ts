@@ -10,7 +10,6 @@ import type {
   PatchNoteInput,
 } from "./note.types";
 import { normalizeSearchString } from "../../utils/search-string-normalize.util";
-import { title } from "node:process";
 
 // methods of note
 const noteRepo = {

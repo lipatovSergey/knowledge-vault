@@ -62,8 +62,9 @@ const userController = {
         userId: req.session.userId as MongoId,
         ...req.validatedBody,
       };
-      const updatedUser = await userService.updateUserData(updateUserInput);
-      res.status(200).json(updatedUser);
+      const user = await userService.updateUserData(updateUserInput);
+      const userContract = mapDomainUserToContract(user);
+      res.status(200).json(userContract);
     } catch (error) {
       next(error);
     }

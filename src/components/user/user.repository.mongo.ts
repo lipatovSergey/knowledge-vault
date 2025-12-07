@@ -1,6 +1,6 @@
 import { type UserDocument, UserModel } from "./user.model";
 import type { Email, MongoId } from "../../types/primitives";
-import { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
+import type { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
 import { mapPersistUserToDomain } from "./user.mapper";
 
 // methods of user
@@ -35,8 +35,8 @@ const userRepo = {
   },
 
   // update user name by id
-  async updateUserData(UpdateUserInput: UpdateUserInput): Promise<UserDomain | null> {
-    const { userId, ...fieldsToUpdate } = UpdateUserInput;
+  async updateUserData(updateUserInput: UpdateUserInput): Promise<UserDomain | null> {
+    const { userId, ...fieldsToUpdate } = updateUserInput;
     const user = await UserModel.findOneAndUpdate(
       { _id: userId },
       { $set: fieldsToUpdate },

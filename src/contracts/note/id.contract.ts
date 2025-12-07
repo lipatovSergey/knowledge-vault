@@ -19,7 +19,7 @@ export const noteIdPatchRequestSchema = z
   .refine(
     (data) => data.title !== undefined || data.content !== undefined || data.tags !== undefined,
     {
-      message: "Title or content required",
+      message: "At least one title, content or tags required",
     },
   );
 export type NoteIdPatchRequest = z.infer<typeof noteIdPatchRequestSchema>;

@@ -13,6 +13,10 @@ const app = express();
 app.use(express.json());
 
 console.log(`Server running in ${NODE_ENV} mode.`);
+// secure cookies behind a proxy
+if (NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 // session
 app.use(sessionMiddleware);
 

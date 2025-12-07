@@ -76,18 +76,18 @@ describe("/api/note/:id", () => {
 
     it("should return 404 status code if request send not by note's owner", async () => {
       // create new user with separate agent
-      const intrudetAgent = request.agent(global.app);
-      await intrudetAgent.post("/api/user").send({
+      const secondAgent = request.agent(global.app);
+      await secondAgent.post("/api/user").send({
         name: "User2",
         email: "test2@example.com",
         password: "pass1234",
       });
-      await intrudetAgent.post("/api/auth/login").send({
+      await secondAgent.post("/api/auth/login").send({
         email: "test2@example.com",
         password: "pass1234",
       });
 
-      const res = await intrudetAgent.get(route);
+      const res = await secondAgent.get(route);
       expect(res.statusCode).toBe(404);
       const body = notFoundErrorSchema.parse(res.body);
       expect(body.instance).toBe(route);
@@ -153,18 +153,18 @@ describe("/api/note/:id", () => {
 
     it("should return 404 status code if request send not by note's owner", async () => {
       // create new user with separate agent
-      const intrudetAgent = request.agent(global.app);
-      await intrudetAgent.post("/api/user").send({
+      const secondAgent = request.agent(global.app);
+      await secondAgent.post("/api/user").send({
         name: "User2",
         email: "test2@example.com",
         password: "pass1234",
       });
-      await intrudetAgent.post("/api/auth/login").send({
+      await secondAgent.post("/api/auth/login").send({
         email: "test2@example.com",
         password: "pass1234",
       });
 
-      const res = await intrudetAgent.delete(route);
+      const res = await secondAgent.delete(route);
       expect(res.statusCode).toBe(404);
       const body = notFoundErrorSchema.parse(res.body);
       expect(body.instance).toBe(route);
@@ -309,18 +309,18 @@ describe("/api/note/:id", () => {
 
     it("should return 404 status code if request send not by note's owner", async () => {
       // create new user with separate agent
-      const intrudetAgent = request.agent(global.app);
-      await intrudetAgent.post("/api/user").send({
+      const secondAgent = request.agent(global.app);
+      await secondAgent.post("/api/user").send({
         name: "User2",
         email: "test2@example.com",
         password: "pass1234",
       });
-      await intrudetAgent.post("/api/auth/login").send({
+      await secondAgent.post("/api/auth/login").send({
         email: "test2@example.com",
         password: "pass1234",
       });
 
-      const res = await intrudetAgent.patch(route).send({
+      const res = await secondAgent.patch(route).send({
         title: "changed-title",
       });
       expect(res.statusCode).toBe(404);
