@@ -1,39 +1,98 @@
-# Knowledge Vault — TS Migration Notes
+# Knowledge Vault
 
-This README captures what changed between the previous version and the current one: my first migration of the project to TypeScript and a rebuilt architecture. This file only applies to this version; the final version will have its own README.
+Session-based notes API with user auth and password reset. Express + Mongoose + Zod validation,
+tested with Jest/Supertest.
 
-## What Changed
-- Fully moved the codebase from JS to TS: dropped reliance on `allowJs`, updated `tsconfig`, added typing for routes, services, repositories, and test utilities.
-- Reworked configuration: moved `MONGO_URI` to `process.env`, removed hard config caching at import time so tests and different environments can set their own values.
-- Rebuilt the session/DB connection layer: single helper for `MONGO_URI`, connect to Mongo before starting the app, MemoryStore in tests.
-- Clarified the build layout: dedicated `dist-ci` for CI, build-specific `tsconfig.ci.json`, Jest settings aimed at built JS.
-- Updated the CI workflow: explicit `NODE_CONFIG_DIR`, correct paths to setup files, early setup for in-memory Mongo, lint excludes `dist`/`dist-ci`/`node_modules`.
-- Unified contracts/domain/persistence layers: inputs validated by Zod contracts, controllers map to domain, services operate on domain types, repositories work with persistence models.
-- Separated reset-token handling: string contract (selector.validator), domain object { selector, validator }, persistence shape { selector, validatorHash, userId, expiresAt }. Added an explicit bcrypt adapter and a DUMMY_HASH for timing-safe comparisons.
-- Moved auth/user/note components to the new architecture: thin controllers, logic in services, repositories isolate Mongoose. Added primitives for fields (email, title, content, etc.), shared mappers and helpers.
-- Reorganized tests: all integration tests rewritten in TS and split by endpoint (auth, user, note). Unit tests for the token repository/service use mocked dependencies and domain types.
+## Features
 
-## New Architecture (Layers)
-- **Controllers/Routes** — HTTP wrapper only, read validated data.
-- **Services** — business rules and orchestration, receive dependencies (repositories/utilities) from outside.
-- **Repositories** — work with Mongoose models, no business logic.
-- **Infrastructure** — DB connection, sessions, config, helper utilities.
-- **Test Layer** — single setup for in-memory Mongo (`startMemoryMongo`), global `beforeAll`, collection cleanup between tests.
+- User registration, login/logout, profile update/delete
+- Password reset via selector/validator token and email outbox
+- Note CRUD with pagination, fields projection, search, and tag filters
+- Session-based auth (express-session + connect-mongo)
+- RFC 7807-style error responses (application/problem+json)
 
-## Key Decisions and Pitfalls
-- Removed top-level config constants: previously `config.get` at import time blocked dynamic overrides in tests. Now `MONGO_URI` always comes from the environment, and missing variables throw an explicit error.
-- Split early setup (`setupFiles`) and late setup (`setupFilesAfterEnv`): early sets `NODE_ENV=test`, late starts the memory server and connects the DB.
-- Tuned Jest for built code: `setupFiles`/`roots` point to `dist-ci` so tests run on build artifacts.
-- CI now passes configs via `NODE_CONFIG_DIR` so `config` finds `config/test.json` even if the working directory is `dist-ci`.
-- Lint ignores build directories so TODO/FIXME from dependencies and artifacts do not leak into reports.
+## Tech Stack
 
-## Tests and CI
-- All tests pass locally and in CI: Jest + Supertest, `mongodb-memory-server` for a fast isolated DB.
-- Workflow: checkout → setup Node 20 → `npm ci` → lint → build (`dist-ci`) → test with `NODE_CONFIG_DIR` and the test environment.
-- Locally: `npm test` (ts-jest, on-the-fly compilation). In CI: `npm run build:ci` → `npm run test:ci` (Jest runs built JS from `dist-ci`, `jest.ci.config.js`).
+- Node.js 20, Express 5
+- MongoDB/Mongoose
+- Zod for contracts/validation
+- express-session + connect-mongo for sessions
+- Jest + Supertest + mongodb-memory-server for tests
+- TypeScript, ESLint, Prettier
 
-## Final Observations
-- First JS → TS migration: the main tasks were removing hidden global state (configs at import time) and agreeing on environment initialization.
-- Layer separation and explicit dependency injection simplified mocking and test isolation.
-- Working with `mongodb-memory-server` requires setting the URI early; any import-time caches break tests.
+## Architecture
 
+- Controllers: thin HTTP layer using validated contracts
+- Services: business logic (user/auth/note/token)
+- Repositories: Mongoose-only data access
+- Contracts: Zod schemas for requests/responses
+- Middleware: validation, auth/guest gates, error handler, session config
+- Utils: search normalization, session helpers, random token generation
+- Flow: request → validation middleware (Zod) → controller → service → repository (Mongoose) →
+  MongoDB
+
+## Getting Started
+
+1. Install: `npm install`
+2. Set env vars (see below). For local dev you can use a `.env`.
+3. Run dev: `npm run dev` (tsx watch, NODE_ENV=development)
+4. Run tests: `npm test`
+
+## Scripts
+
+- `npm run dev` — start in watch mode
+- `npm test` — Jest + Supertest (ts-jest)
+- `npm run lint` — ESLint
+- `npm run build` — tsc build to `dist`
+- `npm start` — run built server (NODE_ENV=production)
+
+## Environment Variables
+
+- `MONGO_URI` (required) — Mongo connection string
+- `SESSION_SECRET` (required) — session signing secret
+- `FRONTEND_URL` — base URL used in password-reset links (e.g., `https://app.example.com`)
+- `PORT` — defaults to config value (3000 in dev)
+- Optional per config: `db.name` via config files
+
+## API Overview
+
+- Auth: `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/password/forgot`,
+  `POST /api/auth/password/reset`
+- User: `POST /api/user` (register), `GET /api/user/me`, `PATCH /api/user/me`, `DELETE /api/user/me`
+- Notes: `POST /api/note`, `GET /api/note` (fields, page, limit, search, tags), `GET /api/note/:id`,
+  `PATCH /api/note/:id`, `DELETE /api/note/:id`
+- Validation: Zod-based; PATCH note requires at least one of title/content/tags; tags are
+  normalized/deduped.
+- Errors: problem+json with `title`, `detail`, `status`, `type`, `instance`; validation errors
+  include field details.
+- Full request/response examples: keep in your API reference (e.g., `docs/api-reference.md`).
+
+## Auth & Sessions
+
+- Login flow (session-based): client POSTs `/api/auth/login` with credentials; server sets
+  `connect.sid` (httpOnly, sameSite=lax by default, secure in production). Frontend must send
+  cookies with `credentials: "include"`/`withCredentials: true`.
+- Session cookie: `httpOnly`, `sameSite` defaults to `lax`; `secure` enabled in production.
+- Behind a proxy/HTTPS terminator, `app.set("trust proxy", 1)` is enabled in production to allow
+  `secure` cookies.
+- For cross-origin frontends, set `sameSite: "none"` + `secure: true` in production.
+
+## Testing
+
+- Integration tests use `mongodb-memory-server`; test setup sets `MONGO_URI` to the in-memory
+  instance.
+- Test runner bootstraps the in-memory Mongo and overrides `MONGO_URI` automatically; no manual DB
+  setup needed.
+- Full coverage of auth, user, and note routes, including validation/error cases.
+- To run: `npm test`
+
+## Production Notes
+
+- Ensure `MONGO_URI`, `SESSION_SECRET`, and `FRONTEND_URL` are set.
+- Run behind HTTPS; keep `secure` cookies on and `trust proxy` enabled if TLS terminates upstream.
+- Connect to Mongo before serving requests; sessions share the Mongo client when available.
+
+## Versioned READMEs
+
+- v0 (TS migration): `docs/README.v0-ts.md`
+- v1: `docs/README.v1.md`
