@@ -1,14 +1,14 @@
-import request from "supertest";
-import * as mailbox from "../../../../tests/mailbox.helper";
 import bcrypt from "bcrypt";
-import { createExpiredResetToken } from "../../../../tests/helpers/password-reset-token.factory";
+import request from "supertest";
 import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
+import { createExpiredResetToken } from "../../../../tests/helpers/password-reset-token.factory";
+import * as mailbox from "../../../../tests/mailbox.helper";
 import type { AuthAgent } from "../../../../tests/test.types";
-import { PasswordResetTokenString } from "../../../types/primitives";
 import {
-  badRequestErrorSchema,
-  validationErrorSchema,
+    badRequestErrorSchema,
+    validationErrorSchema,
 } from "../../../contracts/error/error.contract";
+import type { PasswordResetTokenString } from "../../../types/primitives";
 
 describe("POST /api/auth/password/reset", () => {
   const route = "/api/auth/password/reset";

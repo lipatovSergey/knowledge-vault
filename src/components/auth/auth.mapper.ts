@@ -1,8 +1,8 @@
 import {
-  PasswordResetTokenString,
-  passwordResetTokenStringSchema,
   PasswordResetTokenDomain,
   passwordResetTokenDomainSchema,
+  PasswordResetTokenString,
+  passwordResetTokenStringSchema,
 } from "../../types/primitives";
 import { mapDomainUserToContract } from "../user/user.mapper";
 

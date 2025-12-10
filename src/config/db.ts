@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { MONGO_DB_NAME } from "./env";
 import { getMongoUri } from "../utils/get-mongo-uri.helper";
+import { MONGO_DB_NAME } from "./env";
 
 async function connectDB(): Promise<void> {
   const MONGO_URI = getMongoUri();

@@ -1,22 +1,22 @@
+import { Types } from "mongoose";
 import request from "supertest";
-import type { AuthAgent } from "../../../../tests/test.types";
-import type { MongoId } from "../../../types/primitives";
 import {
-  noteIdDeleteResponseSchema,
-  noteIdGetResponseSchema,
-  noteIdPatchResponseSchema,
-} from "../../../contracts/note/id.contract";
+  createExpectValidationError,
+  ValidationErrorExpectation,
+} from "../../../../tests/helpers/expect-validation-error.helper";
+import type { AuthAgent } from "../../../../tests/test.types";
 import {
   badRequestErrorSchema,
   notFoundErrorSchema,
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
-import { Types } from "mongoose";
 import {
-  createExpectValidationError,
-  ValidationErrorExpectation,
-} from "../../../../tests/helpers/expect-validation-error.helper";
+  noteIdDeleteResponseSchema,
+  noteIdGetResponseSchema,
+  noteIdPatchResponseSchema,
+} from "../../../contracts/note/id.contract";
+import type { MongoId } from "../../../types/primitives";
 
 describe("/api/note/:id", () => {
   let route: string;

@@ -1,6 +1,6 @@
 // src/middleware/error-handler.middleware
+import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/app-error.class";
-import type { Request, Response, NextFunction } from "express";
 const NODE_ENV = process.env.NODE_ENV;
 
 const normalizeUnknownError = (err: unknown): Error => {

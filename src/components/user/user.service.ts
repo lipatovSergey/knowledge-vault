@@ -1,11 +1,10 @@
-import { ConflictError, UnauthorizedError, NotFoundError } from "../../errors/errors.class";
-import type { MongoId, Email } from "../../types/primitives";
-import type { UserRepo } from "./user.repository.mongo";
-import type { AuthUserInput, UpdateUserInput, UserDomain } from "./user.types";
 import type * as bcryptType from "bcrypt";
-import type { CreateUserInput } from "./user.types";
 import { MongoServerError } from "mongodb";
 import { BCRYPT_SALT_ROUNDS } from "../../config/env";
+import { ConflictError, NotFoundError, UnauthorizedError } from "../../errors/errors.class";
+import type { Email, MongoId } from "../../types/primitives";
+import type { UserRepo } from "./user.repository.mongo";
+import type { AuthUserInput, CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
 const DUMMY_HASH = "$2b$10$CwTycUXWue0The9StjUM0uJ8c3PHfXcOnItY.r9QB9sSBxXFByEVO";
 
 function createUserService({

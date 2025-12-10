@@ -1,11 +1,11 @@
 import request from "supertest";
-import type { SupertestResponse, MessageResponse } from "../../../../tests/test.types";
 import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
-import { userRootPostResponseSchema } from "../../../contracts/user/root.contract";
+import type { MessageResponse, SupertestResponse } from "../../../../tests/test.types";
 import {
   conflictErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
+import { userRootPostResponseSchema } from "../../../contracts/user/root.contract";
 
 describe("User registration", () => {
   const route = "/api/user";

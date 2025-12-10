@@ -1,5 +1,5 @@
+import { NextFunction, Request, Response } from "express";
 import { UnauthorizedError } from "../errors/errors.class";
-import { Request, Response, NextFunction } from "express";
 
 function requireAuth(req: Request, _res: Response, next: NextFunction) {
   if (!req.session.userId) {

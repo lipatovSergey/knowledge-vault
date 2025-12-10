@@ -1,6 +1,10 @@
 import { Types } from "mongoose";
-import { NoteDocument, NoteModel, NoteSchemaType } from "../../src/components/note/note.model";
-import { MongoId } from "../../src/types/primitives";
+import {
+  type NoteDocument,
+  NoteModel,
+  type NoteSchemaType,
+} from "../../src/components/note/note.model";
+import type { MongoId } from "../../src/types/primitives";
 
 export type InsertNotes = (Pick<NoteSchemaType, "title" | "content"> &
   Partial<Pick<NoteSchemaType, "tags" | "updatedAt" | "createdAt">>)[];

@@ -1,19 +1,19 @@
-import destroySession from "../../utils/destroy-session.util";
-import regenerateSession from "../../utils/regenerate-session.util";
-import { mapContractTokenToDomain, mapDomainAuthToContract } from "./auth.mapper";
+import type { NextFunction, Request, Response } from "express";
 import authService from ".";
-import type { Request, Response, NextFunction } from "express";
-import type { RequestWithValidatedBody } from "../../types/validated-request";
-import type { RequestWithValidatedResetToken } from "../../types/express";
-import type {
-  AuthUserDomain,
-  ForgotPasswordInput,
-  LoginInput,
-  ResetPasswordInput,
-} from "./auth.types";
 import type { AuthLoginRequest, AuthLoginResponse } from "../../contracts/auth/login.contract";
 import type { ForgotPasswordRequest } from "../../contracts/auth/password-forgot.contract";
 import type { PasswordResetBodyRequest } from "../../contracts/auth/password-reset.contract";
+import type { RequestWithValidatedResetToken } from "../../types/express";
+import type { RequestWithValidatedBody } from "../../types/validated-request";
+import destroySession from "../../utils/destroy-session.util";
+import regenerateSession from "../../utils/regenerate-session.util";
+import { mapContractTokenToDomain, mapDomainAuthToContract } from "./auth.mapper";
+import type {
+    AuthUserDomain,
+    ForgotPasswordInput,
+    LoginInput,
+    ResetPasswordInput,
+} from "./auth.types";
 
 const authController = {
   async loginUser(

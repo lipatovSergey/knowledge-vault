@@ -1,9 +1,11 @@
-import { ResetTokenModel } from "./password-reset-token.model";
 import type { MongoId, PasswordResetSelector } from "../../../types/primitives";
-import type { ResetRequestRecord } from "./password-reset-token.types";
-import type { ResetTokenPersist } from "./password-reset-token.types";
-import type { CreateTokenInput } from "./password-reset-token.types";
 import { mapPersistRecordToDomain } from "./password-reset-token.mapper";
+import { ResetTokenModel } from "./password-reset-token.model";
+import type {
+  CreateTokenInput,
+  ResetRequestRecord,
+  ResetTokenPersist,
+} from "./password-reset-token.types";
 
 const resetTokenRepo = {
   // saves new token to MongoDB and return it

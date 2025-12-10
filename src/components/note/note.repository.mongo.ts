@@ -1,5 +1,6 @@
-import { NoteModel } from "./note.model";
+import { normalizeSearchString } from "../../utils/search-string-normalize.util";
 import { mapPersistNoteToDomain, mapPersistNoteToDomainListItem } from "./note.mapper";
+import { NoteModel } from "./note.model";
 import type {
   CreateNoteInput,
   DeleteNoteInput,
@@ -9,7 +10,6 @@ import type {
   NoteListRepoResult,
   PatchNoteInput,
 } from "./note.types";
-import { normalizeSearchString } from "../../utils/search-string-normalize.util";
 
 // methods of note
 const noteRepo = {

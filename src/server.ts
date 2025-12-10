@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { PORT } from "./config/env";
 import connectDB from "./config/db";
+import { PORT } from "./config/env";
 
 // Global errors catchers
 // Catch and any promise rejections that were never awaited/caugh

@@ -1,7 +1,7 @@
-import { type UserDocument, UserModel } from "./user.model";
 import type { Email, MongoId } from "../../types/primitives";
-import type { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
 import { mapPersistUserToDomain } from "./user.mapper";
+import { type UserDocument, UserModel } from "./user.model";
+import type { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
 
 // methods of user
 const userRepo = {

@@ -1,15 +1,15 @@
 import express, { RequestHandler } from "express";
-import authController from "./auth.controller";
-import validateBody from "../../middleware/validate-body.middleware";
-import validateResetToken from "../../middleware/validate-reset-token.middleware";
-import requireGuest from "../../middleware/require-guest.middleware";
-import requireAuth from "../../middleware/require-auth.middleware";
 import { authLoginRequestSchema } from "../../contracts/auth/login.contract";
 import { forgotPasswordRequestSchema } from "../../contracts/auth/password-forgot.contract";
 import {
-  passwordResetTokenRequestSchema,
   passwordResetBodyRequestSchema,
+  passwordResetTokenRequestSchema,
 } from "../../contracts/auth/password-reset.contract";
+import requireAuth from "../../middleware/require-auth.middleware";
+import requireGuest from "../../middleware/require-guest.middleware";
+import validateBody from "../../middleware/validate-body.middleware";
+import validateResetToken from "../../middleware/validate-reset-token.middleware";
+import authController from "./auth.controller";
 
 const router = express.Router();
 

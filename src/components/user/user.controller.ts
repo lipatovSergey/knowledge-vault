@@ -1,12 +1,12 @@
-import userService from "./index";
-import destroySession from "../../utils/destroy-session.util";
-import type { Request, Response, NextFunction } from "express";
-import type { RequestWithValidatedBody } from "../../types/validated-request";
-import type { MongoId } from "../../types/primitives";
+import type { NextFunction, Request, Response } from "express";
 import type { UserMeGetResponse, UserMePatchRequest } from "../../contracts/user/me.contract";
 import type { UserRootPostRequest } from "../../contracts/user/root.contract";
-import type { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
+import type { MongoId } from "../../types/primitives";
+import type { RequestWithValidatedBody } from "../../types/validated-request";
+import destroySession from "../../utils/destroy-session.util";
+import userService from "./index";
 import { mapDomainUserToContract } from "./user.mapper";
+import type { CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
 
 const userController = {
   async createUser(

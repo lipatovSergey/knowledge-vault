@@ -1,19 +1,19 @@
 import request from "supertest";
-import type { AuthAgent, SupertestResponse } from "../../../../tests/test.types";
-import {
-  userMeGetResponseSchema,
-  userMeDeleteResponseSchema,
-  userMePatchResponseSchema,
-  type UserMeDeleteResponse,
-  type UserMePatchResponse,
-  type UserMeGetResponse,
-} from "../../../contracts/user/me.contract";
 import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
+import type { AuthAgent, SupertestResponse } from "../../../../tests/test.types";
 import {
   notFoundErrorSchema,
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
+import {
+  userMeDeleteResponseSchema,
+  userMeGetResponseSchema,
+  userMePatchResponseSchema,
+  type UserMeDeleteResponse,
+  type UserMeGetResponse,
+  type UserMePatchResponse,
+} from "../../../contracts/user/me.contract";
 
 describe("/api/users/me", () => {
   const route = "/api/user/me";

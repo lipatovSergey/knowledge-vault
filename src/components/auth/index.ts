@@ -1,7 +1,7 @@
-import userService from "../user";
-import tokenService from "./token";
-import createAuthService from "./auth.service";
 import mailService from "../../services/mail";
+import userService from "../user";
+import createAuthService from "./auth.service";
+import tokenService from "./token";
 
 const authService = createAuthService({ userService, tokenService, mailService });
 

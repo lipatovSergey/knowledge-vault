@@ -1,10 +1,10 @@
 import {
-  Schema,
-  model,
-  type Model,
-  type InferSchemaType,
-  type HydratedDocument,
-  type Query,
+    Schema,
+    model,
+    type HydratedDocument,
+    type InferSchemaType,
+    type Model,
+    type Query,
 } from "mongoose";
 
 interface ResetTokenQueryHelpers {

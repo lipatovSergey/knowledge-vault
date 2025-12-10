@@ -1,6 +1,6 @@
-import { BadRequestError } from "../errors/errors.class";
 import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
+import { BadRequestError } from "../errors/errors.class";
 import type { RequestWithValidatedQuery } from "../types/validated-request";
 
 function validateQuery<Query>(schema: ZodType<Query>): RequestHandler {

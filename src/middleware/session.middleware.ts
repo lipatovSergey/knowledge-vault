@@ -1,6 +1,6 @@
 // src/middleware/session.middleware
-import session from "express-session";
 import MongoStore from "connect-mongo";
+import session from "express-session";
 import mongoose from "mongoose";
 import { SESSION_SECRET } from "../config/env";
 import { getMongoUri } from "../utils/get-mongo-uri.helper";

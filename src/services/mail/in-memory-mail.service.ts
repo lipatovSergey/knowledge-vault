@@ -46,4 +46,3 @@ export default class InMemoryMailService extends MailService {
     this.outbox.push(message);
   }
 }
-

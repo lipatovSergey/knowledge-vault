@@ -1,4 +1,7 @@
+import { FRONTEND_URL } from "../../config/env";
 import { NotFoundError } from "../../errors/errors.class";
+import type { MailService } from "../../services/mail";
+import type { MongoId } from "../../types/primitives";
 import type { UserService } from "../user";
 import type {
   AuthUserDomain,
@@ -7,9 +10,6 @@ import type {
   ResetPasswordInput,
 } from "./auth.types";
 import type { TokenService } from "./token";
-import type { MongoId } from "../../types/primitives";
-import { FRONTEND_URL } from "../../config/env";
-import { MailService } from "../../services/mail";
 
 function createAuthService({
   userService,

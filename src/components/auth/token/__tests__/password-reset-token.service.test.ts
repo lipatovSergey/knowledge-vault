@@ -1,9 +1,9 @@
-import createResetTokenService from "../password-reset-token.service";
-import { BadRequestError } from "../../../../errors/errors.class";
 import { TokenService } from "..";
-import type { ResetTokenRepositoryType } from "../password-reset-token.repository.mongo";
+import { BadRequestError } from "../../../../errors/errors.class";
 import type { RandomUtilType } from "../../../../utils/random.util";
+import type { ResetTokenRepositoryType } from "../password-reset-token.repository.mongo";
 import type { BcryptAdapter } from "../password-reset-token.service";
+import createResetTokenService from "../password-reset-token.service";
 
 describe("PasswordResetTokenService", () => {
   let tokenService: TokenService;

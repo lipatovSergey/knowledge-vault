@@ -1,7 +1,7 @@
-import { WithId } from "../../types/primitives";
-import { UserDocument, UserSchemaType } from "./user.model";
-import { UserProfileResponse } from "../../contracts/user/me.contract";
-import { UserDomain } from "./user.types";
+import type { UserProfileResponse } from "../../contracts/user/me.contract";
+import type { WithId } from "../../types/primitives";
+import type { UserDocument, UserSchemaType } from "./user.model";
+import type { UserDomain } from "./user.types";
 
 //type guard
 function isUserDocument(value: unknown): value is UserDocument {

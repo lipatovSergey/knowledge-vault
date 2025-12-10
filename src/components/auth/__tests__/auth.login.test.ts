@@ -2,9 +2,9 @@ import request from "supertest";
 import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
 import { authLoginResponseSchema } from "../../../contracts/auth/login.contract";
 import {
-  conflictErrorSchema,
-  unauthorizedErrorSchema,
-  validationErrorSchema,
+    conflictErrorSchema,
+    unauthorizedErrorSchema,
+    validationErrorSchema,
 } from "../../../contracts/error/error.contract";
 
 describe("User login", () => {

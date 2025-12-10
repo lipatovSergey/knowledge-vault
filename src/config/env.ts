@@ -1,5 +1,5 @@
-import "dotenv/config";
 import config from "config";
+import "dotenv/config";
 
 export const PORT = config.get<number>("port");
 export const MONGO_DB_NAME = config.get<string>("db.name");

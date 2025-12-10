@@ -1,11 +1,11 @@
 import z from "zod";
 import { noteContentSchema, noteTitleSchema, tagSchema } from "../../types/primitives";
+import { normalizeFields } from "../../utils/query.util";
 import {
   noteListItemResponseSchema,
   noteResponseSchema,
   noteTagsArraySchema,
 } from "./shared.contract";
-import { normalizeFields } from "../../utils/query.util";
 
 export const noteRootPostRequestSchema = z.object({
   title: noteTitleSchema.trim(),

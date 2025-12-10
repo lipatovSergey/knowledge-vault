@@ -1,17 +1,17 @@
-import noteService from "./index";
-import { mapDomainNoteToContract, mapDomainListItemToContract } from "./note.mapper";
-import type { Response, NextFunction } from "express";
+import type { NextFunction, Response } from "express";
 import type { NoteIdInParams, NoteIdPatchRequest } from "../../contracts/note/id.contract";
+import type {
+  NoteRootGetRequestQuery,
+  NoteRootPostRequest,
+} from "../../contracts/note/root.contract";
 import type { MongoId } from "../../types/primitives";
 import type {
   RequestWithValidatedBody,
   RequestWithValidatedParams,
   RequestWithValidatedQuery,
 } from "../../types/validated-request";
-import type {
-  NoteRootGetRequestQuery,
-  NoteRootPostRequest,
-} from "../../contracts/note/root.contract";
+import noteService from "./index";
+import { mapDomainListItemToContract, mapDomainNoteToContract } from "./note.mapper";
 import type {
   CreateNoteInput,
   DeleteNoteInput,

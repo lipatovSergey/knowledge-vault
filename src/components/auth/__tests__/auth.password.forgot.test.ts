@@ -1,7 +1,7 @@
 import request from "supertest";
+import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
 import * as mailbox from "../../../../tests/mailbox.helper";
 import type { AuthAgent } from "../../../../tests/test.types";
-import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
 import { validationErrorSchema } from "../../../contracts/error/error.contract";
 
 describe("POST /api/auth/password/forgot", () => {

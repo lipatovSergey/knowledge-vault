@@ -1,6 +1,6 @@
-import createUserService from "./user.service";
-import userRepo from "./user.repository.mongo";
 import bcrypt from "bcrypt";
+import userRepo from "./user.repository.mongo";
+import createUserService from "./user.service";
 
 const userService = createUserService({ userRepo, bcrypt });
 

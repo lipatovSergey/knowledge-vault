@@ -1,9 +1,9 @@
 import express from "express";
-import errorHandler from "./middleware/error-handler.middleware";
-import { sessionMiddleware } from "./middleware/session.middleware";
+import authRoutes from "./components/auth/auth.routes";
 import noteRoutes from "./components/note/note.routes";
 import userRoutes from "./components/user/user.routes";
-import authRoutes from "./components/auth/auth.routes";
+import errorHandler from "./middleware/error-handler.middleware";
+import { sessionMiddleware } from "./middleware/session.middleware";
 const NODE_ENV = process.env.NODE_ENV;
 if (!NODE_ENV) {
   throw new Error("NODE_ENV is not set. Use npm scripts to run the app");

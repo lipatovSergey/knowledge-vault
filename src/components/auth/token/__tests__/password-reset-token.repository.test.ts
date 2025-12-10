@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import resetTokenRepo from "../password-reset-token.repository.mongo";
-import { ResetTokenModel } from "../password-reset-token.model";
 import type { MongoId, PasswordResetSelector } from "../../../../types/primitives";
+import { ResetTokenModel } from "../password-reset-token.model";
+import resetTokenRepo from "../password-reset-token.repository.mongo";
 import type { CreateTokenInput } from "../password-reset-token.types";
 
 describe("password-reset-token repository", () => {

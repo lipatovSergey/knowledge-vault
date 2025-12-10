@@ -1,8 +1,8 @@
 import type { AllowedNoteFields } from "../../contracts/note/root.contract";
-import type { WithId } from "../../types/primitives";
-import type { NoteSchemaType, NoteDocument } from "./note.model";
-import type { ListItemDomain, NoteDomain } from "./note.types";
 import type { NoteContract, NoteListItemContract } from "../../contracts/note/shared.contract";
+import type { WithId } from "../../types/primitives";
+import type { NoteDocument, NoteSchemaType } from "./note.model";
+import type { ListItemDomain, NoteDomain } from "./note.types";
 
 // type guard
 function isNoteDocument(value: unknown): value is NoteDocument {

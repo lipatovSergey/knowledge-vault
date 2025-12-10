@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import resetTokenRepo from "../../src/components/auth/token/password-reset-token.repository.mongo";
-import { CreateTokenInput } from "../../src/components/auth/token/password-reset-token.types";
+import type { CreateTokenInput } from "../../src/components/auth/token/password-reset-token.types";
 
 export async function createExpiredResetToken({
   userId = new mongoose.Types.ObjectId().toString(),

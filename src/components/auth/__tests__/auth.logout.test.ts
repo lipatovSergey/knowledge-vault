@@ -1,6 +1,6 @@
 import request from "supertest";
+import type { AuthAgent } from "../../../../tests/test.types";
 import { authLogoutResponseSchema } from "../../../contracts/auth/logout.contract";
-import { AuthAgent } from "../../../../tests/test.types";
 import { unauthorizedErrorSchema } from "../../../contracts/error/error.contract";
 
 describe("User logout", () => {

@@ -1,19 +1,19 @@
 import request from "supertest";
-import type { AuthAgent } from "../../../../tests/test.types";
 import { createExpectValidationError } from "../../../../tests/helpers/expect-validation-error.helper";
 import {
-  noteRootGetResponseSchema,
-  noteRootPostResponseSchema,
-} from "../../../contracts/note/root.contract";
+  type InsertNotes,
+  insertNotesDirectly,
+} from "../../../../tests/helpers/insert-notes.helper";
+import type { AuthAgent } from "../../../../tests/test.types";
 import {
   badRequestErrorSchema,
   unauthorizedErrorSchema,
   validationErrorSchema,
 } from "../../../contracts/error/error.contract";
 import {
-  type InsertNotes,
-  insertNotesDirectly,
-} from "../../../../tests/helpers/insert-notes.helper";
+  noteRootGetResponseSchema,
+  noteRootPostResponseSchema,
+} from "../../../contracts/note/root.contract";
 import type { MongoId } from "../../../types/primitives";
 import type { NoteDocument } from "../note.model";
 

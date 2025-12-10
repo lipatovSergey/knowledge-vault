@@ -1,5 +1,5 @@
 import type { Response } from "supertest";
-import { ValidationError } from "../../src/contracts/error/error.contract";
+import type { ValidationError } from "../../src/contracts/error/error.contract";
 
 type ErrorExpectation = (res: Response) => void;
 

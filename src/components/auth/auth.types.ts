@@ -1,5 +1,5 @@
-import { Email, PasswordPlain, PasswordResetTokenDomain } from "../../types/primitives";
-import { UserDomain } from "../user/user.types";
+import type { Email, PasswordPlain, PasswordResetTokenDomain } from "../../types/primitives";
+import type { UserDomain } from "../user/user.types";
 
 export type LoginInput = {
   email: Email;

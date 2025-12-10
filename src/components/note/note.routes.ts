@@ -1,14 +1,14 @@
-import requireAuth from "../../middleware/require-auth.middleware";
-import validateBody from "../../middleware/validate-body.middleware";
-import validateParams from "../../middleware/validate-params.middleware";
-import noteController from "./note.controller";
 import express, { RequestHandler } from "express";
+import { noteIdInParamsSchema, noteIdPatchRequestSchema } from "../../contracts/note/id.contract";
 import {
   noteRootGetRequestQuerySchema,
   noteRootPostRequestSchema,
 } from "../../contracts/note/root.contract";
-import { noteIdInParamsSchema, noteIdPatchRequestSchema } from "../../contracts/note/id.contract";
+import requireAuth from "../../middleware/require-auth.middleware";
+import validateBody from "../../middleware/validate-body.middleware";
+import validateParams from "../../middleware/validate-params.middleware";
 import validateQuery from "../../middleware/validate-query.middleware";
+import noteController from "./note.controller";
 const router = express.Router();
 
 // create new note
