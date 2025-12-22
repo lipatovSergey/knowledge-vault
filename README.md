@@ -92,6 +92,16 @@ tested with Jest/Supertest.
 - Run behind HTTPS; keep `secure` cookies on and `trust proxy` enabled if TLS terminates upstream.
 - Connect to Mongo before serving requests; sessions share the Mongo client when available.
 
+## Configs
+
+- `tsconfig.json`: dev config (noEmit, isolatedModules) extending `tsconfig.base.json`.
+- `tsconfig.base.json`: shared strict TS settings for `src`/`tests`.
+- `tsconfig.build.json`: production build output to `dist`.
+- `tsconfig.ci.json`: CI build output to `dist-ci` for Jest CI runs.
+- `jest.config.js`: local Jest with ts-jest (on-the-fly TS) rooted in `src`/`tests`.
+- `jest.ci.config.js`: CI Jest targeting built JS in `dist-ci`.
+- `eslint.config.cjs`: ESLint rules/plugins (TS, Jest) excluding build artifacts.
+
 ## Versioned READMEs
 
 - v0 (TS migration): `docs/README.v0-ts.md`
