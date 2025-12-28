@@ -15,9 +15,8 @@ import type {
 const noteRepo = {
   // saves new document to MongoDB and return it
   async create(noteData: CreateNoteInput): Promise<NoteDomain> {
-    const newNote = new NoteModel(noteData);
-    const savedNote = await newNote.save();
-    return mapPersistNoteToDomain(savedNote);
+    const newNote = await new NoteModel(noteData).save();
+    return mapPersistNoteToDomain(newNote);
   },
 
   // finds and should return note info from DB. Only for owner
@@ -30,8 +29,6 @@ const noteRepo = {
   // deletes note from db by ID. Only for owner
   async deleteNote(input: DeleteNoteInput): Promise<boolean> {
     const { noteId, userId } = input;
-    // const { deletedCount } = await NoteModel.deleteOne({ _id: noteId, userId });
-
     const { deletedCount } = await NoteModel.deleteOne({ _id: noteId, userId });
     return deletedCount === 1;
   },

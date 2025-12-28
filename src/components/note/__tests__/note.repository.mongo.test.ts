@@ -4,31 +4,52 @@ import { GetNoteListRepoInput, NoteListRepoResult } from "../note.types";
 import { Types } from "mongoose";
 
 describe("note.repository.mongo", () => {
+  const note = {
+    _id: new Types.ObjectId("6950d753e555252c89e75b54"),
+    title: "valid-title",
+    content: "valid-content",
+    tags: [],
+    userId: new Types.ObjectId("6950d753e555252c89e75b4c"),
+    createdAt: new Date("2025-12-28T07:08:03.251Z"),
+    updatedAt: new Date("2025-12-28T07:08:03.251Z"),
+    __v: 0,
+  };
+
+  const noteMapped = {
+    id: "6950d753e555252c89e75b54",
+    title: "valid-title",
+    content: "valid-content",
+    tags: [],
+    createdAt: new Date("2025-12-28T07:08:03.251Z"),
+    updatedAt: new Date("2025-12-28T07:08:03.251Z"),
+  };
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
+  describe("create", () => {
+    const input = {
+      userId: "6950d753e555252c89e75b4c",
+      title: "valid-title",
+      content: "valid-content",
+      tags: ["tag1"],
+    };
+
+    let saveSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      saveSpy = jest.spyOn(NoteModel.prototype, "save").mockResolvedValue(note);
+    });
+
+    it("returns new mapped note", async () => {
+      const result = await noteRepo.create(input);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(noteMapped);
+    });
+  });
+
   describe("getNote", () => {
-    const note = {
-      _id: new Types.ObjectId("6950d753e555252c89e75b54"),
-      title: "valid-title",
-      content: "valid-content",
-      tags: [],
-      userId: new Types.ObjectId("6950d753e555252c89e75b4c"),
-      createdAt: new Date("2025-12-28T07:08:03.251Z"),
-      updatedAt: new Date("2025-12-28T07:08:03.251Z"),
-      __v: 0,
-    };
-
-    const noteMapped = {
-      id: "6950d753e555252c89e75b54",
-      title: "valid-title",
-      content: "valid-content",
-      tags: [],
-      createdAt: new Date("2025-12-28T07:08:03.251Z"),
-      updatedAt: new Date("2025-12-28T07:08:03.251Z"),
-    };
-
     const input = {
       noteId: "6950d753e555252c89e75b54",
       userId: "6950d753e555252c89e75b4c",
@@ -59,7 +80,7 @@ describe("note.repository.mongo", () => {
     });
   });
 
-  describe.only("deleteNote", () => {
+  describe("deleteNote", () => {
     const input = {
       noteId: "6950d753e555252c89e75b54",
       userId: "6950d753e555252c89e75b4c",
@@ -81,6 +102,52 @@ describe("note.repository.mongo", () => {
       const result = await noteRepo.deleteNote(input);
       expect(deleteOneSpy).toHaveBeenCalledWith({ _id: input.noteId, userId: input.userId });
       expect(result).toBe(false);
+    });
+  });
+
+  describe("updateNote", () => {
+    const input = {
+      noteId: "6950d753e555252c89e75b54",
+      userId: "6950d753e555252c89e75b4c",
+      data: {
+        title: "updated-title",
+        content: "updated-content",
+        tags: ["new-tag-1"],
+      },
+    };
+
+    let findOneAndUpdateChain: Pick<ReturnType<typeof NoteModel.findOneAndUpdate>, "lean">;
+    let findOneAndUpdateSpy: jest.SpyInstance;
+    beforeEach(() => {
+      findOneAndUpdateChain = {
+        lean: jest.fn().mockResolvedValue(note),
+      };
+
+      findOneAndUpdateSpy = jest
+        .spyOn(NoteModel, "findOneAndUpdate")
+        .mockReturnValue(
+          findOneAndUpdateChain as unknown as ReturnType<typeof NoteModel.findOneAndUpdate>,
+        );
+    });
+
+    it("returns mapped updated note", async () => {
+      const result = await noteRepo.updateNote(input);
+      expect(findOneAndUpdateSpy).toHaveBeenCalledWith(
+        { _id: input.noteId, userId: input.userId },
+        input.data,
+        {
+          returnDocument: "after",
+          runValidators: true,
+          context: "query",
+        },
+      );
+      expect(result).toEqual(noteMapped);
+    });
+
+    it("returns null if there is no note to update", async () => {
+      (findOneAndUpdateChain.lean as jest.Mock).mockResolvedValueOnce(null);
+      const result = await noteRepo.updateNote(input);
+      expect(result).toBe(null);
     });
   });
 
