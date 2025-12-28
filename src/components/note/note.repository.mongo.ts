@@ -30,6 +30,8 @@ const noteRepo = {
   // deletes note from db by ID. Only for owner
   async deleteNote(input: DeleteNoteInput): Promise<boolean> {
     const { noteId, userId } = input;
+    // const { deletedCount } = await NoteModel.deleteOne({ _id: noteId, userId });
+
     const { deletedCount } = await NoteModel.deleteOne({ _id: noteId, userId });
     return deletedCount === 1;
   },
