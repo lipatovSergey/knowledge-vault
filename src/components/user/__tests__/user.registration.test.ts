@@ -67,12 +67,12 @@ describe("User registration", () => {
 
   it("should return 409 if user with used email exists", async () => {
     await request(global.app).post(route).send({
-      name: " Test User",
+      name: "Test User",
       email: "test@example.com",
       password: "pass123",
     });
     const res = await request(global.app).post(route).send({
-      name: " Test User",
+      name: "Test User",
       email: "test@example.com",
       password: "pass123",
     });

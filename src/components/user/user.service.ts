@@ -1,7 +1,7 @@
 import type * as bcryptType from "bcrypt";
-import { MongoServerError } from "mongodb";
 import { BCRYPT_SALT_ROUNDS } from "../../config/env";
 import { ConflictError, NotFoundError, UnauthorizedError } from "../../errors/errors.class";
+import { isMongoDuplicateEmailError } from "../../utils/type-guards.util";
 import type { Email, MongoId } from "../../types/primitives";
 import type { UserRepo } from "./user.repository.mongo";
 import type { AuthUserInput, CreateUserInput, UpdateUserInput, UserDomain } from "./user.types";
@@ -27,11 +27,7 @@ function createUserService({
       try {
         await userRepo.create(userToSave);
       } catch (error) {
-        if (
-          error instanceof MongoServerError &&
-          error?.code === 11000 &&
-          (error?.keyPattern?.email || error?.keyValue?.email)
-        ) {
+        if (isMongoDuplicateEmailError(error)) {
           throw new ConflictError("User already exists");
         }
         throw error;
